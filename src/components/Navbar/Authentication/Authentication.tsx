@@ -1,20 +1,28 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import AuthenticationModal from "@/components/Modals/AuthenticationModal/AuthenticationModal";
+import { auth } from "@/firebase/clientApp";
+import useLoginOperations from "@/hooks/useLoginOperations";
 
-import useAuthOperations from "@/hooks/useAuthOperations";
-import { Button, Stack } from "@chakra-ui/react";
+import useAuthOperations from "@/hooks/useSignUpOperations";
+import { Button, Stack, Text } from "@chakra-ui/react";
 
-import React from "react";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import React, { useEffect } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 type AuthModalView = "logIn" | "signUp" | "resetPassword";
 
 export default function Authentication() {
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
-  const currentUserState = useRecoilValue(currentUserStateAtom);
+  const [currentUserState, setCurrentUserState] =
+    useRecoilState(currentUserStateAtom);
 
   const { onSignOut, signOutLoading } = useAuthOperations();
+
+  const [user, loading, error] = useAuthState(auth);
+
+  const { onLogin } = useLoginOperations();
 
   const handleSignInUp = (event: React.MouseEvent<HTMLButtonElement>) => {
     const eventSource = event.currentTarget.name;
@@ -25,19 +33,30 @@ export default function Authentication() {
     }));
   };
 
+  useEffect(() => {
+    if (user) {
+      onLogin(user);
+    }
+  }, [user]);
+
   return (
     <>
       <Stack direction="row">
         {currentUserState.isThereCurrentUser ? (
-          <Button
-            name="signOut"
-            onClick={() => {
-              onSignOut();
-            }}
-            isLoading={signOutLoading}
-          >
-            Sign Out
-          </Button>
+          <>
+            <Button>
+              <Text>{currentUserState.username}</Text>
+            </Button>
+            <Button
+              name="signOut"
+              onClick={() => {
+                onSignOut();
+              }}
+              isLoading={signOutLoading}
+            >
+              Sign Out
+            </Button>
+          </>
         ) : (
           <>
             <Button name="logIn" onClick={handleSignInUp}>

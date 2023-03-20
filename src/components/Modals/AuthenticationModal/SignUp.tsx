@@ -1,26 +1,23 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
 
-import { auth, firestore } from "@/firebase/clientApp";
-import useAuthOperations from "@/hooks/useAuthOperations";
+import useAuthOperations from "@/hooks/useSignUpOperations";
 import {
-  Input,
   Button,
   Flex,
-  Text,
   Icon,
-  Stack,
+  Input,
   InputGroup,
-  InputLeftElement,
   InputRightElement,
   Spinner,
+  Text,
 } from "@chakra-ui/react";
 
-import React, { useEffect, useState } from "react";
-import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
+import React, { useState } from "react";
+
 import { useSetRecoilState } from "recoil";
 
-import { BiError } from "react-icons/bi";
 import { AiOutlineCheckCircle } from "react-icons/ai";
+import { BiError } from "react-icons/bi";
 
 export default function SignUp() {
   const [signUpForm, setSignUpForm] = useState({
@@ -28,61 +25,67 @@ export default function SignUp() {
     fullname: "",
     username: "",
     password: "",
-    confirmPassword: "",
   });
 
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
 
-  const [
-    createUserWithEmailAndPassword,
-    userCred,
-    loading,
-    signUpBackendError,
-  ] = useCreateUserWithEmailAndPassword(auth);
-
-  const [error, setError] = useState("");
-
-  const { onSignUpLoading, onSignUp, isUserNameTaken, onSignUpError } =
+  const { onSignUpLoading, onSignUp, isUserNameTaken, error, setError } =
     useAuthOperations();
 
   const [userNameTakenState, setUserNameTakenState] = useState(false);
   const [userNameTakenStateLoading, setUserNameTakenStateLoading] =
     useState(false);
 
-  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const [passwordWeak, setPassordWeak] = useState(false);
+
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
-    if (signUpForm.password !== signUpForm.confirmPassword) {
-      setError("Passwords do not match");
+
+    // Checking all requirements, again beacuse I don't trust react
+    const usernameRegex = /^[a-z0-9]+$/;
+    if (!usernameRegex.test(signUpForm.username)) {
+      setUserNameTakenState((prev) => true);
       return;
     }
-    await createUserWithEmailAndPassword(signUpForm.email, signUpForm.password);
-  };
 
-  const onSuccessfullUserAuthCreation = async () => {
-    console.log("Creation of User's first part is done.");
-    console.log("UserCred:  ", userCred);
-
-    console.log("Now going second part");
-
-    if (userCred) onSignUp(userCred, signUpForm.username, signUpForm.fullname);
-  };
-
-  useEffect(() => {
-    if (userCred) {
-      onSuccessfullUserAuthCreation();
+    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+    if (!passwordRegex.test(signUpForm.password)) {
+      setPassordWeak((prev) => true);
+      return;
     }
 
-    return () => {};
-  }, [userCred]);
+    onSignUp(
+      signUpForm.email,
+      signUpForm.password,
+      signUpForm.username,
+      signUpForm.fullname
+    );
+  };
 
   const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    setError((prev) => "");
     if (event.target.name === "username") {
-      setUserNameTakenStateLoading((prev) => true);
-      const isTaken = await isUserNameTaken(event.target.value);
-      console.log(isTaken);
-      if (isTaken !== undefined) setUserNameTakenState((prev) => isTaken);
-      setUserNameTakenStateLoading((prev) => false);
+      let regexFailFlag = false;
+      const usernameRegex = /^[a-z0-9]+$/;
+      if (!usernameRegex.test(event.target.value)) {
+        setUserNameTakenState((prev) => true);
+        regexFailFlag = true;
+      }
+      if (!regexFailFlag) {
+        setUserNameTakenStateLoading((prev) => true);
+        const isTaken = await isUserNameTaken(event.target.value);
+
+        if (isTaken !== undefined) setUserNameTakenState((prev) => isTaken);
+        setUserNameTakenStateLoading((prev) => false);
+      }
+    }
+
+    if (event.target.name === "password") {
+      const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+      if (!regex.test(event.target.value)) {
+        setPassordWeak((prev) => true);
+      } else setPassordWeak((prev) => false);
     }
 
     setSignUpForm((prev) => ({
@@ -155,7 +158,6 @@ export default function SignUp() {
             mb={2}
             onChange={onChange}
             fontSize="10pt"
-            border="1px solid"
             borderColor={userNameTakenState ? "red" : "gray.200"}
             _placeholder={{
               color: "gray.500",
@@ -168,44 +170,32 @@ export default function SignUp() {
           />
         </InputGroup>
 
-        <Input
-          required
-          name="password"
-          placeholder="Password"
-          type="password"
-          mb={1}
-          onChange={onChange}
-          fontSize="10pt"
-          _placeholder={{
-            color: "gray.500",
-          }}
-          _hover={{
-            border: "1px solid",
-            borderColor: "blue.500",
-          }}
-          bg="gray.50"
-        />
-        <Input
-          required
-          name="confirmPassword"
-          placeholder="Confirm Password"
-          type="password"
-          mb={1}
-          onChange={onChange}
-          fontSize="10pt"
-          _placeholder={{
-            color: "gray.500",
-          }}
-          _hover={{
-            border: "1px solid",
-            borderColor: "blue.500",
-          }}
-          bg="gray.50"
-        />
+        <InputGroup>
+          <InputRightElement>
+            {passwordWeak && (
+              <Icon ml={5} as={BiError} fontSize="20px" mr={3} color="red" />
+            )}
+          </InputRightElement>
 
-        <Text textAlign="center" color="red" fontSize="10pt">
-          {error}
-        </Text>
+          <Input
+            required
+            name="password"
+            placeholder="Password"
+            type="password"
+            mb={1}
+            onChange={onChange}
+            borderColor={passwordWeak ? "red" : "gray.200"}
+            fontSize="10pt"
+            _placeholder={{
+              color: "gray.500",
+            }}
+            _hover={{
+              border: "1px solid",
+              borderColor: "blue.500",
+            }}
+            bg="gray.50"
+          />
+        </InputGroup>
 
         <Button
           width="100%"
@@ -215,8 +205,8 @@ export default function SignUp() {
           bg="black"
           textColor="white"
           type="submit"
-          isLoading={loading || onSignUpLoading || userNameTakenStateLoading}
-          isDisabled={userNameTakenState}
+          isLoading={onSignUpLoading || userNameTakenStateLoading}
+          isDisabled={userNameTakenState || passwordWeak}
           _hover={{
             bg: !userNameTakenState && "black",
             textColor: !userNameTakenState && "white",
@@ -226,10 +216,9 @@ export default function SignUp() {
         </Button>
 
         <Text color="red" textAlign="center" fontSize="10pt">
-          {onSignUpError}
+          {error}
         </Text>
 
-        <Text>{signUpBackendError?.message}</Text>
         <Flex fontSize="9pt" justify="center">
           <Text mr={1}>Have an account?</Text>
           <Text

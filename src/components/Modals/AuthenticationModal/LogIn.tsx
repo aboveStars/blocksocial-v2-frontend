@@ -1,9 +1,8 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
-import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
-import { auth } from "@/firebase/clientApp";
-import { Input, Button, Flex, Text } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
-import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
+import useLoginOperations from "@/hooks/useLoginOperations";
+
+import { Button, Flex, Input, Text } from "@chakra-ui/react";
+import React, { useState } from "react";
 import { useSetRecoilState } from "recoil";
 
 export default function LogIn() {
@@ -12,12 +11,12 @@ export default function LogIn() {
     email: "",
     password: "",
   });
-  const setCurrentUserState = useSetRecoilState(currentUserStateAtom);
 
-  const [signInWithEmailAndPassword, userCred, loading, error] =
-    useSignInWithEmailAndPassword(auth);
+  const { directLogin, loginLoading, loginError, setLoginError } =
+    useLoginOperations();
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setLoginError("");
     setLoginForm((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
@@ -26,31 +25,8 @@ export default function LogIn() {
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await signInWithEmailAndPassword(loginForm.email, loginForm.password);
+    directLogin(loginForm.email, loginForm.password);
   };
-
-  const handleSuccessfullLogin = () => {
-    console.log("User Succeffuly Signed-In");
-
-    console.log("UserCred: ", userCred);
-
-    // State Updates
-    setCurrentUserState((prev) => ({
-      ...prev,
-      isThereCurrentUser: true,
-    }));
-
-    setAuthModalState((prev) => ({
-      ...prev,
-      open: false,
-    }));
-  };
-
-  useEffect(() => {
-    if (userCred) {
-      handleSuccessfullLogin();
-    }
-  }, [userCred]);
 
   return (
     <>
@@ -89,21 +65,28 @@ export default function LogIn() {
           }}
           bg="gray.50"
         />
+
         <Button
           width="100%"
           height="36px"
           mt={2}
           mb={2}
+          bg="black"
+          textColor="white"
           type="submit"
-          isLoading={loading}
+          isLoading={loginLoading}
+          _hover={{
+            bg: "black",
+            textColor: "white",
+          }}
         >
-          Log In
+          Log-In
         </Button>
-        {error && (
-          <Text color="red" textAlign="center" fontSize="10pt">
-            {error.message}
-          </Text>
-        )}
+
+        <Text color="red" textAlign="center" fontSize="10pt">
+          {loginError}
+        </Text>
+
         <Flex fontSize="9pt" justify="center">
           <Text mr={1}>New Here?</Text>
           <Text

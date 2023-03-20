@@ -2,16 +2,22 @@ import { atom } from "recoil";
 
 export interface CurrentUser {
   isThereCurrentUser: boolean;
-  uid: string;
+
   username: string;
   fullname: string;
+  email: string;
+  uid: string;
 }
 
-const defaultState: CurrentUser = {
+
+
+ const defaultState: CurrentUser = {
   isThereCurrentUser: false,
-  uid: "",
+
   username: "",
   fullname: "",
+  email: "",
+  uid: "",
 };
 
 export const currentUserStateAtom = atom<CurrentUser>({

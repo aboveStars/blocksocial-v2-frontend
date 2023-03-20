@@ -1,24 +1,29 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
-import {
-  CurrentUser,
-  currentUserStateAtom,
-} from "@/components/atoms/currentUserAtom";
+import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { auth, firestore } from "@/firebase/clientApp";
-import { FirebaseError } from "firebase/app";
 import { signOut, User, UserCredential } from "firebase/auth";
-import { doc, getDoc, setDoc, writeBatch } from "firebase/firestore";
-import { useState } from "react";
+import { doc, getDoc, writeBatch } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { useResetRecoilState, useSetRecoilState } from "recoil";
+import useAuthErrorCodes from "./useAuthErrorCodes";
 
-const useAuthOperations = () => {
+const useSignUpOperations = () => {
   const resetCurrentUserState = useResetRecoilState(currentUserStateAtom);
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
   const setCurrentUserState = useSetRecoilState(currentUserStateAtom);
 
   const [signOutLoading, setSignOutLoading] = useState(false);
-  const [onSignUpLoading, setOnSignUpLoading] = useState(false);
 
-  const [onSignUpError, setOnSignUpError] = useState("");
+  const [onSignUpLoading, setOnSignUpLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const [createUserWithEmailAndPassword, , , signUpBackendError] =
+    useCreateUserWithEmailAndPassword(auth, {
+      sendEmailVerification: true,
+    });
+
+  const { getFriendlyAuthError } = useAuthErrorCodes();
 
   const onSignOut = async () => {
     setSignOutLoading(true);
@@ -38,36 +43,57 @@ const useAuthOperations = () => {
   };
 
   const onSignUp = async (
+    email: string,
+    password: string,
+    username: string,
+    fullName: string
+  ) => {
+    console.log("We are phase-1");
+    setError("");
+
+    setOnSignUpLoading((prev) => true);
+
+    const isTaken = await isUserNameTaken(username);
+    // I don't trust front of frontend, states are being updated slowly
+    if (isTaken) {
+      console.log("Username is taken, aborting user creation");
+      setError("Username is taken");
+      setOnSignUpLoading((prev) => false);
+      return;
+    }
+
+    const userCredential = await createUserWithEmailAndPassword(
+      email,
+      password
+    );
+    if (!userCredential) {
+      console.log("Error at Phase-1");
+      setOnSignUpLoading((prev) => false);
+      return;
+    }
+
+    console.log("Phase-1 successfull");
+    onSignUpPhase2(userCredential, username, fullName);
+  };
+
+  const onSignUpPhase2 = async (
     userCred: UserCredential,
     username: string,
     fullname: string
   ) => {
-    const isTaken = await isUserNameTaken(username);
-
-    // I don't trust front of frontend, states are being updated slowly
-    if (isTaken) {
-      console.log("Username is taken, aborting user creation");
-      setOnSignUpError("Username is taken");
-      return;
-    }
-
+    console.log("We are phase-2");
     let errorHappened: boolean = false;
 
-    setOnSignUpLoading(true);
-
-    let user: User | null = null;
-    let uid: string;
+    let user: User | null | undefined = null;
 
     try {
-      user = userCred.user;
-      uid = user.uid;
-
-      const validUserObjectForFirestore = JSON.parse(JSON.stringify(user));
+      user = userCred?.user;
 
       const data = {
         username: username,
         fullname: fullname,
-        ...validUserObjectForFirestore,
+        email: user.email,
+        uid: user.uid,
       };
 
       // creating batch
@@ -90,24 +116,27 @@ const useAuthOperations = () => {
       console.log(
         "Due to error on second-phase of user creating, we are now deleting user"
       );
-      setOnSignUpError("Error while creating user :/");
+      setError("Error while creating user :/");
+      setOnSignUpLoading((prev) => false);
 
       user?.delete();
 
       return;
     }
 
+    // Normally these are login things
+    // In future, these may be transferred to useSignIn
     setAuthModalState((prev) => ({
       ...prev,
       open: false,
     }));
 
     setCurrentUserState((prev) => ({
-      ...prev,
       isThereCurrentUser: true,
-      uid: uid,
       fullname: fullname,
       username: username,
+      email: user?.email || "",
+      uid: user?.uid || "",
     }));
 
     setOnSignUpLoading(false);
@@ -126,14 +155,22 @@ const useAuthOperations = () => {
     return existingStatus;
   };
 
+  useEffect(() => {
+    if (signUpBackendError) {
+      const friendlyError = getFriendlyAuthError(signUpBackendError);
+      if (friendlyError) setError((pref) => friendlyError);
+    }
+  }, [signUpBackendError]);
+
   return {
     onSignOut,
     signOutLoading,
     onSignUp,
-    onSignUpError,
+    error,
+    setError,
     onSignUpLoading,
     isUserNameTaken,
   };
 };
 
-export default useAuthOperations;
+export default useSignUpOperations;

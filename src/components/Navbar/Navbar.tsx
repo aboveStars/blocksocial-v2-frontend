@@ -1,5 +1,4 @@
-import { Button, Flex, Text } from "@chakra-ui/react";
-import React from "react";
+import { Flex, Text } from "@chakra-ui/react";
 import Authentication from "./Authentication/Authentication";
 
 import SearchBar from "./SearchBar/SearchBar";

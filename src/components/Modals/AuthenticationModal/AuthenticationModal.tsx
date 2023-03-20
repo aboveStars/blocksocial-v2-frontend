@@ -1,17 +1,17 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
 import {
+  Flex,
   Modal,
-  ModalOverlay,
+  ModalBody,
+  ModalCloseButton,
   ModalContent,
   ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  Flex,
+  ModalOverlay,
+  Text,
 } from "@chakra-ui/react";
-import React from "react";
 import { useRecoilState } from "recoil";
 import LogIn from "./LogIn";
-import OAuthButtons from "./OAuthButtons";
+
 import SignUp from "./SignUp";
 
 export default function AuthenticationModal() {
@@ -49,7 +49,9 @@ export default function AuthenticationModal() {
               width="70%"
               pb="6"
             >
-              <OAuthButtons />
+              <Text fontSize="2xl" fontWeight={700} mb={5}>
+                BlockSocial
+              </Text>
               {authModalState.view == "signUp" && <SignUp />}
               {authModalState.view == "logIn" && <LogIn />}
             </Flex>
