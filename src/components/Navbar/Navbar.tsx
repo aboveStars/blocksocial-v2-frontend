@@ -14,6 +14,8 @@ export default function Navbar({}: Props) {
         align="center"
         p={5}
         justify="space-between"
+        border="1px solid"
+        borderColor="yellow"
       >
         <Text
           color="white"

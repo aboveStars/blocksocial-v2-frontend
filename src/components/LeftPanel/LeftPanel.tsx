@@ -1,4 +1,4 @@
-import { Button } from "@chakra-ui/react";
+import { Button, Flex } from "@chakra-ui/react";
 import React from "react";
 
 type Props = {};
@@ -6,7 +6,9 @@ type Props = {};
 export default function LeftPanel({}: Props) {
   return (
     <>
-      <Button>Create</Button>
+      <Flex border="1px solid" borderColor="green" width="20%">
+        {/* <Button>Create</Button> */}
+      </Flex>
     </>
   );
 }
