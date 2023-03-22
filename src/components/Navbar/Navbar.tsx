@@ -15,7 +15,7 @@ export default function Navbar({}: Props) {
         p={5}
         justify="space-between"
         border="1px solid"
-        borderColor="yellow"
+        borderColor="gray.100"
       >
         <Text
           color="white"
