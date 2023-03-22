@@ -1,7 +1,20 @@
-import { Flex, Text } from "@chakra-ui/react";
+import {
+  Button,
+  Flex,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Text,
+} from "@chakra-ui/react";
 import React from "react";
 import { UserDataAtUserpage } from "../atoms/currentUserAtom";
+import PostCreateModal from "../Modals/Post/PostCreateModal";
 import Header from "../user/Header";
+import Posts from "../user/Posts";
 
 type Props = {
   userData: UserDataAtUserpage;
@@ -10,6 +23,7 @@ type Props = {
 export default function UserPageLayout({ userData }: Props) {
   return (
     <>
+      <PostCreateModal />
       <Flex
         border="1px solid"
         borderColor="blue.500"
@@ -34,7 +48,7 @@ export default function UserPageLayout({ userData }: Props) {
             justify="center"
             align="center"
           >
-            <Text textColor="white">Posts</Text>
+            <Posts />
           </Flex>
         </Flex>
       </Flex>

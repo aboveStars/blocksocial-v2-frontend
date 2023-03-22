@@ -1,30 +1,30 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { firestore, storage } from "@/firebase/clientApp";
-import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import {
   deleteObject,
   getDownloadURL,
   ref,
   uploadString,
 } from "firebase/storage";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 
 export default function useImageUpload() {
-  const [selectedFile, setSelectedFile] = useState<string>("");
-
+  const [selectedProfilePhoto, setSelectedProfilePhoto] = useState<string>("");
   const [currentUserState, setCurrentUserState] =
     useRecoilState(currentUserStateAtom);
 
   const [profilePhotoUploadLoading, setProfilePhotoUploadLoading] =
     useState(false);
   const [profilePhotoUploadError, setProfilePhotoUploadError] = useState(false);
+
   /**
-   * Selecting image efficiently, produce ready data to write storage via selectedFile
+   * Selecting image efficiently, produce ready data to write storage
    * @param event
    * @returns
    */
-  const onSelectFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onSelectProfilePhoto = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) {
       console.log("No Files Provided to onSelectFile \n aborting.....");
       return;
@@ -36,13 +36,12 @@ export default function useImageUpload() {
     reader.readAsDataURL(file);
 
     reader.onload = (readerEvent) => {
-      setSelectedFile(readerEvent.target?.result as string);
+      setSelectedProfilePhoto(readerEvent.target?.result as string);
     };
   };
 
   /**
-   * This is the main image upload function.
-   *
+   * Profile Photo Uploading to Database
    */
   const profilePhotoUpload = async () => {
     let errorHappened: boolean = false;
@@ -59,7 +58,7 @@ export default function useImageUpload() {
     );
 
     try {
-      await uploadString(imageRef, selectedFile, "data_url");
+      await uploadString(imageRef, selectedProfilePhoto, "data_url");
     } catch (error) {
       console.log("Error while uploading pp to storage: ", error);
       errorHappened = true;
@@ -137,10 +136,15 @@ export default function useImageUpload() {
     setProfilePhotoUploadLoading(false);
   };
 
+  /**
+   * Post Photo Upload
+   * @returns Downloadable Post Photo Image URL
+   */
+
   return {
-    selectedFile,
-    onSelectFile,
-    setSelectedFile,
+    onSelectProfilePhoto,
+    selectedProfilePhoto,
+    setSelectedProfilePhoto,
     profilePhotoUpload,
     profilePhotoUploadLoading,
     profilePhotoUploadError,

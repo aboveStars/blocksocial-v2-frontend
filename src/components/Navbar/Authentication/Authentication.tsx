@@ -6,6 +6,7 @@ import useLoginOperations from "@/hooks/useLoginOperations";
 
 import useAuthOperations from "@/hooks/useSignUpOperations";
 import { Button, Stack, Text } from "@chakra-ui/react";
+import { useRouter } from "next/router";
 
 import React, { useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -15,8 +16,7 @@ type AuthModalView = "logIn" | "signUp" | "resetPassword";
 
 export default function Authentication() {
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
-  const [currentUserState, setCurrentUserState] =
-    useRecoilState(currentUserStateAtom);
+  const currentUserState = useRecoilValue(currentUserStateAtom);
 
   const { onSignOut, signOutLoading } = useAuthOperations();
 
@@ -33,6 +33,8 @@ export default function Authentication() {
     }));
   };
 
+  const router = useRouter();
+
   useEffect(() => {
     if (user) {
       onLogin(user);
@@ -44,7 +46,9 @@ export default function Authentication() {
       <Stack direction="row">
         {currentUserState.isThereCurrentUser ? (
           <>
-            <Button>
+            <Button
+              onClick={() => router.push(`/users/${currentUserState.username}`)}
+            >
               <Text>{currentUserState.username}</Text>
             </Button>
             <Button
