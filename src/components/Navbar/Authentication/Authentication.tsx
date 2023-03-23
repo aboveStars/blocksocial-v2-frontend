@@ -48,6 +48,8 @@ export default function Authentication() {
           <>
             <Button
               onClick={() => router.push(`/users/${currentUserState.username}`)}
+              colorScheme="blue"
+              variant="solid"
             >
               <Text>{currentUserState.username}</Text>
             </Button>
@@ -57,16 +59,28 @@ export default function Authentication() {
                 onSignOut();
               }}
               isLoading={signOutLoading}
+              variant="outline"
+              colorScheme="blue"
             >
               Sign Out
             </Button>
           </>
         ) : (
           <>
-            <Button name="logIn" onClick={handleSignInUp}>
+            <Button
+              name="logIn"
+              onClick={handleSignInUp}
+              variant="outline"
+              colorScheme="blue"
+            >
               Log In
             </Button>
-            <Button name="signUp" onClick={handleSignInUp}>
+            <Button
+              name="signUp"
+              onClick={handleSignInUp}
+              variant="solid"
+              colorScheme="blue"
+            >
               Sign Up
             </Button>
           </>

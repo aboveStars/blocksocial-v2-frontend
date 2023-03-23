@@ -1,4 +1,4 @@
-import { Flex } from "@chakra-ui/react";
+import { Container, Flex } from "@chakra-ui/react";
 import React, { ReactNode } from "react";
 import LeftPanel from "../LeftPanel/LeftPanel";
 import Navbar from "../Navbar/Navbar";
@@ -11,8 +11,9 @@ export default function Layout({ children }: Props) {
   return (
     <>
       <Navbar />
-      <Flex bg="black">{children}</Flex>
-      <LeftPanel />
+      <Flex as="main" mt="">
+        {children}
+      </Flex>
     </>
   );
 }

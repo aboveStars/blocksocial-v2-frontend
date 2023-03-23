@@ -81,14 +81,8 @@ export default function SearchBar({}: Props) {
 
   return (
     <>
-      <Flex direction="column">
-        <Flex
-          align="center"
-          flexGrow={1}
-          maxWidth={300}
-          ml="12"
-          position="relative"
-        >
+      <Flex direction="column" maxWidth="300px">
+        <Flex align="center" position="relative">
           <InputGroup size="md">
             <InputLeftElement>
               <Icon as={AiOutlineSearch} color="white" fontSize="12pt" />
@@ -132,7 +126,6 @@ export default function SearchBar({}: Props) {
           <Flex
             position="absolute"
             mt="12"
-            ml="12"
             minHeight="200px"
             backdropFilter="auto"
             backdropBlur="5px"

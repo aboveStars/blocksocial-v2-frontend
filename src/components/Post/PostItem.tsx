@@ -2,16 +2,16 @@ import {
   Flex,
   Icon,
   Image,
+  Skeleton,
   SkeletonCircle,
   SkeletonText,
-  Stack,
   Text,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
 import { AiOutlineComment, AiOutlineHeart } from "react-icons/ai";
 import { BiSend } from "react-icons/bi";
-import { BsDot } from "react-icons/bs";
+import { BsDot, BsImage } from "react-icons/bs";
 
 import { firestore } from "@/firebase/clientApp";
 import { doc, getDoc } from "firebase/firestore";
@@ -51,8 +51,14 @@ export default function PostItem({ postData }: Props) {
   }, [postData]);
 
   return (
-    <Flex bg="black" direction="column">
-      <Flex mb={3} align="center" gap={1} height="55px">
+    <Flex bg="black" direction="column" width="550px">
+      <Flex
+        align="center"
+        gap={1}
+        height="55px"
+        bg="gray.900"
+        borderRadius="10px 10px 0px 0px"
+      >
         <Image
           src={postSenderProfilePhotoURL}
           width="50px"
@@ -82,36 +88,58 @@ export default function PostItem({ postData }: Props) {
 
             <Icon as={BsDot} color="white" fontSize="13px" />
 
-            <Text as="i" fontSize="10pt" textColor="gray.500">
+            <Text as="i" fontSize="9pt" textColor="gray.500">
               {moment(new Date(postData.creationTime.seconds * 1000)).fromNow()}
             </Text>
           </Flex>
         </Flex>
       </Flex>
+
       <Image
         src={postData.image}
-        maxWidth="400px"
-        rounded={10}
-        border="1px solid"
-        borderColor="gray.800"
+        maxWidth="550px"
+        border=""
+        fallback={
+          <>
+            <Skeleton height="400px" rounded="10" position="relative" />
+            <Icon
+              as={BsImage}
+              fontSize="8xl"
+              color="white"
+              position="absolute"
+              style={{
+                marginTop: "215px",
+                marginLeft: "153px",
+              }}
+            />
+          </>
+        }
       />
-      <Flex align="center" mt="3">
-        <Text textColor="white">{postData.description}</Text>
-      </Flex>
-      <Flex align="center" justify="space-between" mt="2">
-        <Flex gap="1">
-          <Icon as={AiOutlineHeart} color="red" fontSize="25px" />
-          <Text textColor="white">53</Text>
-        </Flex>
 
-        <Flex gap="1">
-          <Icon as={AiOutlineComment} color="white" fontSize="25px" />
-          <Text textColor="white">34</Text>
+      <Flex
+        direction="column"
+        bg="gray.900"
+        borderRadius="0px 0px 10px 10px"
+        mt={1}
+      >
+        <Flex align="center" ml={2.5}>
+          <Text textColor="white">{postData.description}</Text>
         </Flex>
+        <Flex align="center" justify="space-between" p={2}>
+          <Flex gap="1">
+            <Icon as={AiOutlineHeart} color="red" fontSize="25px" />
+            <Text textColor="white">53</Text>
+          </Flex>
 
-        <Flex gap="1">
-          <Icon as={BiSend} color="white" fontSize="25px" />
-          <Text textColor="white">14</Text>
+          <Flex gap="1">
+            <Icon as={AiOutlineComment} color="white" fontSize="25px" />
+            <Text textColor="white">34</Text>
+          </Flex>
+
+          <Flex gap="1">
+            <Icon as={BiSend} color="white" fontSize="25px" />
+            <Text textColor="white">14</Text>
+          </Flex>
         </Flex>
       </Flex>
     </Flex>

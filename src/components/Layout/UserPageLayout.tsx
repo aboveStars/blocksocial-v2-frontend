@@ -19,21 +19,14 @@ import Posts from "../user/Posts";
 
 type Props = {
   userInformation: UserInformation;
-  userPosts : PostData[]
+  userPosts: PostData[];
 };
 
 export default function UserPageLayout({ userInformation, userPosts }: Props) {
   return (
     <>
       <PostCreateModal />
-      <Flex
-        border="1px solid"
-        borderColor="blue.500"
-        direction="row"
-        justify="center"
-        align="center"
-        width="100%"
-      >
+      <Flex direction="row" justify="center" align="center" width="100%">
         <Flex direction="column" width="50%" maxWidth="800px">
           <Flex
             border="1px solid"
