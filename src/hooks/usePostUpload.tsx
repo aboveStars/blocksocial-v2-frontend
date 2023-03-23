@@ -2,9 +2,15 @@ import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postCreateModalStateAtom } from "@/components/atoms/postCreateModalAtom";
 import { PostCreateForm, PostData } from "@/components/types/Post";
 import { firestore, storage } from "@/firebase/clientApp";
-import { doc, setDoc, writeBatch } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  serverTimestamp,
+  Timestamp,
+  writeBatch,
+} from "firebase/firestore";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
 const usePostCreate = () => {
@@ -37,16 +43,19 @@ const usePostCreate = () => {
     const username = currentUserUsername;
     const postName = Date.now();
 
-    const postDocRef = doc(firestore, `users/${username}/posts/${postName}`);
+    // Add a new document with a generated id
+    const newPostRef = doc(collection(firestore, `users/${username}/posts`));
 
     const postData: PostData = {
-      title: postCreateForm.title,
+      senderUsername: currentUserUsername,
       description: postCreateForm.description,
       image: "",
+      creationTime: serverTimestamp() as Timestamp,
+      id: serverTimestamp() as Timestamp, // this is not good
     };
 
     const batch = writeBatch(firestore);
-    batch.set(postDocRef, postData);
+    batch.set(newPostRef, postData);
 
     // upload photo...
     const postPhotoRef = ref(
@@ -57,7 +66,7 @@ const usePostCreate = () => {
     const photoURL = await getDownloadURL(postPhotoRef);
 
     // update doc....
-    batch.update(postDocRef, {
+    batch.update(newPostRef, {
       image: photoURL,
     });
 

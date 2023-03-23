@@ -91,12 +91,12 @@ export default function SearchBar({}: Props) {
         >
           <InputGroup size="md">
             <InputLeftElement>
-              <Icon as={AiOutlineSearch} color="white" fontSize="10pt" />
+              <Icon as={AiOutlineSearch} color="white" fontSize="12pt" />
             </InputLeftElement>
             <Input
               ref={inputRef}
               pr="4.5rem"
-              placeholder="Search friends, posts...."
+              placeholder="Search"
               border="1px solid"
               borderColor="gray.700"
               textColor="white"

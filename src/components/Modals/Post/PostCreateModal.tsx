@@ -35,7 +35,6 @@ export default function PostCreateModal({}: Props) {
   );
 
   const [postCreateForm, setPostCreateForm] = useState({
-    title: "",
     description: "",
     image: "",
   });
@@ -50,7 +49,7 @@ export default function PostCreateModal({}: Props) {
   const handleSendPost = async () => {
     await sendPost(postCreateForm);
     console.log("Succesfully Uploaded Post");
-    setPostCreateForm({ title: "", description: "", image: "" });
+    setPostCreateForm({ description: "", image: "" });
   };
 
   useEffect(() => {
@@ -70,9 +69,6 @@ export default function PostCreateModal({}: Props) {
         <ModalHeader>Create Post</ModalHeader>
 
         <ModalBody>
-          <Text>Title</Text>
-          <Input name="title" onChange={onTextsChanged} />
-
           <Text>Description</Text>
           <Input name="description" onChange={onTextsChanged} />
 

@@ -9,7 +9,7 @@ export interface CurrentUser {
   profilePhoto?: string;
 }
 
-export interface UserDataAtUserpage {
+export interface UserInformation {
   username: string;
   fullname: string;
   email: string;

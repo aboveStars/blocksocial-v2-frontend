@@ -1,17 +1,21 @@
-import { UserDataAtUserpage } from "@/components/atoms/currentUserAtom";
+import { UserInformation } from "@/components/atoms/currentUserAtom";
 import UserPageLayout from "@/components/Layout/UserPageLayout";
+import { PostData } from "@/components/types/Post";
 
 import { firestore } from "@/firebase/clientApp";
 import { Flex, Text } from "@chakra-ui/react";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { GetServerSidePropsContext } from "next";
 
+import safeJsonStringify from "safe-json-stringify";
+
 type Props = {
-  userData: UserDataAtUserpage;
+  userInformation: UserInformation;
+  userPosts: PostData[];
 };
 
-export default function index({ userData }: Props) {
-  if (!userData) {
+export default function index({ userInformation, userPosts }: Props) {
+  if (!userInformation) {
     return (
       <Flex justify="center" align="center" width="100%">
         <Text color="red">User Not Found</Text>
@@ -19,27 +23,54 @@ export default function index({ userData }: Props) {
     );
   }
 
-  return <UserPageLayout userData={userData} />;
+  return (
+    <>
+      <UserPageLayout userInformation={userInformation} userPosts={userPosts} />
+    </>
+  );
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   // getting page name [username] => yunus20korkmaz03
   const username = context.query.username;
-  let finalPropData: UserDataAtUserpage | undefined = undefined;
+  let userInformation: UserInformation | undefined = undefined;
   try {
-    const userDocRef = doc(firestore, "users", username as string);
-    const userDoc = await getDoc(userDocRef);
+    const userInformationDocRef = doc(firestore, `users/${username as string}`);
+    const userDoc = await getDoc(userInformationDocRef);
 
     if (userDoc.exists()) {
-      finalPropData = {
+      userInformation = {
         ...userDoc.data(),
-      } as UserDataAtUserpage;
+      } as UserInformation;
     }
   } catch (error) {}
 
+  const userPostsColeection = collection(
+    firestore,
+    `users/${username as string}/posts`
+  );
+  const userPostsSnapshot = await getDocs(userPostsColeection);
+
+  const userPosts: PostData[] = [];
+
+  userPostsSnapshot.forEach((doc) => {
+    const postObject: PostData = {
+      senderUsername: doc.data().senderUsername,
+      description: doc.data().description,
+      image: doc.data().image || null,
+      creationTime: doc.data().creationTime,
+      id: doc.data().id,
+    };
+    const serializablePostObject: PostData = JSON.parse(
+      safeJsonStringify(postObject)
+    );
+    userPosts.push(serializablePostObject);
+  });
+
   return {
     props: {
-      userData: finalPropData ?? null,
+      userInformation: userInformation ?? null,
+      userPosts: userPosts,
     },
   };
 }

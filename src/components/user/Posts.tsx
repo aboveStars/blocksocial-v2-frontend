@@ -1,16 +1,22 @@
-import { Stack, Text } from "@chakra-ui/react";
-import React from "react";
+import { Divider, Stack } from "@chakra-ui/react";
+import PostItem from "../Post/PostItem";
+import { PostData } from "../types/Post";
 
-type Props = {};
+type Props = {
+  userPosts: PostData[];
+};
 
-export default function Posts({}: Props) {
+export default function Posts({ userPosts }: Props) {
   return (
     <>
-      <Stack>
-        <Text color="white">Post-1</Text>
-        <Text color="white">Post-2</Text>
-        <Text color="white">Post-3</Text>
-        <Text color="white">Post-4</Text>
+      <Stack
+        gap={3}
+        mt={3}
+        divider={<Divider borderColor="gray.600" borderWidth="1px" />}
+      >
+        {userPosts.map((postData, index) => (
+          <PostItem key={index} postData={postData} />
+        ))}
       </Stack>
     </>
   );

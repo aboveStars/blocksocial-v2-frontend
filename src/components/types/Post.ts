@@ -1,11 +1,14 @@
+import { Timestamp } from "firebase/firestore";
+
 export type PostCreateForm = {
-  title: string;
   description: string;
   image: string;
 };
 
 export type PostData = {
-  title: string;
+  senderUsername: string;
   description: string;
-  image: string;
-}
+  image?: string;
+  creationTime: Timestamp;
+  id: Timestamp;
+};

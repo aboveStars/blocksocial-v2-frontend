@@ -12,7 +12,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import {
   currentUserStateAtom,
-  UserDataAtUserpage,
+  UserInformation,
 } from "../atoms/currentUserAtom";
 
 import useImageUpload from "@/hooks/useImageUpload";
@@ -26,10 +26,10 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 import { postCreateModalStateAtom } from "../atoms/postCreateModalAtom";
 
 type Props = {
-  userData: UserDataAtUserpage;
+  userInformation: UserInformation;
 };
 
-export default function Header({ userData }: Props) {
+export default function Header({ userInformation }: Props) {
   const currentUserUid = useRecoilValue(currentUserStateAtom).uid;
 
   const [canModify, setCanModify] = useState<boolean>(false);
@@ -58,7 +58,7 @@ export default function Header({ userData }: Props) {
   useEffect(() => {
     setSelectedProfilePhoto("");
     if (currentUserUid)
-      if (currentUserUid == userData.uid) {
+      if (currentUserUid == userInformation.uid) {
         setCanModify((prev) => true);
       } else {
         setCanModify((prev) => false);
@@ -66,7 +66,7 @@ export default function Header({ userData }: Props) {
     else {
       setCanModify((prev) => false);
     }
-  }, [userData, currentUserUid]);
+  }, [userInformation, currentUserUid]);
 
   return (
     <Flex direction="column" justify="center" align="center">
@@ -87,10 +87,10 @@ export default function Header({ userData }: Props) {
               }
             />
           </>
-        ) : userData.profilePhoto ? (
+        ) : userInformation.profilePhoto ? (
           <>
             <Image
-              src={userData.profilePhoto}
+              src={userInformation.profilePhoto}
               fallback={
                 <SkeletonCircle
                   width="200px"
@@ -159,11 +159,11 @@ export default function Header({ userData }: Props) {
         </Flex>
       )}
 
-      <Text textColor="white">{userData.username}</Text>
+      <Text textColor="white">{userInformation.username}</Text>
       <Divider />
-      <Text textColor="white">{userData.fullname}</Text>
-      <Text textColor="white">{userData.uid}</Text>
-      <Text textColor="white">{userData.email}</Text>
+      <Text textColor="white">{userInformation.fullname}</Text>
+      <Text textColor="white">{userInformation.uid}</Text>
+      <Text textColor="white">{userInformation.email}</Text>
       <Divider />
 
       {canModify && (

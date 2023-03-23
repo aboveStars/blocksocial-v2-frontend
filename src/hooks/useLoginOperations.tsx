@@ -70,13 +70,16 @@ const useLoginOperations = () => {
     }
 
     // State Updates
-    setCurrentUserState((prev) => ({
-      isThereCurrentUser: true,
-      username: userData.username,
-      fullname: userData.fullname,
-      email: userData.email,
-      uid: userData.uid,
-    }));
+    setCurrentUserState(
+      (prev) =>
+        ({
+          isThereCurrentUser: true,
+          username: userData.username,
+          fullname: userData.fullname,
+          email: userData.email,
+          uid: userData.uid,
+        } as CurrentUser)
+    );
 
     setAuthModalState((prev) => ({
       ...prev,
