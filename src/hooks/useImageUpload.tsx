@@ -11,7 +11,7 @@ import React, { useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 
 export default function useImageUpload() {
-  const [selectedProfilePhoto, setSelectedProfilePhoto] = useState<string>("");
+  const [selectedProfilePhoto, setSelectedProfilePhoto] = useState("");
   const [currentUserState, setCurrentUserState] =
     useRecoilState(currentUserStateAtom);
 
@@ -25,6 +25,7 @@ export default function useImageUpload() {
    * @returns
    */
   const onSelectProfilePhoto = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("OnSelectPhoto Triggered!");
     if (!event.target.files) {
       console.log("No Files Provided to onSelectFile \n aborting.....");
       return;
@@ -36,6 +37,7 @@ export default function useImageUpload() {
     reader.readAsDataURL(file);
 
     reader.onload = (readerEvent) => {
+      console.log("onLoad fired, now we update state");
       setSelectedProfilePhoto(readerEvent.target?.result as string);
     };
   };

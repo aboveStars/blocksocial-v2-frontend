@@ -21,6 +21,7 @@ import { PostData } from "../types/Post";
 import usePost from "@/hooks/usePost";
 import { useRecoilValue } from "recoil";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
+import { CgProfile } from "react-icons/cg";
 
 type Props = {
   postData: PostData;
@@ -78,12 +79,16 @@ export default function PostItem({ postData }: Props) {
           height="50px"
           rounded="full"
           fallback={
-            <SkeletonCircle
-              width="50px"
-              height="50px"
-              startColor="gray.100"
-              endColor="gray.800"
-            />
+            postSenderProfilePhotoURL ? (
+              <SkeletonCircle
+                width="50px"
+                height="50px"
+                startColor="gray.100"
+                endColor="gray.800"
+              />
+            ) : (
+              <Icon as={CgProfile} color="white" height="50px" width="50px" />
+            )
           }
         />
         <Flex direction="column">

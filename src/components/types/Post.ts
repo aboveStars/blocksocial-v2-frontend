@@ -11,8 +11,10 @@ export type PostData = {
   description: string;
   image?: string;
   likeCount: number;
-  whoLiked : string[]
+  whoLiked: string[];
 
   creationTime: Timestamp;
   id: string;
 };
+
+

@@ -1,5 +1,6 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { UserInformation } from "@/components/types/User";
 import { auth, firestore } from "@/firebase/clientApp";
 import { signOut, User, UserCredential } from "firebase/auth";
 import { doc, getDoc, writeBatch } from "firebase/firestore";
@@ -89,10 +90,14 @@ const useSignUpOperations = () => {
     try {
       user = userCred?.user;
 
-      const data = {
+      const data: UserInformation = {
         username: username,
         fullname: fullname,
-        email: user.email,
+
+        followingCount: 0,
+        followerCount: 0,
+
+        email: user.email || "", // Users also authenticate with something else than email
         uid: user.uid,
       };
 

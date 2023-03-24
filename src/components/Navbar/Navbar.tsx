@@ -18,6 +18,7 @@ export default function Navbar({}: Props) {
         align="center"
         p={5}
         bg="black"
+        zIndex="banner"
       >
         <Flex width="100%" justify="flex-start">
           <Text

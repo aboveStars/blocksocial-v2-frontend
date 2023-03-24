@@ -27,6 +27,7 @@ import { AiOutlineSearch } from "react-icons/ai";
 import { UserInSearchbar } from "../../types/User";
 
 import { MdCancel } from "react-icons/md";
+import { CgProfile } from "react-icons/cg";
 
 type Props = {};
 
@@ -153,12 +154,21 @@ export default function SearchBar({}: Props) {
                     height="50px"
                     rounded="full"
                     fallback={
-                      <SkeletonCircle
-                        width="50px"
-                        height="50px"
-                        startColor="gray.100"
-                        endColor="gray.800"
-                      />
+                      r.profilePhoto ? (
+                        <SkeletonCircle
+                          width="50px"
+                          height="50px"
+                          startColor="gray.100"
+                          endColor="gray.800"
+                        />
+                      ) : (
+                        <Icon
+                          as={CgProfile}
+                          color="white"
+                          height="50px"
+                          width="50px"
+                        />
+                      )
                     }
                   />
                   <Flex justify="center" ml={1} flexDirection="column">

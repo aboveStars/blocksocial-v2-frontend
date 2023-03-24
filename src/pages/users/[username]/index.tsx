@@ -1,6 +1,6 @@
-import { UserInformation } from "@/components/atoms/currentUserAtom";
 import UserPageLayout from "@/components/Layout/UserPageLayout";
 import { PostData } from "@/components/types/Post";
+import { UserInformation } from "@/components/types/User";
 
 import { firestore } from "@/firebase/clientApp";
 import { Flex, Text } from "@chakra-ui/react";
@@ -59,7 +59,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       description: doc.data().description,
       image: doc.data().image || null,
       likeCount: doc.data().likeCount,
-      whoLiked : doc.data().whoLiked,
+      whoLiked: doc.data().whoLiked,
       creationTime: doc.data().creationTime,
       id: doc.data().id,
     };

@@ -1,21 +1,6 @@
 import { atom } from "recoil";
+import { CurrentUser } from "../types/User";
 
-export interface CurrentUser {
-  isThereCurrentUser: boolean;
-  username: string;
-  fullname: string;
-  email: string;
-  uid: string;
-  profilePhoto?: string;
-}
-
-export interface UserInformation {
-  username: string;
-  fullname: string;
-  email: string;
-  uid: string;
-  profilePhoto?: string;
-}
 
 const defaultState: CurrentUser = {
   isThereCurrentUser: false,
