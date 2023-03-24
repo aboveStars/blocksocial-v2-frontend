@@ -21,6 +21,8 @@ import { CgProfile } from "react-icons/cg";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { postCreateModalStateAtom } from "../atoms/postCreateModalAtom";
 import { UserInformation } from "../types/User";
+import useFollow from "@/hooks/useFollow";
+import { authModalStateAtom } from "../atoms/authModalAtom";
 
 type Props = {
   userInformation: UserInformation;
@@ -28,6 +30,7 @@ type Props = {
 
 export default function Header({ userInformation }: Props) {
   const currentUserUid = useRecoilValue(currentUserStateAtom).uid;
+  const currentUserUsername = useRecoilValue(currentUserStateAtom).username;
 
   const [isCurrentUserPage, setIsCurrentUserPage] = useState<boolean>(false);
   const [modifying, setModifying] = useState<boolean>(false);
@@ -52,6 +55,13 @@ export default function Header({ userInformation }: Props) {
 
   const [ostensibleProfilePhoto, setOstensibleProfilePhoto] = useState("");
 
+  const [ostensibleUserInformation, setOstensibleUserInformation] =
+    useState(userInformation);
+
+  const { follow } = useFollow();
+
+  const setAuthModalState = useSetRecoilState(authModalStateAtom);
+
   /**
    * userData is already being controlled then, comes here
    * Current user uid, but direcly comes here. So we check it
@@ -59,7 +69,12 @@ export default function Header({ userInformation }: Props) {
    */
 
   useEffect(() => {
+    // Beacuse when page changes (userPage) state variable are not reseted.
+    // We manually reset
+    // But there is no problem at "userInformation" (userInformation.username changes, I mean)
     setSelectedProfilePhoto("");
+    setOstensibleProfilePhoto("");
+    setOstensibleUserInformation(userInformation);
     if (currentUserUid)
       if (currentUserUid == userInformation.uid) {
         setIsCurrentUserPage((prev) => true);
@@ -75,13 +90,8 @@ export default function Header({ userInformation }: Props) {
     const poorStatus: boolean = !!(
       !userInformation.profilePhoto && !ostensibleProfilePhoto
     );
-    console.log(poorStatus);
     setPoorProfilePhoto(poorStatus);
   }, [userInformation, ostensibleProfilePhoto]);
-
-  useEffect(() => {
-    console.log(selectedProfilePhoto.length);
-  }, [selectedProfilePhoto]);
 
   return (
     <Flex direction="column" justify="center" align="center" mt={3}>
@@ -142,6 +152,7 @@ export default function Header({ userInformation }: Props) {
               setOstensibleProfilePhoto(selectedProfilePhoto);
               setModifying(false);
               setSelectedProfilePhoto("");
+              if (inputRef.current) inputRef.current.value = "";
             }}
             isLoading={profilePhotoUploadLoading}
           >
@@ -154,6 +165,7 @@ export default function Header({ userInformation }: Props) {
             onClick={() => {
               setSelectedProfilePhoto("");
               setModifying(false);
+              if (inputRef.current) inputRef.current.value = "";
             }}
             isDisabled={profilePhotoUploadLoading}
           >
@@ -184,7 +196,7 @@ export default function Header({ userInformation }: Props) {
       <Flex align="center" gap={3} mt={2}>
         <Flex gap={1}>
           <Text as="b" fontSize="12pt" textColor="white">
-            {userInformation.followingCount}
+            {ostensibleUserInformation.followingCount}
           </Text>
           <Text fontSize="12pt" textColor="gray.500">
             Following
@@ -192,7 +204,7 @@ export default function Header({ userInformation }: Props) {
         </Flex>
         <Flex gap={1}>
           <Text as="b" fontSize="12pt" textColor="white">
-            {userInformation.followerCount}
+            {ostensibleUserInformation.followerCount}
           </Text>
           <Text fontSize="12pt" textColor="gray.500">
             Follower
@@ -202,12 +214,50 @@ export default function Header({ userInformation }: Props) {
 
       {!isCurrentUserPage && (
         <Flex mt={2} mb={2}>
-          <Button variant="solid" colorScheme="blue" size="sm">
-            Follow
-          </Button>
-          {/* <Button variant="outline" colorScheme="blue" size="sm">
-            Unfollow
-          </Button> */}
+          {ostensibleUserInformation.followers.includes(currentUserUsername) ? (
+            <Button
+              variant="outline"
+              colorScheme="blue"
+              size="sm"
+              onClick={() => {
+                follow(userInformation.username, -1);
+                setOstensibleUserInformation((prev) => ({
+                  ...prev,
+                  followers: prev.followers.filter(
+                    (f) => f !== currentUserUsername
+                  ),
+                  followerCount: prev.followerCount - 1,
+                }));
+              }}
+            >
+              Unfollow
+            </Button>
+          ) : (
+            <Button
+              variant="solid"
+              colorScheme="blue"
+              size="sm"
+              onClick={() => {
+                if (!currentUserUsername) {
+                  console.log("Only Users can follow");
+                  setAuthModalState((prev) => ({
+                    ...prev,
+                    open: true,
+                    view: "logIn",
+                  }));
+                  return;
+                }
+                follow(userInformation.username, 1);
+                setOstensibleUserInformation((prev) => ({
+                  ...prev,
+                  followers: prev.followers.concat(currentUserUsername),
+                  followerCount: prev.followerCount + 1,
+                }));
+              }}
+            >
+              Follow
+            </Button>
+          )}
         </Flex>
       )}
 

@@ -122,7 +122,10 @@ export default function PostCreateModal({}: Props) {
             variant="outline"
             colorScheme="blue"
             mr={3}
-            onClick={() => setPostCreatModaleState({ isOpen: false })}
+            onClick={() => {
+              setPostCreatModaleState({ isOpen: false });
+              if (imageInputRef.current) imageInputRef.current.value = "";
+            }}
             isDisabled={postUploadLoading}
           >
             Cancel

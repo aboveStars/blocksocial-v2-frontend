@@ -95,7 +95,10 @@ const useSignUpOperations = () => {
         fullname: fullname,
 
         followingCount: 0,
+        followings: [],
+
         followerCount: 0,
+        followers: [],
 
         email: user.email || "", // Users also authenticate with something else than email
         uid: user.uid,

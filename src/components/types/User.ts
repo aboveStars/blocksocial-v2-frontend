@@ -21,7 +21,10 @@ export interface UserInformation {
   fullname: string;
 
   followingCount: number;
+  followings: string[];
+
   followerCount: number;
+  followers: string[];
 
   email: string;
   uid: string;

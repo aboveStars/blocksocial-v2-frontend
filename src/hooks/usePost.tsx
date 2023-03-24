@@ -21,10 +21,14 @@ const usePost = () => {
    * @param postId postId of post
    * @param opCode like : 1, deLike : -1
    */
-  const like = async (postId: string, opCode: number) => {
+  const like = async (
+    postId: string,
+    postSenderUsername: string,
+    opCode: number
+  ) => {
     console.log("Like Operation Started");
     const postDocQuery = query(
-      collection(firestore, `users/${currentUserUsername}/posts`),
+      collection(firestore, `users/${postSenderUsername}/posts`),
       where("id", "==", postId)
     );
     // This query size will be 1.
@@ -36,7 +40,7 @@ const usePost = () => {
 
     const postDocRef = doc(
       firestore,
-      `users/${currentUserUsername}/posts/${postDocId}`
+      `users/${postSenderUsername}/posts/${postDocId}`
     );
 
     console.log("Updating Like Count...");
