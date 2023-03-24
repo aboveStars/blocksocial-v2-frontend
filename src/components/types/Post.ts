@@ -7,8 +7,12 @@ export type PostCreateForm = {
 
 export type PostData = {
   senderUsername: string;
+
   description: string;
   image?: string;
+  likeCount: number;
+  whoLiked : string[]
+
   creationTime: Timestamp;
-  id: Timestamp;
+  id: string;
 };

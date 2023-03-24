@@ -50,8 +50,10 @@ const usePostCreate = () => {
       senderUsername: currentUserUsername,
       description: postCreateForm.description,
       image: "",
+      likeCount: 0,
+      whoLiked: [],
       creationTime: serverTimestamp() as Timestamp,
-      id: serverTimestamp() as Timestamp, // this is not good
+      id: postName.toString(), // this is not good
     };
 
     const batch = writeBatch(firestore);

@@ -45,11 +45,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   } catch (error) {}
 
-  const userPostsColeection = collection(
+  const userPostsCollection = collection(
     firestore,
     `users/${username as string}/posts`
   );
-  const userPostsSnapshot = await getDocs(userPostsColeection);
+  const userPostsSnapshot = await getDocs(userPostsCollection);
 
   const userPosts: PostData[] = [];
 
@@ -58,6 +58,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       senderUsername: doc.data().senderUsername,
       description: doc.data().description,
       image: doc.data().image || null,
+      likeCount: doc.data().likeCount,
+      whoLiked : doc.data().whoLiked,
       creationTime: doc.data().creationTime,
       id: doc.data().id,
     };
