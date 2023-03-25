@@ -4,7 +4,14 @@ import { UserInformation } from "@/components/types/User";
 
 import { firestore } from "@/firebase/clientApp";
 import { Flex, Text } from "@chakra-ui/react";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+} from "firebase/firestore";
 import { GetServerSidePropsContext } from "next";
 
 import safeJsonStringify from "safe-json-stringify";
@@ -43,7 +50,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     const tempUserInformation: UserInformation = {
       username: userDoc.data().username,
       fullname: userDoc.data().fullname,
-      profilePhoto: userDoc.data().profilePhoto,
+      profilePhoto: userDoc.data().profilePhoto || null,
       followingCount: userDoc.data().followingCount,
       followings: userDoc.data().followings,
       followerCount: userDoc.data().followerCount,
@@ -54,15 +61,20 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     userInformation = tempUserInformation;
   } catch (error) {}
 
-  const userPostsCollection = collection(
+  const userPostsDatasCollection = collection(
     firestore,
-    `users/${username as string}/posts`
+    `users/${username}/posts`
   );
-  const userPostsSnapshot = await getDocs(userPostsCollection);
+  const userPostDatasQuery = query(
+    userPostsDatasCollection,
+    orderBy("creationTime", "desc")
+  );
+
+  const userPostDatasSnapshot = await getDocs(userPostDatasQuery);
 
   const userPosts: PostData[] = [];
 
-  userPostsSnapshot.forEach((doc) => {
+  userPostDatasSnapshot.forEach((doc) => {
     const postObject: PostData = {
       senderUsername: doc.data().senderUsername,
       description: doc.data().description,

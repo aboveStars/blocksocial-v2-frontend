@@ -1,5 +1,4 @@
 import { Flex } from "@chakra-ui/react";
-import PostCreateModal from "../Modals/Post/PostCreateModal";
 import { PostData } from "../types/Post";
 import Posts from "../user/Posts";
 
@@ -10,7 +9,13 @@ type Props = {
 export default function MainPageLayout({ postsDatas }: Props) {
   return (
     <>
-      <Posts postsDatas={postsDatas} />
+      <Flex width="100%">
+        <Flex flexGrow={1}></Flex>
+        <Flex>
+          <Posts postsDatas={postsDatas} />
+        </Flex>
+        <Flex flexGrow={1}></Flex>
+      </Flex>
     </>
   );
 }

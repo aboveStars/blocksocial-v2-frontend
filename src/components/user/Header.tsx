@@ -90,7 +90,7 @@ export default function Header({ userInformation }: Props) {
     const poorStatus: boolean = !!!(
       ostensibleUserInformation.profilePhoto || selectedProfilePhoto
     );
-    console.log(poorStatus);
+
     setPoorProfilePhoto(poorStatus);
   }, [ostensibleUserInformation.profilePhoto]);
 

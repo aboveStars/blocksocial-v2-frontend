@@ -59,18 +59,20 @@ const usePostCreate = () => {
     const batch = writeBatch(firestore);
     batch.set(newPostRef, postData);
 
-    // upload photo...
-    const postPhotoRef = ref(
-      storage,
-      `users/${username}/postsPhotos/${postName}`
-    );
-    await uploadString(postPhotoRef, postCreateForm.image, "data_url");
-    const photoURL = await getDownloadURL(postPhotoRef);
+    // upload photo...if there is
+    if (postCreateForm.image) {
+      const postPhotoRef = ref(
+        storage,
+        `users/${username}/postsPhotos/${postName}`
+      );
+      await uploadString(postPhotoRef, postCreateForm.image, "data_url");
+      const photoURL = await getDownloadURL(postPhotoRef);
 
-    // update doc....
-    batch.update(newPostRef, {
-      image: photoURL,
-    });
+      // update doc....
+      batch.update(newPostRef, {
+        image: photoURL,
+      });
+    }
 
     // commit changes
     await batch.commit();

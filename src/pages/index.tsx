@@ -2,7 +2,7 @@ import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import MainPageLayout from "@/components/Layout/MainPageLayout";
 import { PostData } from "@/components/types/Post";
 import { firestore } from "@/firebase/clientApp";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
 import safeJsonStringify from "safe-json-stringify";
@@ -14,6 +14,7 @@ export default function Home() {
   useEffect(() => {
     if (!currentUserState.username) {
       console.log("Please Log-In to see somethings");
+      setPostDatasInServer([]);
       return;
     }
     handleMainPage();
@@ -28,11 +29,17 @@ export default function Home() {
     let postsDatas: PostData[] = [];
 
     for (const username of currentUserFollowings) {
-      const followedUserColRef = collection(
+      const followedUserPostDatasCollection = collection(
         firestore,
         `users/${username}/posts`
       );
-      const followedUserPostsDatasSnapshot = await getDocs(followedUserColRef);
+      const followedUserPostDatasQuery = query(
+        followedUserPostDatasCollection,
+        orderBy("creationTime", "desc")
+      );
+      const followedUserPostsDatasSnapshot = await getDocs(
+        followedUserPostDatasQuery
+      );
 
       const followedUserPostsDatas: PostData[] = [];
 

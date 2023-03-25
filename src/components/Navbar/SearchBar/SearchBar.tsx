@@ -26,8 +26,8 @@ import { AiOutlineSearch } from "react-icons/ai";
 
 import { UserInSearchbar } from "../../types/User";
 
-import { MdCancel } from "react-icons/md";
 import { CgProfile } from "react-icons/cg";
+import { MdCancel } from "react-icons/md";
 
 type Props = {};
 
@@ -44,6 +44,11 @@ export default function SearchBar({}: Props) {
    * To clear search keyword
    */
   const inputRef = useRef<HTMLInputElement>(null);
+
+  /**
+   * To close search panel, when click somewhere else
+   */
+  const [searchFocus, setSearchFocus] = useState(false);
 
   const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const searchInput = event.target.value;
@@ -82,23 +87,34 @@ export default function SearchBar({}: Props) {
 
   return (
     <>
-      <Flex direction="column" maxWidth="300px">
-        <Flex align="center" position="relative">
+      <Flex direction="column" maxWidth="300px" position="relative">
+        <Flex align="center">
           <InputGroup size="md">
             <InputLeftElement>
-              <Icon as={AiOutlineSearch} color="white" fontSize="12pt" />
+              <Icon as={AiOutlineSearch} color="gray.600" fontSize="12pt" />
             </InputLeftElement>
             <Input
               ref={inputRef}
               pr="4.5rem"
               placeholder="Search"
-              border="1px solid"
-              borderColor="gray.700"
               textColor="white"
-              _focus={{
-                bg: "gray.800",
-              }}
               onChange={onChange}
+              _hover={{
+                borderColor: "gray.900",
+              }}
+              _focus={{
+                bg: "gray.900",
+              }}
+              focusBorderColor="gray.900"
+              borderColor="gray.800"
+              onFocus={() => setSearchFocus(true)}
+              onBlur={(event) => {
+                if (event.relatedTarget?.id == "search-result-panel") {
+                  return;
+                } else {
+                  setSearchFocus(false);
+                }
+              }}
             />
             <InputRightElement>
               <Spinner
@@ -123,24 +139,26 @@ export default function SearchBar({}: Props) {
           </InputGroup>
         </Flex>
 
-        {searchListOpen && (
+        {searchListOpen && searchFocus && (
           <Flex
+            id="search-result-panel"
             position="absolute"
-            mt="12"
-            minHeight="200px"
+            width="100%"
+            top="42px"
+            minHeight="60px"
+            bg="rgba(0, 0, 0, 0.5)"
+            borderRadius="0px 0px 10px 10px"
             backdropFilter="auto"
-            backdropBlur="5px"
+            backdropBlur="10px"
+            tabIndex={0}
           >
-            <Stack>
+            <Stack mt={1} mb={1}>
               {searchResult.map((r) => (
                 <Flex
-                  bg="gray.900"
                   key={r.username}
                   align="center"
-                  width="295px"
                   height="55px"
                   p={1}
-                  borderRadius="30"
                   cursor="pointer"
                   onClick={() => {
                     setSearchListOpen(false);
