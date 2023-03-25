@@ -20,7 +20,7 @@ import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
 import { CgProfile } from "react-icons/cg";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
 import { PostData } from "../types/Post";
@@ -38,10 +38,10 @@ export default function PostItem({ postData }: Props) {
 
   const { like } = usePost();
 
-  const currentUserUsername = useRecoilValue(currentUserStateAtom).username;
+  const [currentUserState, setCurrentUserState] =
+    useRecoilState(currentUserStateAtom);
 
-  // To show user its like, count and other things...
-
+  // To update post values locally
   const [ostensiblePostData, setOstensiblePostData] = useState(postData);
 
   const router = useRouter();
@@ -72,38 +72,14 @@ export default function PostItem({ postData }: Props) {
   };
 
   const handleFollowOnPost = () => {
-    if (!currentUserUsername) {
-      console.log("Only Users can follow");
-      setAuthModalState((prev) => ({
-        ...prev,
-        open: true,
-        view: "logIn",
-      }));
-      return;
-    }
-
+    // Follow
     follow(postData.senderUsername, 1);
-    setIsCurrentUserFollowThisPostSender(true);
-  };
-
-  const checkFollowingStatus = async () => {
-    if (!currentUserUsername || !postData) {
-      console.log("Problem: ");
-      console.log("currentUsername: ", currentUserUsername);
-      console.log("postData: ", postData);
-      return;
-    }
-    const currentUserDocRef = doc(firestore, `users/${currentUserUsername}`);
-    const currentUserDocSnapshot = await getDoc(currentUserDocRef);
-    // I am sure, this snaphot not null but typescript......
-    if (!currentUserDocSnapshot.exists()) {
-      return;
-    }
-    const followingStatus = currentUserDocSnapshot
-      .data()
-      .followings.includes(postData.senderUsername);
-
-    setIsCurrentUserFollowThisPostSender(followingStatus);
+    // Current User Update (locally)
+    setCurrentUserState((prev) => ({
+      ...prev,
+      followingCount: prev.followingCount + 1,
+      followings: prev.followings.concat(postData.senderUsername),
+    }));
   };
 
   useEffect(() => {
@@ -113,12 +89,19 @@ export default function PostItem({ postData }: Props) {
     }
   }, [postData]);
 
+  /**
+   * I gave UID just because, I can not trust 'currentUserState'
+   * There is no UID usage in here so.
+   */
   useEffect(() => {
-    if (!postData || !currentUserUsername) {
+    if (!postData || !currentUserState.uid) {
       return;
     }
-    checkFollowingStatus();
-  }, [postData, currentUserUsername]);
+    const followingStatus: boolean = currentUserState.followings.includes(
+      postData.senderUsername
+    );
+    setIsCurrentUserFollowThisPostSender(followingStatus);
+  }, [postData, currentUserState]);
 
   return (
     <Flex bg="black" direction="column" width="550px">
@@ -180,7 +163,11 @@ export default function PostItem({ postData }: Props) {
             colorScheme="blue"
             size="sm"
             onClick={handleFollowOnPost}
-            hidden={isCurrentUserFollowThisPostSender}
+            hidden={
+              !currentUserState.username ||
+              isCurrentUserFollowThisPostSender ||
+              currentUserState.username == postData.senderUsername
+            }
           >
             Follow
           </Button>
@@ -210,7 +197,7 @@ export default function PostItem({ postData }: Props) {
         </Flex>
         <Flex align="center" justify="space-between" p={2}>
           <Flex gap="1">
-            {ostensiblePostData.whoLiked.includes(currentUserUsername) ? (
+            {ostensiblePostData.whoLiked.includes(currentUserState.username) ? (
               <Icon
                 as={AiFillHeart}
                 color="red"
@@ -222,7 +209,7 @@ export default function PostItem({ postData }: Props) {
                     ...prev,
                     likeCount: prev.likeCount - 1,
                     whoLiked: prev.whoLiked.filter(
-                      (wL) => wL !== currentUserUsername
+                      (wL) => wL !== currentUserState.username
                     ),
                   }));
                 }}
@@ -234,7 +221,7 @@ export default function PostItem({ postData }: Props) {
                 fontSize="25px"
                 cursor="pointer"
                 onClick={() => {
-                  if (!currentUserUsername) {
+                  if (!currentUserState.username) {
                     console.log("Only Users can like");
                     setAuthModalState((prev) => ({
                       ...prev,
@@ -247,7 +234,7 @@ export default function PostItem({ postData }: Props) {
                   setOstensiblePostData((prev) => ({
                     ...prev,
                     likeCount: prev.likeCount + 1,
-                    whoLiked: prev.whoLiked.concat(currentUserUsername),
+                    whoLiked: prev.whoLiked.concat(currentUserState.username),
                   }));
                 }}
               />

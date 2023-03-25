@@ -1,16 +1,7 @@
 import { atom } from "recoil";
-import { CurrentUser } from "../types/User";
-
-
-const defaultState: CurrentUser = {
-  isThereCurrentUser: false,
-  username: "",
-  fullname: "",
-  email: "",
-  uid: "",
-};
+import { CurrentUser, defaultCurrentUserState } from "../types/User";
 
 export const currentUserStateAtom = atom<CurrentUser>({
   key: "currentUserAtom",
-  default: defaultState,
+  default: defaultCurrentUserState,
 });

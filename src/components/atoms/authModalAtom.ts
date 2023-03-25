@@ -5,12 +5,12 @@ export interface AuthModalState {
   view: "logIn" | "signUp" | "resetPassword";
 }
 
-const defaultState: AuthModalState = {
+export const defaultAuthModalState: AuthModalState = {
   open: false,
   view: "logIn",
 };
 
 export const authModalStateAtom = atom<AuthModalState>({
   key: "authModalState",
-  default: defaultState,
+  default: defaultAuthModalState,
 });

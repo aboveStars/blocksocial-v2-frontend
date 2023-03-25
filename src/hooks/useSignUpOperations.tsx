@@ -1,6 +1,10 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
-import { UserInformation } from "@/components/types/User";
+import {
+  CurrentUser,
+  defaultCurrentUserState,
+  UserInformation,
+} from "@/components/types/User";
 import { auth, firestore } from "@/firebase/clientApp";
 import { signOut, User, UserCredential } from "firebase/auth";
 import { doc, getDoc, writeBatch } from "firebase/firestore";
@@ -87,23 +91,23 @@ const useSignUpOperations = () => {
 
     let user: User | null | undefined = null;
 
+    user = userCred?.user;
+
+    const data: UserInformation = {
+      username: username,
+      fullname: fullname,
+
+      followingCount: 0,
+      followings: [],
+
+      followerCount: 0,
+      followers: [],
+
+      email: user.email || "", // Users also authenticate with something else than email
+      uid: user.uid,
+    };
+
     try {
-      user = userCred?.user;
-
-      const data: UserInformation = {
-        username: username,
-        fullname: fullname,
-
-        followingCount: 0,
-        followings: [],
-
-        followerCount: 0,
-        followers: [],
-
-        email: user.email || "", // Users also authenticate with something else than email
-        uid: user.uid,
-      };
-
       // creating batch
       const batch = writeBatch(firestore);
 
@@ -139,13 +143,12 @@ const useSignUpOperations = () => {
       open: false,
     }));
 
-    setCurrentUserState((prev) => ({
+    const currentUserDataTemp: CurrentUser = {
+      ...data,
       isThereCurrentUser: true,
-      fullname: fullname,
-      username: username,
-      email: user?.email || "",
-      uid: user?.uid || "",
-    }));
+    };
+
+    setCurrentUserState((prev) => currentUserDataTemp);
 
     setOnSignUpLoading(false);
 

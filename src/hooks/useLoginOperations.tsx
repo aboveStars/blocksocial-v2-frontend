@@ -1,8 +1,12 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
+import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import {
   CurrentUser,
-  currentUserStateAtom,
-} from "@/components/atoms/currentUserAtom";
+  defaultCurrentUserState,
+  defaultUserInformation,
+  UserInformation,
+} from "@/components/types/User";
+
 import { auth, firestore } from "@/firebase/clientApp";
 import { User } from "firebase/auth";
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -52,15 +56,22 @@ const useLoginOperations = () => {
     );
     const userQuerySnapshot = await getDocs(userQuery);
 
-    let userData: CurrentUser;
+    let currentUserDataOnServer: UserInformation = defaultUserInformation;
 
     userQuerySnapshot.forEach((doc) => {
-      userData = {
-        ...doc.data(),
-      } as CurrentUser;
+      currentUserDataOnServer = {
+        username: doc.data().username,
+        fullname: doc.data().fullname,
+        followingCount: doc.data().followingCount,
+        followings: doc.data().followings,
+        followerCount: doc.data().followerCount,
+        followers: doc.data().followers,
+        email: doc.data().email,
+        uid: doc.data().uid,
+      };
     });
 
-    if (!userData!) {
+    if (!currentUserDataOnServer!) {
       console.log(
         "Error while getting user document, \n At sign-up it is right."
       );
@@ -69,17 +80,20 @@ const useLoginOperations = () => {
       return;
     }
 
+    const currentUserDataTemp: CurrentUser = {
+      isThereCurrentUser: true,
+      username: currentUserDataOnServer.username,
+      fullname: currentUserDataOnServer.fullname,
+      followingCount: currentUserDataOnServer.followingCount,
+      followings: currentUserDataOnServer.followings,
+      followerCount: currentUserDataOnServer.followerCount,
+      followers: currentUserDataOnServer.followers,
+      email: currentUserDataOnServer.email,
+      uid: currentUserDataOnServer.uid,
+    };
+
     // State Updates
-    setCurrentUserState(
-      (prev) =>
-        ({
-          isThereCurrentUser: true,
-          username: userData.username,
-          fullname: userData.fullname,
-          email: userData.email,
-          uid: userData.uid,
-        } as CurrentUser)
-    );
+    setCurrentUserState((prev) => currentUserDataTemp);
 
     setAuthModalState((prev) => ({
       ...prev,

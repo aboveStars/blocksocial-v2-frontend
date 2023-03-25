@@ -37,12 +37,20 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
     const userInformationDocRef = doc(firestore, `users/${username as string}`);
     const userDoc = await getDoc(userInformationDocRef);
-
-    if (userDoc.exists()) {
-      userInformation = {
-        ...userDoc.data(),
-      } as UserInformation;
+    if (!userDoc.exists()) {
+      return;
     }
+    const tempUserInformation: UserInformation = {
+      username: userDoc.data().username,
+      fullname: userDoc.data().fullname,
+      followingCount: userDoc.data().followingCount,
+      followings: userDoc.data().followings,
+      followerCount: userDoc.data().followerCount,
+      followers: userDoc.data().followers,
+      email: userDoc.data().email,
+      uid: userDoc.data().uid,
+    };
+    userInformation = tempUserInformation;
   } catch (error) {}
 
   const userPostsCollection = collection(
