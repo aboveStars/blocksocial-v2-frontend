@@ -15,16 +15,16 @@ import { BiSend } from "react-icons/bi";
 import { BsDot, BsImage } from "react-icons/bs";
 
 import { firestore } from "@/firebase/clientApp";
+import useFollow from "@/hooks/useFollow";
 import usePost from "@/hooks/usePost";
 import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
 import { CgProfile } from "react-icons/cg";
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
 import { PostData } from "../types/Post";
-import useFollow from "@/hooks/useFollow";
 
 type Props = {
   postData: PostData;

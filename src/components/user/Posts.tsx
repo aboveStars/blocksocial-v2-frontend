@@ -3,10 +3,10 @@ import PostItem from "../Post/PostItem";
 import { PostData } from "../types/Post";
 
 type Props = {
-  userPosts: PostData[];
+  postsDatas: PostData[];
 };
 
-export default function Posts({ userPosts }: Props) {
+export default function Posts({ postsDatas }: Props) {
   return (
     <>
       <Stack
@@ -14,7 +14,7 @@ export default function Posts({ userPosts }: Props) {
         mt={3}
         divider={<Divider borderColor="gray.600" borderWidth="1px" />}
       >
-        {userPosts.map((postData, index) => (
+        {postsDatas.map((postData, index) => (
           <PostItem key={index} postData={postData} />
         ))}
       </Stack>

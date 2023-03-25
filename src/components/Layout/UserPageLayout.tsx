@@ -1,19 +1,8 @@
-import {
-  Button,
-  Flex,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Text,
-} from "@chakra-ui/react";
-import React from "react";
-import { UserInformation } from "../atoms/currentUserAtom";
+import { Flex } from "@chakra-ui/react";
+
 import PostCreateModal from "../Modals/Post/PostCreateModal";
 import { PostData } from "../types/Post";
+import { UserInformation } from "../types/User";
 import Header from "../user/Header";
 import Posts from "../user/Posts";
 
@@ -43,7 +32,7 @@ export default function UserPageLayout({ userInformation, userPosts }: Props) {
             justify="center"
             align="center"
           >
-            <Posts userPosts={userPosts} />
+            <Posts postsDatas={userPosts} />
           </Flex>
         </Flex>
       </Flex>
