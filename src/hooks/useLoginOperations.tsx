@@ -1,10 +1,8 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import {
-  CurrentUser,
-  defaultCurrentUserState,
-  defaultUserInformation,
-  UserInformation,
+  CurrentUser, defaultUserInformation,
+  UserInformation
 } from "@/components/types/User";
 
 import { auth, firestore } from "@/firebase/clientApp";
@@ -82,6 +80,7 @@ const useLoginOperations = () => {
 
     const currentUserDataTemp: CurrentUser = {
       isThereCurrentUser: true,
+      loading : false,
       username: currentUserDataOnServer.username,
       fullname: currentUserDataOnServer.fullname,
       followingCount: currentUserDataOnServer.followingCount,

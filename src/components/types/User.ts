@@ -6,6 +6,7 @@ export type UserInSearchbar = {
 
 export interface CurrentUser {
   isThereCurrentUser: boolean;
+  loading: boolean;
   username: string;
   fullname: string;
 
@@ -22,6 +23,7 @@ export interface CurrentUser {
 
 export const defaultCurrentUserState: CurrentUser = {
   isThereCurrentUser: false,
+  loading: true,
   username: "",
   fullname: "",
   followingCount: 0,

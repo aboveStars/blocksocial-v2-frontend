@@ -18,11 +18,11 @@ import { AiOutlinePlus } from "react-icons/ai";
 import { BiPencil } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
 
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import useFollow from "@/hooks/useFollow";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import { authModalStateAtom } from "../atoms/authModalAtom";
 import { postCreateModalStateAtom } from "../atoms/postCreateModalAtom";
 import { UserInformation } from "../types/User";
-import useFollow from "@/hooks/useFollow";
-import { authModalStateAtom } from "../atoms/authModalAtom";
 
 type Props = {
   userInformation: UserInformation;
@@ -32,8 +32,9 @@ export default function Header({ userInformation }: Props) {
   const [currentUserState, setCurrentUserState] =
     useRecoilState(currentUserStateAtom);
 
-  const [isCurrentUserPage, setIsCurrentUserPage] = useState<boolean>(false);
-  const [modifying, setModifying] = useState<boolean>(false);
+  const [isCurrentUserPage, setIsCurrentUserPage] = useState(false);
+
+  const [modifying, setModifying] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -53,8 +54,6 @@ export default function Header({ userInformation }: Props) {
 
   const [poorProfilePhoto, setPoorProfilePhoto] = useState(false);
 
-  const [ostensibleProfilePhoto, setOstensibleProfilePhoto] = useState("");
-
   const [ostensibleUserInformation, setOstensibleUserInformation] =
     useState(userInformation);
 
@@ -73,7 +72,6 @@ export default function Header({ userInformation }: Props) {
     // We manually reset
     // But there is no problem at "userInformation" (userInformation.username changes, I mean)
     setSelectedProfilePhoto("");
-    setOstensibleProfilePhoto("");
     setOstensibleUserInformation(userInformation);
 
     if (currentUserState.uid)
@@ -83,16 +81,18 @@ export default function Header({ userInformation }: Props) {
         setIsCurrentUserPage((prev) => false);
       }
     else {
+      if (currentUserState.loading) return;
       setIsCurrentUserPage((prev) => false);
     }
   }, [userInformation, currentUserState.uid]);
 
   useEffect(() => {
-    const poorStatus: boolean = !!(
-      !userInformation.profilePhoto && !ostensibleProfilePhoto
+    const poorStatus: boolean = !!!(
+      ostensibleUserInformation.profilePhoto || selectedProfilePhoto
     );
+    console.log(poorStatus);
     setPoorProfilePhoto(poorStatus);
-  }, [userInformation, ostensibleProfilePhoto]);
+  }, [ostensibleUserInformation.profilePhoto]);
 
   const handleFollow = () => {
     // User check
@@ -146,10 +146,8 @@ export default function Header({ userInformation }: Props) {
           src={
             selectedProfilePhoto
               ? selectedProfilePhoto
-              : ostensibleProfilePhoto
-              ? ostensibleProfilePhoto
-              : userInformation.profilePhoto
-              ? userInformation.profilePhoto
+              : ostensibleUserInformation.profilePhoto
+              ? ostensibleUserInformation.profilePhoto
               : ""
           }
           fallback={
@@ -195,7 +193,10 @@ export default function Header({ userInformation }: Props) {
             size="sm"
             onClick={async () => {
               await profilePhotoUpload();
-              setOstensibleProfilePhoto(selectedProfilePhoto);
+              setOstensibleUserInformation((prev) => ({
+                ...prev,
+                profilePhoto: selectedProfilePhoto,
+              }));
               setModifying(false);
               setSelectedProfilePhoto("");
               if (inputRef.current) inputRef.current.value = "";
@@ -258,7 +259,7 @@ export default function Header({ userInformation }: Props) {
         </Flex>
       </Flex>
 
-      {!isCurrentUserPage && (
+      {isCurrentUserPage == false && (
         <Flex mt={2} mb={2}>
           {currentUserState.followings.includes(userInformation.username) ? (
             <Button
@@ -275,6 +276,7 @@ export default function Header({ userInformation }: Props) {
               colorScheme="blue"
               size="sm"
               onClick={handleFollow}
+              isLoading={currentUserState.loading}
             >
               Follow
             </Button>

@@ -10,13 +10,15 @@ import { useRouter } from "next/router";
 
 import React, { useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 type AuthModalView = "logIn" | "signUp" | "resetPassword";
 
 export default function Authentication() {
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
-  const currentUserState = useRecoilValue(currentUserStateAtom);
+
+  const [currentUserState, setCurrentUserState] =
+    useRecoilState(currentUserStateAtom);
 
   const { onSignOut, signOutLoading } = useAuthOperations();
 
@@ -40,6 +42,14 @@ export default function Authentication() {
       onLogin(user);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!user)
+      setCurrentUserState((prev) => ({
+        ...prev,
+        loading: loading,
+      }));
+  }, [loading]);
 
   return (
     <>

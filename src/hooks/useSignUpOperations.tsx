@@ -14,7 +14,6 @@ import { useResetRecoilState, useSetRecoilState } from "recoil";
 import useAuthErrorCodes from "./useAuthErrorCodes";
 
 const useSignUpOperations = () => {
-  const resetCurrentUserState = useResetRecoilState(currentUserStateAtom);
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
   const setCurrentUserState = useSetRecoilState(currentUserStateAtom);
 
@@ -37,7 +36,10 @@ const useSignUpOperations = () => {
     await signOut(auth);
 
     // Clear States
-    resetCurrentUserState();
+    setCurrentUserState({
+      ...defaultCurrentUserState,
+      loading: false,
+    });
     setAuthModalState((prev) => ({
       ...prev,
       open: true,
@@ -145,6 +147,7 @@ const useSignUpOperations = () => {
 
     const currentUserDataTemp: CurrentUser = {
       ...data,
+      loading: false,
       isThereCurrentUser: true,
     };
 

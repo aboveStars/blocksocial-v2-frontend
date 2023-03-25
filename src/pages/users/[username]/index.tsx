@@ -43,6 +43,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     const tempUserInformation: UserInformation = {
       username: userDoc.data().username,
       fullname: userDoc.data().fullname,
+      profilePhoto: userDoc.data().profilePhoto,
       followingCount: userDoc.data().followingCount,
       followings: userDoc.data().followings,
       followerCount: userDoc.data().followerCount,
