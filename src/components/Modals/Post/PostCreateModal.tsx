@@ -47,6 +47,11 @@ export default function PostCreateModal({}: Props) {
   };
 
   const handleSendPost = async () => {
+    // Already button is disabled when empty, but for prevent from any
+    if (!!!postCreateForm.description && !!!postCreateForm.image) {
+      console.log("You Can not create empty post, aborting");
+      return;
+    }
     await sendPost(postCreateForm);
     console.log("Succesfully Uploaded Post");
     setPostCreateForm({ description: "", image: "" });
@@ -134,6 +139,9 @@ export default function PostCreateModal({}: Props) {
             colorScheme="blue"
             onClick={handleSendPost}
             isLoading={postUploadLoading}
+            isDisabled={
+              !!!postCreateForm.description && !!!postCreateForm.image
+            }
           >
             Post
           </Button>

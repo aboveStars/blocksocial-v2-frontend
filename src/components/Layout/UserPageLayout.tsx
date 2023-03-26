@@ -15,26 +15,17 @@ export default function UserPageLayout({ userInformation, userPosts }: Props) {
   return (
     <>
       <PostCreateModal />
-      <Flex direction="row" justify="center" align="center" width="100%">
-        <Flex direction="column" width="50%" maxWidth="800px">
-          <Flex
-            border="1px solid"
-            borderColor="blue.600"
-            width="100%"
-            justify="center"
-            align="center"
-          >
+      <Flex width="100%">
+        <Flex grow={1} border="1px solid yellow"></Flex>
+        <Flex border="1px solid green" direction="column" width="550px">
+          <Flex justify="center" align="center">
             <Header userInformation={userInformation} />
           </Flex>
-          <Flex
-            border="1px solid"
-            borderColor="blue.600"
-            justify="center"
-            align="center"
-          >
+          <Flex justify="center" align="center">
             <Posts postsDatas={userPosts} />
           </Flex>
         </Flex>
+        <Flex grow={1} border="1px solid pink"></Flex>
       </Flex>
     </>
   );

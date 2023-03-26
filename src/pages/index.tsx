@@ -20,10 +20,23 @@ export default function Home() {
     handleMainPage();
   }, [currentUserState.username]);
 
+  /**
+   * Shuffles posts.
+   * @param postsDatasArray
+   * @returns shuffled posts
+   */
+  const shufflePosts = (postsDatasArray: PostData[]) => {
+    const shuffledPostsArray = [...postsDatasArray];
+    shuffledPostsArray.sort(() => Math.random() - 0.5);
+    shuffledPostsArray.sort(
+      (postA, postB) => postB.creationTime.seconds - postA.creationTime.seconds
+    );
+    return shuffledPostsArray;
+  };
+
   const handleMainPage = async () => {
     // get current user followings
     const currentUserFollowings: string[] = currentUserState.followings;
-    console.log("Followings: ", currentUserFollowings);
 
     // get followings's posts
     let postsDatas: PostData[] = [];
@@ -56,17 +69,16 @@ export default function Home() {
         const serializablePostData: PostData = JSON.parse(
           safeJsonStringify(postDataObject)
         );
-        console.log("One of posts of ", username, serializablePostData);
         followedUserPostsDatas.push(serializablePostData);
       }
       postsDatas.push(...followedUserPostsDatas);
     }
 
-    console.log("Final Post Datas: ", postsDatas);
+    // shuffle posts
+    const finalPostDatas = shufflePosts(postsDatas);
 
-    // pass the data to the props
-
-    setPostDatasInServer(postsDatas);
+    // Update state varible
+    setPostDatasInServer(finalPostDatas);
   };
 
   return (

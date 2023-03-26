@@ -14,9 +14,15 @@ export default function useFollow() {
 
   /**
    * @param username username to operate
-   * @param opCode  1 for follow, -1 for deFollow
+   * @param opCode  1 for follow, -1 for unFollow
    */
   const follow = async (operateToUserName: string, opCode: number) => {
+    // Check if we follow ourselves (normally user doesn't see button to follow himself but for any bug it is more safer)
+    if (operateToUserName == currentUserUsername) {
+      console.log("You can not follow or unfollow yourself ");
+      return;
+    }
+
     // Update to be followed user
     console.log("Updating otherman's data");
     const toBeFollowedDocRef = doc(firestore, `users/${operateToUserName}`);

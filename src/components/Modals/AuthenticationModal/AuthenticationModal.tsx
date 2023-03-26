@@ -27,7 +27,7 @@ export default function AuthenticationModal() {
   return (
     <>
       <Modal isOpen={authModalState.open} onClose={handleClose}>
-        <ModalOverlay />
+        <ModalOverlay backdropFilter="auto" backdropBlur="5px" />
         <ModalContent>
           <ModalHeader textAlign="center">
             {authModalState.view == "logIn" && "Log In"}

@@ -39,6 +39,11 @@ const usePostCreate = () => {
    * Sends Post to Database
    */
   const sendPost = async (postCreateForm: PostCreateForm) => {
+    // This is my third control but, I don't trust states really :/
+    if (!!!postCreateForm.description && !!!postCreateForm.image) {
+      console.log("You Can not create empty post, aborting");
+      return;
+    }
     setPostUploadUpdating(true);
     const username = currentUserUsername;
     const postName = Date.now();

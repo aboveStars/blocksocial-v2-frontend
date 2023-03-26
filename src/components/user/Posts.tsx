@@ -9,11 +9,7 @@ type Props = {
 export default function Posts({ postsDatas }: Props) {
   return (
     <>
-      <Stack
-        gap={3}
-        mt={3}
-        divider={<Divider borderColor="gray.600" borderWidth="1px" />}
-      >
+      <Stack gap={3} mt={3}>
         {postsDatas.map((postData, index) => (
           <PostItem key={index} postData={postData} />
         ))}

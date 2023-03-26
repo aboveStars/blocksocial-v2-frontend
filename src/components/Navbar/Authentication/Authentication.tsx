@@ -10,7 +10,7 @@ import { useRouter } from "next/router";
 
 import React, { useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 
 type AuthModalView = "logIn" | "signUp" | "resetPassword";
 

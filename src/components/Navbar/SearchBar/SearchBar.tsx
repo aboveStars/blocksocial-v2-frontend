@@ -172,7 +172,7 @@ export default function SearchBar({}: Props) {
                     height="50px"
                     rounded="full"
                     fallback={
-                      r.profilePhoto ? (
+                      !!r.profilePhoto ? (
                         <SkeletonCircle
                           width="50px"
                           height="50px"
