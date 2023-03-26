@@ -112,7 +112,9 @@ export default function SignUp() {
             border: "1px solid",
             borderColor: "blue.500",
           }}
+          
           bg="gray.50"
+
         />
         <Input
           required

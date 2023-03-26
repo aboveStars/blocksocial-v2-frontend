@@ -263,7 +263,7 @@ export default function Header({ userInformation }: Props) {
       <Flex direction="column" justify="center" align="center" mt={3}>
         <Flex
           position="relative"
-          width="200px"
+          width="100%"
           direction="column"
           align="center"
         >
@@ -288,10 +288,11 @@ export default function Header({ userInformation }: Props) {
                   as={CgProfile}
                   color="white"
                   height="200px"
-                  width="200px"
+                  width="100%"
                 />
               )
             }
+            width="200px"
             height="200px"
             rounded="full"
           />

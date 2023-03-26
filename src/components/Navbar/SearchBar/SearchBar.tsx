@@ -28,6 +28,7 @@ import { UserInSearchbar } from "../../types/User";
 
 import { CgProfile } from "react-icons/cg";
 import { MdCancel } from "react-icons/md";
+import SearchItem from "./SearchItem";
 
 type Props = {};
 
@@ -87,7 +88,7 @@ export default function SearchBar({}: Props) {
 
   return (
     <>
-      <Flex direction="column" maxWidth="300px" position="relative">
+      <Flex direction="column" position="relative">
         <Flex align="center">
           <InputGroup size="md">
             <InputLeftElement>
@@ -153,51 +154,13 @@ export default function SearchBar({}: Props) {
             tabIndex={0}
           >
             <Stack mt={1} mb={1}>
-              {searchResult.map((r) => (
-                <Flex
-                  key={r.username}
-                  align="center"
-                  height="55px"
-                  p={1}
-                  cursor="pointer"
-                  onClick={() => {
-                    setSearchListOpen(false);
-                    if (inputRef.current) inputRef.current.value = "";
-                    router.push(`/users/${r.username}`);
-                  }}
-                >
-                  <Image
-                    src={r.profilePhoto}
-                    width="50px"
-                    height="50px"
-                    rounded="full"
-                    fallback={
-                      !!r.profilePhoto ? (
-                        <SkeletonCircle
-                          width="50px"
-                          height="50px"
-                          startColor="gray.100"
-                          endColor="gray.800"
-                        />
-                      ) : (
-                        <Icon
-                          as={CgProfile}
-                          color="white"
-                          height="50px"
-                          width="50px"
-                        />
-                      )
-                    }
-                  />
-                  <Flex justify="center" ml={1} flexDirection="column">
-                    <Text textColor="white" as="b" fontSize="10pt">
-                      {r.username}
-                    </Text>
-                    <Text textColor="gray.100" fontSize="9pt" as="i">
-                      {r.fullname}
-                    </Text>
-                  </Flex>
-                </Flex>
+              {searchResult.map((result) => (
+                <SearchItem
+                  key={result.username}
+                  inputReferance={inputRef}
+                  searchListOpenStateSetter={setSearchListOpen}
+                  searchItemData={result}
+                />
               ))}
             </Stack>
           </Flex>

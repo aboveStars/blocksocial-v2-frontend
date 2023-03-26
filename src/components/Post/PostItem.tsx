@@ -104,7 +104,7 @@ export default function PostItem({ postData }: Props) {
   }, [postData, currentUserState]);
 
   return (
-    <Flex bg="black" direction="column" width="550px">
+    <Flex bg="black" direction="column" width="100%">
       <Flex
         align="center"
         position="relative"
@@ -113,7 +113,6 @@ export default function PostItem({ postData }: Props) {
         bg="gray.900"
         borderRadius="10px 10px 0px 0px"
         p={1}
-        width="100%"
       >
         <Image
           src={postSenderProfilePhotoURL}
@@ -176,12 +175,11 @@ export default function PostItem({ postData }: Props) {
       {postData.image && (
         <Image
           src={postData.image}
-          width="550px"
-          p={1}
+          width="100%"
           bg="gray.900"
           fallback={
             <Flex align="center" justify="center">
-              <Skeleton height="550px" width="550px" />
+              <Skeleton height="500px" width="100%" />
               <Icon
                 as={BsImage}
                 position="absolute"

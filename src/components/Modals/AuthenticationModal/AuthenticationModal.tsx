@@ -26,7 +26,7 @@ export default function AuthenticationModal() {
   };
   return (
     <>
-      <Modal isOpen={authModalState.open} onClose={handleClose}>
+      <Modal isOpen={authModalState.open} onClose={handleClose} allowPinchZoom={true}>
         <ModalOverlay backdropFilter="auto" backdropBlur="5px" />
         <ModalContent>
           <ModalHeader textAlign="center">

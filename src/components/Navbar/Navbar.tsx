@@ -16,24 +16,60 @@ export default function Navbar({}: Props) {
         width="100%"
         height="50px"
         align="center"
-        p={5}
+        p={2}
         bg="black"
         zIndex="banner"
       >
         <Flex width="100%" justify="flex-start">
-          <Text
-            color="white"
-            fontSize="20pt"
-            fontWeight={700}
-            cursor="pointer"
-            onClick={() => router.push("/")}
+          <Flex
+            display={{
+              base: "none",
+              sm: "none",
+              md: "flex",
+              lg: "flex",
+            }}
           >
-            BlockSocial
-          </Text>
+            <Text
+              color="white"
+              fontSize="20pt"
+              fontWeight={700}
+              cursor="pointer"
+              onClick={() => router.push("/")}
+            >
+              BlockSocial
+            </Text>
+          </Flex>
+          <Flex
+            display={{
+              base: "flex",
+              sm: "flex",
+              md: "none",
+              lg: "none",
+            }}
+          >
+            <Text
+              color="white"
+              fontSize="20pt"
+              fontWeight={700}
+              cursor="pointer"
+              onClick={() => router.push("/")}
+            >
+              BS
+            </Text>
+          </Flex>
         </Flex>
 
         <Flex width="100%" justify="center">
-          <SearchBar />
+          <Flex
+            display={{
+              base: "none",
+              sm: "none",
+              md: "flex",
+              lg: "flex",
+            }}
+          >
+            <SearchBar />
+          </Flex>
         </Flex>
 
         <Flex width="100%" justify="flex-end">

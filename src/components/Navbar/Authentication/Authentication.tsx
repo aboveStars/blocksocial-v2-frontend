@@ -60,6 +60,12 @@ export default function Authentication() {
               onClick={() => router.push(`/users/${currentUserState.username}`)}
               colorScheme="blue"
               variant="solid"
+              size={{
+                base: "sm",
+                sm: "sm",
+                md: "md",
+                lg: "md",
+              }}
             >
               <Text>{currentUserState.username}</Text>
             </Button>
@@ -71,6 +77,12 @@ export default function Authentication() {
               isLoading={signOutLoading}
               variant="outline"
               colorScheme="blue"
+              size={{
+                base: "sm",
+                sm: "sm",
+                md: "md",
+                lg: "md",
+              }}
             >
               Sign Out
             </Button>
@@ -82,6 +94,12 @@ export default function Authentication() {
               onClick={handleSignInUp}
               variant="outline"
               colorScheme="blue"
+              size={{
+                base: "sm",
+                sm: "sm",
+                md: "md",
+                lg: "md",
+              }}
             >
               Log In
             </Button>
@@ -90,6 +108,12 @@ export default function Authentication() {
               onClick={handleSignInUp}
               variant="solid"
               colorScheme="blue"
+              size={{
+                base: "sm",
+                sm: "sm",
+                md: "md",
+                lg: "md",
+              }}
             >
               Sign Up
             </Button>
