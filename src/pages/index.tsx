@@ -1,6 +1,6 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import MainPageLayout from "@/components/Layout/MainPageLayout";
-import { PostData } from "@/components/types/Post";
+import { PostItemData } from "@/components/types/Post";
 import { firestore } from "@/firebase/clientApp";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { useEffect, useState } from "react";
@@ -9,7 +9,9 @@ import safeJsonStringify from "safe-json-stringify";
 
 export default function Home() {
   const currentUserState = useRecoilValue(currentUserStateAtom);
-  const [postsDatasInServer, setPostDatasInServer] = useState<PostData[]>([]);
+  const [postsDatasInServer, setPostDatasInServer] = useState<PostItemData[]>(
+    []
+  );
 
   useEffect(() => {
     if (!currentUserState.username) {
@@ -25,7 +27,7 @@ export default function Home() {
    * @param postsDatasArray
    * @returns shuffled posts
    */
-  const shufflePosts = (postsDatasArray: PostData[]) => {
+  const shufflePosts = (postsDatasArray: PostItemData[]) => {
     const shuffledPostsArray = [...postsDatasArray];
     shuffledPostsArray.sort(() => Math.random() - 0.5);
     shuffledPostsArray.sort(
@@ -39,7 +41,7 @@ export default function Home() {
     const currentUserFollowings: string[] = currentUserState.followings;
 
     // get followings's posts
-    let postsDatas: PostData[] = [];
+    let postsDatas: PostItemData[] = [];
 
     for (const username of currentUserFollowings) {
       const followedUserPostDatasCollection = collection(
@@ -54,19 +56,23 @@ export default function Home() {
         followedUserPostDatasQuery
       );
 
-      const followedUserPostsDatas: PostData[] = [];
+      const followedUserPostsDatas: PostItemData[] = [];
 
       for (const doc of followedUserPostsDatasSnapshot.docs) {
-        const postDataObject: PostData = {
+        const postDataObject: PostItemData = {
           senderUsername: doc.data().senderUsername,
           description: doc.data().description,
-          image: doc.data().image || null,
+          image: doc.data().image,
           likeCount: doc.data().likeCount,
           whoLiked: doc.data().whoLiked,
+          commentCount : doc.data().commentCount,
+          commentsCollectionPath: `users/${doc.data().senderUsername}/posts/${
+            doc.id
+          }/comments`,
           creationTime: doc.data().creationTime,
           id: doc.data().id,
         };
-        const serializablePostData: PostData = JSON.parse(
+        const serializablePostData: PostItemData = JSON.parse(
           safeJsonStringify(postDataObject)
         );
         followedUserPostsDatas.push(serializablePostData);
@@ -82,6 +88,6 @@ export default function Home() {
   };
 
   return (
-    postsDatasInServer && <MainPageLayout postsDatas={postsDatasInServer} />
+    postsDatasInServer && <MainPageLayout postItemsDatas={postsDatasInServer} />
   );
 }

@@ -98,6 +98,7 @@ const useSignUpOperations = () => {
     const data: UserInformation = {
       username: username,
       fullname: fullname,
+      profilePhoto: "",
 
       followingCount: 0,
       followings: [],

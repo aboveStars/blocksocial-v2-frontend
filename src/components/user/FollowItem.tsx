@@ -38,6 +38,7 @@ export default function FollowItem({
     fullname: "",
     profilePhoto: "",
   });
+  const [gettingFollowItemState, setGettingFollowItemState] = useState(false);
 
   const [currentUserState, setCurrentUserState] =
     useRecoilState(currentUserStateAtom);
@@ -51,6 +52,7 @@ export default function FollowItem({
   }, [username]);
 
   const getFollowItemInformation = async () => {
+    setGettingFollowItemState(true);
     const followItemUserDocRef = doc(firestore, `users/${username}`);
     const followItemUserDocSnaphot = await getDoc(followItemUserDocRef);
 
@@ -71,6 +73,7 @@ export default function FollowItem({
     };
 
     setFollowItemState(followItemStateServer);
+    setGettingFollowItemState(false);
   };
 
   const handleFollowonFollowItem = () => {
@@ -102,14 +105,7 @@ export default function FollowItem({
           width="50px"
           height="50px"
           fallback={
-            !!!followItemState.username ? (
-              <SkeletonCircle
-                width="50px"
-                height="50px"
-                startColor="gray.100"
-                endColor="gray.800"
-              />
-            ) : !!followItemState.profilePhoto ? (
+            !!followItemState.profilePhoto || gettingFollowItemState ? (
               <SkeletonCircle
                 width="50px"
                 height="50px"

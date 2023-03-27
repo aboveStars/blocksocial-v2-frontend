@@ -60,6 +60,7 @@ const useLoginOperations = () => {
       currentUserDataOnServer = {
         username: doc.data().username,
         fullname: doc.data().fullname,
+        profilePhoto : doc.data().profilePhoto,
         followingCount: doc.data().followingCount,
         followings: doc.data().followings,
         followerCount: doc.data().followerCount,
@@ -83,6 +84,7 @@ const useLoginOperations = () => {
       loading : false,
       username: currentUserDataOnServer.username,
       fullname: currentUserDataOnServer.fullname,
+      profilePhoto :currentUserDataOnServer.profilePhoto,
       followingCount: currentUserDataOnServer.followingCount,
       followings: currentUserDataOnServer.followings,
       followerCount: currentUserDataOnServer.followerCount,

@@ -1,6 +1,6 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postCreateModalStateAtom } from "@/components/atoms/postCreateModalAtom";
-import { PostCreateForm, PostData } from "@/components/types/Post";
+import { PostCreateForm, PostMainData } from "@/components/types/Post";
 import { firestore, storage } from "@/firebase/clientApp";
 import {
   collection,
@@ -51,12 +51,13 @@ const usePostCreate = () => {
     // Add a new document with a generated id
     const newPostRef = doc(collection(firestore, `users/${username}/posts`));
 
-    const postData: PostData = {
+    const postData: PostMainData = {
       senderUsername: currentUserUsername,
       description: postCreateForm.description,
       image: "",
       likeCount: 0,
       whoLiked: [],
+      commentCount : 0,
       creationTime: serverTimestamp() as Timestamp,
       id: postName.toString(), // this is not good
     };

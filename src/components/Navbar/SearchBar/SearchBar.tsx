@@ -2,15 +2,12 @@ import { firestore } from "@/firebase/clientApp";
 import {
   Flex,
   Icon,
-  Image,
   Input,
   InputGroup,
   InputLeftElement,
   InputRightElement,
-  SkeletonCircle,
   Spinner,
   Stack,
-  Text,
 } from "@chakra-ui/react";
 import {
   collection,
@@ -26,7 +23,6 @@ import { AiOutlineSearch } from "react-icons/ai";
 
 import { UserInSearchbar } from "../../types/User";
 
-import { CgProfile } from "react-icons/cg";
 import { MdCancel } from "react-icons/md";
 import SearchItem from "./SearchItem";
 
@@ -91,7 +87,7 @@ export default function SearchBar({}: Props) {
       <Flex direction="column" position="relative">
         <Flex align="center">
           <InputGroup size="md">
-            <InputLeftElement>
+            <InputLeftElement pointerEvents="none">
               <Icon as={AiOutlineSearch} color="gray.600" fontSize="12pt" />
             </InputLeftElement>
             <Input

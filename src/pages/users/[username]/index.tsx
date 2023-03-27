@@ -1,5 +1,5 @@
 import UserPageLayout from "@/components/Layout/UserPageLayout";
-import { PostData } from "@/components/types/Post";
+import { PostItemData } from "@/components/types/Post";
 import { UserInformation } from "@/components/types/User";
 
 import { firestore } from "@/firebase/clientApp";
@@ -18,10 +18,10 @@ import safeJsonStringify from "safe-json-stringify";
 
 type Props = {
   userInformation: UserInformation;
-  userPosts: PostData[];
+  postItemsDatas: PostItemData[];
 };
 
-export default function index({ userInformation, userPosts }: Props) {
+export default function index({ userInformation, postItemsDatas }: Props) {
   if (!userInformation) {
     return (
       <Flex justify="center" align="center" width="100%">
@@ -32,7 +32,10 @@ export default function index({ userInformation, userPosts }: Props) {
 
   return (
     <>
-      <UserPageLayout userInformation={userInformation} userPosts={userPosts} />
+      <UserPageLayout
+        userInformation={userInformation}
+        postItemsDatas={postItemsDatas}
+      />
     </>
   );
 }
@@ -50,7 +53,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     const tempUserInformation: UserInformation = {
       username: userDoc.data().username,
       fullname: userDoc.data().fullname,
-      profilePhoto: userDoc.data().profilePhoto || null,
+      profilePhoto: userDoc.data().profilePhoto,
       followingCount: userDoc.data().followingCount,
       followings: userDoc.data().followings,
       followerCount: userDoc.data().followerCount,
@@ -72,28 +75,32 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const userPostDatasSnapshot = await getDocs(userPostDatasQuery);
 
-  const userPosts: PostData[] = [];
+  const postItemDatas: PostItemData[] = [];
 
   userPostDatasSnapshot.forEach((doc) => {
-    const postObject: PostData = {
+    const postObject: PostItemData = {
       senderUsername: doc.data().senderUsername,
       description: doc.data().description,
-      image: doc.data().image || null,
+      image: doc.data().image,
       likeCount: doc.data().likeCount,
       whoLiked: doc.data().whoLiked,
+      commentCount: doc.data().commentCount,
+      commentsCollectionPath: `users/${doc.data().senderUsername}/posts/${
+        doc.id
+      }/comments`,
       creationTime: doc.data().creationTime,
       id: doc.data().id,
     };
-    const serializablePostObject: PostData = JSON.parse(
+    const serializablePostObject: PostItemData = JSON.parse(
       safeJsonStringify(postObject)
     );
-    userPosts.push(serializablePostObject);
+    postItemDatas.push(serializablePostObject);
   });
 
   return {
     props: {
       userInformation: userInformation ?? null,
-      userPosts: userPosts,
+      postItemsDatas: postItemDatas,
     },
   };
 }
