@@ -32,6 +32,7 @@ export default function SignUp() {
   const { onSignUpLoading, onSignUp, isUserNameTaken, error, setError } =
     useAuthOperations();
 
+  const [userNameLowerCaseValue, setUsernameLowercaseValue] = useState("");
   const [userNameTakenState, setUserNameTakenState] = useState(false);
   const [userNameTakenStateLoading, setUserNameTakenStateLoading] =
     useState(false);
@@ -65,10 +66,12 @@ export default function SignUp() {
 
   const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     setError((prev) => "");
+
     if (event.target.name === "username") {
+      setUsernameLowercaseValue(event.target.value.toLowerCase());
       let regexFailFlag = false;
       const usernameRegex = /^[a-z0-9]+$/;
-      if (!usernameRegex.test(event.target.value)) {
+      if (!usernameRegex.test(event.target.value.toLowerCase())) {
         setUserNameTakenState((prev) => true);
         regexFailFlag = true;
       }
@@ -104,17 +107,15 @@ export default function SignUp() {
           type="email"
           mb={2}
           onChange={onChange}
-          fontSize="10pt"
           _placeholder={{
             color: "gray.500",
+            fontSize: "10pt",
           }}
           _hover={{
             border: "1px solid",
             borderColor: "blue.500",
           }}
-          
           bg="gray.50"
-
         />
         <Input
           required
@@ -123,9 +124,9 @@ export default function SignUp() {
           type="text"
           mb={2}
           onChange={onChange}
-          fontSize="10pt"
           _placeholder={{
             color: "gray.500",
+            fontSize: "10pt",
           }}
           _hover={{
             border: "1px solid",
@@ -158,11 +159,12 @@ export default function SignUp() {
             placeholder="Username"
             type="text"
             mb={2}
+            value={userNameLowerCaseValue}
             onChange={onChange}
-            fontSize="10pt"
             borderColor={userNameTakenState ? "red" : "gray.200"}
             _placeholder={{
               color: "gray.500",
+              fontSize: "10pt",
             }}
             _hover={{
               border: "1px solid",
@@ -187,9 +189,9 @@ export default function SignUp() {
             mb={1}
             onChange={onChange}
             borderColor={passwordWeak ? "red" : "gray.200"}
-            fontSize="10pt"
             _placeholder={{
               color: "gray.500",
+              fontSize: "10pt",
             }}
             _hover={{
               border: "1px solid",

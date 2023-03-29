@@ -10,7 +10,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 
-export default function useImageUpload() {
+export default function useProfilePhoto() {
   const [selectedProfilePhoto, setSelectedProfilePhoto] = useState("");
   const [currentUserState, setCurrentUserState] =
     useRecoilState(currentUserStateAtom);
@@ -19,15 +19,20 @@ export default function useImageUpload() {
     useState(false);
   const [profilePhotoUploadError, setProfilePhotoUploadError] = useState(false);
 
-  /**
-   * Selecting image efficiently, produce ready data to write storage
-   * @param event
-   * @returns
-   */
-  const onSelectProfilePhoto = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("OnSelectPhoto Triggered!");
+  const [willBeCroppedProfilePhoto, setWillBeCroppedProfilePhoto] =
+    useState("");
+
+  const [profilePhotoDeleteLoading, setProfilePhotoDeleteLoading] =
+    useState(false);
+
+  const onSelectWillBeCroppedProfilePhoto = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    console.log("OnSelectToBeCropped Triggered!");
     if (!event.target.files) {
-      console.log("No Files Provided to onSelectFile \n aborting.....");
+      console.log(
+        "No Files Provided to onSelectWillBeCropped \n aborting....."
+      );
       return;
     }
 
@@ -38,7 +43,7 @@ export default function useImageUpload() {
 
     reader.onload = (readerEvent) => {
       console.log("onLoad fired, now we update state");
-      setSelectedProfilePhoto(readerEvent.target?.result as string);
+      setWillBeCroppedProfilePhoto(readerEvent.target?.result as string);
     };
   };
 
@@ -138,17 +143,35 @@ export default function useImageUpload() {
     setProfilePhotoUploadLoading(false);
   };
 
+  const profilePhotoDelete = async () => {
+    setProfilePhotoDeleteLoading(true);
+    const currentUserDocRef = doc(
+      firestore,
+      `users/${currentUserState.username}`
+    );
+    console.log("Profile Photo Deleting");
+    await updateDoc(currentUserDocRef, {
+      profilePhoto: "",
+    });
+    console.log("Profile Photo Deleted");
+    setProfilePhotoDeleteLoading(false);
+  };
+
   /**
    * Post Photo Upload
    * @returns Downloadable Post Photo Image URL
    */
 
   return {
-    onSelectProfilePhoto,
     selectedProfilePhoto,
     setSelectedProfilePhoto,
     profilePhotoUpload,
     profilePhotoUploadLoading,
     profilePhotoUploadError,
+    profilePhotoDelete,
+    profilePhotoDeleteLoading,
+    onSelectWillBeCroppedProfilePhoto,
+    willBeCroppedProfilePhoto,
+    setWillBeCroppedProfilePhoto,
   };
 }

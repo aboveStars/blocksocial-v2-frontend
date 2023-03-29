@@ -34,13 +34,13 @@ export default function LogIn() {
         <Input
           required
           name="email"
-          placeholder="E-Mail"
+          placeholder="Email"
           type="email"
           mb={2}
           onChange={onChange}
-          fontSize="10pt"
           _placeholder={{
             color: "gray.500",
+            fontSize: "10pt",
           }}
           _hover={{
             border: "1px solid",
@@ -55,9 +55,9 @@ export default function LogIn() {
           type="password"
           mb={1}
           onChange={onChange}
-          fontSize="10pt"
           _placeholder={{
             color: "gray.500",
+            fontSize: "10pt",
           }}
           _hover={{
             border: "1px solid",
@@ -80,7 +80,7 @@ export default function LogIn() {
             textColor: "white",
           }}
         >
-          Log-In
+          Log In
         </Button>
 
         <Text color="red" textAlign="center" fontSize="10pt">
