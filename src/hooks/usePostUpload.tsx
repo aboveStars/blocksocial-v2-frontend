@@ -15,13 +15,13 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 
 const usePostCreate = () => {
   const currentUserUsername = useRecoilValue(currentUserStateAtom).username;
-  const [selectedPostPhoto, setSelectedPostPhoto] = useState("");
+  const [willBeCroppedPostPhoto, setWillBeCroppedPostPhoto] = useState("");
   const [postUploadLoading, setPostUploadUpdating] = useState(false);
   const setPostCreateModalState = useSetRecoilState(postCreateModalStateAtom);
 
-  const onSelectPostPhoto = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onSelectWillBeCroppedPhoto = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) {
-      console.log("No Files provided to onSelectPostPhoto");
+      console.log("No Files provided to onSelectWillBeCroppedPhoto");
       return;
     }
 
@@ -31,7 +31,7 @@ const usePostCreate = () => {
     reader.readAsDataURL(file);
 
     reader.onload = (readerEvent) => {
-      setSelectedPostPhoto(readerEvent.target?.result as string);
+      setWillBeCroppedPostPhoto(readerEvent.target?.result as string);
     };
   };
 
@@ -91,9 +91,9 @@ const usePostCreate = () => {
   };
 
   return {
-    selectedPostPhoto,
-    setSelectedPostPhoto,
-    onSelectPostPhoto,
+    willBeCroppedPostPhoto,
+    setWillBeCroppedPostPhoto,
+    onSelectWillBeCroppedPhoto,
     sendPost,
     postUploadLoading,
   };

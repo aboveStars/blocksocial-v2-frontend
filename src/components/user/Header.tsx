@@ -199,7 +199,7 @@ export default function Header({ userInformation }: Props) {
 
   const handleFollow = () => {
     // User check
-    if (!currentUserState.username) {
+    if (!currentUserState.isThereCurrentUser) {
       console.log("Only Users can follow");
       setAuthModalState((prev) => ({
         ...prev,
@@ -535,6 +535,7 @@ export default function Header({ userInformation }: Props) {
                       setZoom(1);
                       setCroppedAreaPixels(null);
                       setWillBeCroppedProfilePhoto("");
+                      if (inputRef.current) inputRef.current.value = "";
                     }}
                   >
                     Try
@@ -549,6 +550,7 @@ export default function Header({ userInformation }: Props) {
                       setZoom(1);
                       setCroppedAreaPixels(null);
                       setWillBeCroppedProfilePhoto("");
+                      if (inputRef.current) inputRef.current.value = "";
                     }}
                   >
                     Cancel
@@ -563,6 +565,7 @@ export default function Header({ userInformation }: Props) {
                     onCropChange={setCrop}
                     onCropComplete={onCropComplete}
                     onZoomChange={setZoom}
+                    cropShape="round"
                   />
                 </Flex>
               </Flex>

@@ -12,7 +12,8 @@ import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { CgProfile } from "react-icons/cg";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import { authModalStateAtom } from "../atoms/authModalAtom";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
 import { FollowingsFollowersModalType } from "./Header";
 
@@ -47,6 +48,8 @@ export default function FollowItem({
 
   const { follow } = useFollow();
 
+  const setAuthModalState = useSetRecoilState(authModalStateAtom);
+
   useEffect(() => {
     getFollowItemInformation();
   }, [username]);
@@ -77,6 +80,14 @@ export default function FollowItem({
   };
 
   const handleFollowonFollowItem = () => {
+    if (!currentUserState.isThereCurrentUser) {
+      console.log("Login First to Follow");
+      setAuthModalState((prev) => ({
+        ...prev,
+        open: true,
+      }));
+      return;
+    }
     // Follow
     follow(followItemState.username, 1);
     // Current User Update (locally)
