@@ -1,27 +1,56 @@
-import { Flex, Text } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Authentication from "./Authentication/Authentication";
+import PostCreateButton from "./SearchBar/PostCreateButton";
 
 import SearchBar from "./SearchBar/SearchBar";
 
-type Props = {};
-
-export default function Navbar({}: Props) {
+export default function Navbar() {
   const router = useRouter();
+
+  // return (
+  //   <Flex
+  //     as="nav"
+  //     align="center"
+  //     justify="space-between"
+  //     wrap="wrap"
+  //     padding={6}
+  //     bg="gray.700"
+
+  //   >
+  //     <Box>
+  //       <Text textColor="white" fontSize="20pt" fontWeight="700">
+  //         BlockSocial
+  //       </Text>
+  //     </Box>
+  //     <Box flex="1">
+  //       <SearchBar/>
+  //     </Box>
+  //     <Box>
+  //      <PostCreateButton/>
+  //      <Authentication/>
+  //     </Box>
+  //   </Flex>
+  // );
+
   return (
     <>
       <Flex
         position="sticky"
         top="0"
+        left="0"
+        right="0"
         width="100%"
         height="50px"
+        justify="space-between"
         align="center"
-        p={2}
         bg="black"
         zIndex="banner"
+        px={3}
+        gap={2}
       >
-        <Flex width="100%" justify="flex-start">
-          <Flex
+        <Box>
+          <Box
             display={{
               base: "none",
               sm: "none",
@@ -38,7 +67,7 @@ export default function Navbar({}: Props) {
             >
               BlockSocial
             </Text>
-          </Flex>
+          </Box>
           <Flex
             display={{
               base: "flex",
@@ -49,32 +78,26 @@ export default function Navbar({}: Props) {
           >
             <Text
               color="white"
-              fontSize="20pt"
               fontWeight={700}
+              fontSize="30pt"
               cursor="pointer"
               onClick={() => router.push("/")}
             >
               BS
             </Text>
           </Flex>
-        </Flex>
+        </Box>
 
-        <Flex width="100%" justify="center">
-          <Flex
-            display={{
-              base: "none",
-              sm: "none",
-              md: "flex",
-              lg: "flex",
-            }}
-          >
-            <SearchBar />
+        <Box flex="1">
+          <SearchBar />
+        </Box>
+
+        <Box gap={2}>
+          <Flex align="center" gap={1}>
+            <PostCreateButton />
+            <Authentication />
           </Flex>
-        </Flex>
-
-        <Flex width="100%" justify="flex-end">
-          <Authentication />
-        </Flex>
+        </Box>
       </Flex>
     </>
   );

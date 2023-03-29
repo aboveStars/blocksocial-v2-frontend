@@ -10,7 +10,7 @@ import {
   InputRightElement,
   SkeletonCircle,
   Stack,
-  Text
+  Text,
 } from "@chakra-ui/react";
 import { collection, getDocs } from "firebase/firestore";
 import React, { useEffect, useRef, useState } from "react";

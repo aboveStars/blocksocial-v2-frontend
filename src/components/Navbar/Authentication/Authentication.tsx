@@ -4,12 +4,20 @@ import AuthenticationModal from "@/components/Modals/AuthenticationModal/Authent
 import { auth } from "@/firebase/clientApp";
 import useLoginOperations from "@/hooks/useLoginOperations";
 
-import useAuthOperations from "@/hooks/useSignUpOperations";
-import { Button, Stack, Text } from "@chakra-ui/react";
+import {
+  Button,
+  Flex,
+  Icon,
+  Image,
+  SkeletonCircle,
+  Stack,
+} from "@chakra-ui/react";
 import { useRouter } from "next/router";
 
 import React, { useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { BsPersonCircle } from "react-icons/bs";
+import { CgProfile } from "react-icons/cg";
 import { useRecoilState, useSetRecoilState } from "recoil";
 
 type AuthModalView = "logIn" | "signUp" | "resetPassword";
@@ -19,8 +27,6 @@ export default function Authentication() {
 
   const [currentUserState, setCurrentUserState] =
     useRecoilState(currentUserStateAtom);
-
-  const { onSignOut, signOutLoading } = useAuthOperations();
 
   const [user, loading, error] = useAuthState(auth);
 
@@ -53,73 +59,93 @@ export default function Authentication() {
 
   return (
     <>
-      <Stack direction="row">
+      <Flex>
         {currentUserState.isThereCurrentUser ? (
-          <>
-            <Button
-              onClick={() => router.push(`/users/${currentUserState.username}`)}
-              colorScheme="blue"
-              variant="solid"
-              size={{
-                base: "sm",
-                sm: "sm",
-                md: "md",
-                lg: "md",
-              }}
-            >
-              <Text>{currentUserState.username}</Text>
-            </Button>
-            <Button
-              name="signOut"
-              onClick={() => {
-                onSignOut();
-              }}
-              isLoading={signOutLoading}
-              variant="outline"
-              colorScheme="blue"
-              size={{
-                base: "sm",
-                sm: "sm",
-                md: "md",
-                lg: "md",
-              }}
-            >
-              Sign Out
-            </Button>
-          </>
+          <Image
+            src={currentUserState.profilePhoto}
+            rounded="full"
+            width="40px"
+            fallback={
+              currentUserState.profilePhoto ||
+              !currentUserState.isThereCurrentUser ? (
+                <SkeletonCircle
+                  width="40px"
+                  height="40px"
+                  startColor="gray.100"
+                  endColor="gray.800"
+                />
+              ) : (
+                <Icon
+                  as={CgProfile}
+                  color="white"
+                  height="40px"
+                  width="40px"
+                  cursor="pointer"
+                  onClick={() =>
+                    router.push(`/users/${currentUserState.username}`)
+                  }
+                />
+              )
+            }
+            cursor="pointer"
+            onClick={() => router.push(`/users/${currentUserState.username}`)}
+          />
         ) : (
           <>
-            <Button
-              name="logIn"
-              onClick={handleSignInUp}
-              variant="outline"
-              colorScheme="blue"
-              size={{
-                base: "sm",
-                sm: "sm",
-                md: "md",
-                lg: "md",
+            <Flex
+              id="big-screen-auth-buttons"
+              gap={2}
+              display={{
+                base: "none",
+                sm: "none",
+                md: "flex",
+                lg: "flex",
               }}
             >
-              Log In
-            </Button>
-            <Button
-              name="signUp"
-              onClick={handleSignInUp}
-              variant="solid"
-              colorScheme="blue"
-              size={{
-                base: "sm",
-                sm: "sm",
-                md: "md",
-                lg: "md",
+              <Button
+                name="logIn"
+                onClick={handleSignInUp}
+                variant="outline"
+                colorScheme="blue"
+                size="md"
+              >
+                Log In
+              </Button>
+              <Button
+                name="signUp"
+                onClick={handleSignInUp}
+                variant="solid"
+                colorScheme="blue"
+                size="md"
+              >
+                Sign Up
+              </Button>
+            </Flex>
+            <Flex
+              display={{
+                base: "flex",
+                sm: "flex",
+                md: "none",
+                lg: "none",
               }}
             >
-              Sign Up
-            </Button>
+              <Icon
+                as={BsPersonCircle}
+                color="white"
+                fontSize="40px"
+                cursor="pointer"
+                onClick={() =>
+                  setAuthModalState((prev) => ({
+                    ...prev,
+                    open: true,
+                    view: "logIn",
+                  }))
+                }
+              />
+            </Flex>
           </>
         )}
-      </Stack>
+      </Flex>
       <AuthenticationModal />
     </>
   );

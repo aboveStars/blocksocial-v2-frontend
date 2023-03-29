@@ -17,7 +17,6 @@ import {
   query,
   startAt,
 } from "firebase/firestore";
-import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 
@@ -35,8 +34,6 @@ export default function SearchBar({}: Props) {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchResult, setSearchResult] = useState<UserInSearchbar[]>([]);
 
-  const router = useRouter();
-
   /**
    * To clear search keyword
    */
@@ -48,7 +45,8 @@ export default function SearchBar({}: Props) {
   const [searchFocus, setSearchFocus] = useState(false);
 
   const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const searchInput = event.target.value;
+    const inputValue = event.target.value;
+    const searchInput = inputValue.toLowerCase();
     if (searchInput.length == 0) {
       setSearchListOpen(false);
       return;
@@ -83,85 +81,79 @@ export default function SearchBar({}: Props) {
   };
 
   return (
-    <>
-      <Flex direction="column" position="relative">
-        <Flex align="center">
-          <InputGroup size="md">
-            <InputLeftElement pointerEvents="none">
-              <Icon as={AiOutlineSearch} color="gray.600" fontSize="12pt" />
-            </InputLeftElement>
-            <Input
-              ref={inputRef}
-              pr="4.5rem"
-              placeholder="Search"
-              textColor="white"
-              onChange={onChange}
-              _hover={{
-                borderColor: "gray.900",
-              }}
-              _focus={{
-                bg: "gray.900",
-              }}
-              focusBorderColor="gray.900"
-              borderColor="gray.800"
-              onFocus={() => setSearchFocus(true)}
-              onBlur={(event) => {
-                if (event.relatedTarget?.id == "search-result-panel") {
-                  return;
-                } else {
-                  setSearchFocus(false);
-                }
-              }}
-            />
-            <InputRightElement>
-              <Spinner
-                size="sm"
-                ml={1.5}
-                color="gray"
-                hidden={!searchLoading}
+    <Flex direction="column" position="relative">
+      <Flex align="center">
+        <InputGroup>
+          <InputLeftElement pointerEvents="none">
+            <Icon as={AiOutlineSearch} color="gray.600" fontSize="12pt" />
+          </InputLeftElement>
+          <Input
+            ref={inputRef}
+            placeholder="Search"
+            textColor="white"
+            onChange={onChange}
+            _hover={{
+              borderColor: "gray.900",
+            }}
+            _focus={{
+              bg: "gray.900",
+            }}
+            _placeholder={{
+              fontSize: "10pt",
+            }}
+            borderColor="gray.800"
+            onFocus={() => setSearchFocus(true)}
+            onBlur={(event) => {
+              if (event.relatedTarget?.id == "search-result-panel") {
+                return;
+              } else {
+                setSearchFocus(false);
+              }
+            }}
+          />
+          <InputRightElement>
+            <Spinner size="sm" ml={1.5} color="gray" hidden={!searchLoading} />
+            {!searchLoading && searchListOpen && (
+              <Icon
+                as={MdCancel}
+                color="gray.400"
+                fontSize="11pt"
+                cursor="pointer"
+                onClick={() => {
+                  setSearchListOpen(false);
+                  if (inputRef.current) inputRef.current.value = "";
+                }}
               />
-              {!searchLoading && searchListOpen && (
-                <Icon
-                  as={MdCancel}
-                  color="gray.400"
-                  fontSize="11pt"
-                  cursor="pointer"
-                  onClick={() => {
-                    setSearchListOpen(false);
-                    if (inputRef.current) inputRef.current.value = "";
-                  }}
-                />
-              )}
-            </InputRightElement>
-          </InputGroup>
-        </Flex>
-
-        {searchListOpen && searchFocus && (
-          <Flex
-            id="search-result-panel"
-            position="absolute"
-            width="100%"
-            top="42px"
-            minHeight="60px"
-            bg="rgba(0, 0, 0, 0.5)"
-            borderRadius="0px 0px 10px 10px"
-            backdropFilter="auto"
-            backdropBlur="10px"
-            tabIndex={0}
-          >
-            <Stack mt={1} mb={1}>
-              {searchResult.map((result) => (
-                <SearchItem
-                  key={result.username}
-                  inputReferance={inputRef}
-                  searchListOpenStateSetter={setSearchListOpen}
-                  searchItemData={result}
-                />
-              ))}
-            </Stack>
-          </Flex>
-        )}
+            )}
+          </InputRightElement>
+        </InputGroup>
       </Flex>
-    </>
+
+      {searchListOpen && searchFocus && (
+        <Flex
+          id="search-result-panel"
+          position="absolute"
+          width="100%"
+          top="42px"
+          minHeight="60px"
+          bg="rgba(0, 0, 0, 0.5)"
+          borderRadius="0px 0px 10px 10px"
+          backdropFilter="auto"
+          backdropBlur="10px"
+          tabIndex={0}
+        >
+          <Stack mt={1} mb={1}>
+            {searchResult.map((result) => (
+              <SearchItem
+                key={result.username}
+                inputReferance={inputRef}
+                searchListOpenStateSetter={setSearchListOpen}
+                searchItemData={result}
+              />
+            ))}
+          </Stack>
+        </Flex>
+      )}
+    </Flex>
   );
 }

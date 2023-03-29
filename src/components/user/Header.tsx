@@ -13,25 +13,25 @@ import {
   ModalOverlay,
   SkeletonCircle,
   Stack,
-  Text,
+  Text
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
 
 import useProfilePhoto from "@/hooks/useProfilePhoto";
 
-import { AiOutlinePlus } from "react-icons/ai";
 import { BiPencil } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
 
 import useFollow from "@/hooks/useFollow";
+import Cropper from "react-easy-crop";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
-import { postCreateModalStateAtom } from "../atoms/postCreateModalAtom";
 import { UserInformation } from "../types/User";
-import FollowItem from "./FollowItem";
-import Cropper from "react-easy-crop";
 import getCroppedImg from "../utils/GetCroppedImage";
+import FollowItem from "./FollowItem";
+
+import useAuthOperations from "@/hooks/useSignUpOperations";
 
 type Props = {
   userInformation: UserInformation;
@@ -73,7 +73,7 @@ export default function Header({ userInformation }: Props) {
     onSelectWillBeCroppedProfilePhoto,
   } = useProfilePhoto();
 
-  const setPostCreateModalState = useSetRecoilState(postCreateModalStateAtom);
+  
 
   const [poorProfilePhoto, setPoorProfilePhoto] = useState(false);
 
@@ -103,6 +103,8 @@ export default function Header({ userInformation }: Props) {
     },
     []
   );
+
+  const { onSignOut, signOutLoading } = useAuthOperations();
 
   /**
    * userData is already being controlled then, comes here
@@ -280,6 +282,123 @@ export default function Header({ userInformation }: Props) {
         </ModalContent>
       </Modal>
 
+      <Modal
+        id="profile-photo-update-panel"
+        isOpen={profilePhotoUpdateModalOpen}
+        onClose={() => {
+          setCrop({ x: 0, y: 0 });
+          setZoom(1);
+          setCroppedAreaPixels(null);
+          setWillBeCroppedProfilePhoto("");
+          setProiflePhotoUpdateModalOpen(false);
+        }}
+      >
+        <Input
+          id="profile-photo-input"
+          ref={inputRef}
+          type="file"
+          hidden
+          onChange={onSelectWillBeCroppedProfilePhoto}
+        />
+        <ModalOverlay backdropFilter="auto" backdropBlur="8px" />
+        <ModalContent bg="gray.900">
+          <ModalHeader>
+            <Text color="white">Update Profile Photo</Text>
+          </ModalHeader>
+          <ModalCloseButton color="white" />
+          <ModalBody>
+            <Flex id="intial-add-delete-buttons" gap={2} align="center" mb={5}>
+              <Button
+                variant="outline"
+                colorScheme="red"
+                onClick={async () => {
+                  await profilePhotoDelete();
+                  setOstensibleUserInformation((prev) => ({
+                    ...prev,
+                    profilePhoto: "",
+                  }));
+                }}
+                hidden={
+                  !!willBeCroppedProfilePhoto ||
+                  !!!ostensibleUserInformation.profilePhoto
+                }
+                isLoading={profilePhotoDeleteLoading}
+              >
+                Delete Profile Photo
+              </Button>
+
+              <Button
+                variant="solid"
+                colorScheme="blue"
+                onClick={() => {
+                  inputRef.current?.click();
+                }}
+                hidden={!!willBeCroppedProfilePhoto}
+              >
+                Add Profile Photo
+              </Button>
+            </Flex>
+            {willBeCroppedProfilePhoto && (
+              <Flex id="crop-area" direction="column" gap={3} mt="5">
+                <Flex align="center" justify="flex-end" gap={2}>
+                  <Button
+                    size="sm"
+                    variant="solid"
+                    colorScheme="blue"
+                    onClick={async () => {
+                      // Get cropped image
+                      const croppedImage = await getCroppedImg(
+                        willBeCroppedProfilePhoto,
+                        croppedAreaPixels
+                      );
+                      // update states
+                      setSelectedProfilePhoto(croppedImage as string);
+                      setProiflePhotoUpdateModalOpen(false);
+                      setModifying(true);
+                      // reset states
+                      setCrop({ x: 0, y: 0 });
+                      setZoom(1);
+                      setCroppedAreaPixels(null);
+                      setWillBeCroppedProfilePhoto("");
+                      if (inputRef.current) inputRef.current.value = "";
+                    }}
+                  >
+                    Try
+                  </Button>
+                  <Button
+                    id="willBeCroppped-delete-button"
+                    size="sm"
+                    variant="outline"
+                    colorScheme="blue"
+                    onClick={() => {
+                      setCrop({ x: 0, y: 0 });
+                      setZoom(1);
+                      setCroppedAreaPixels(null);
+                      setWillBeCroppedProfilePhoto("");
+                      if (inputRef.current) inputRef.current.value = "";
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </Flex>
+                <Flex position="relative" width="100%" height="400px">
+                  <Cropper
+                    image={willBeCroppedProfilePhoto}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={1}
+                    onCropChange={setCrop}
+                    onCropComplete={onCropComplete}
+                    onZoomChange={setZoom}
+                    cropShape="round"
+                  />
+                </Flex>
+              </Flex>
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
       <Flex direction="column" justify="center" align="center" mt={3}>
         <Flex
           position="relative"
@@ -444,152 +563,21 @@ export default function Header({ userInformation }: Props) {
         )}
 
         {isCurrentUserPage && (
-          <Flex
-            align="center"
-            gap="1"
-            cursor="pointer"
-            onClick={() => setPostCreateModalState({ isOpen: true })}
-          >
-            <Icon
-              as={AiOutlinePlus}
-              color="white"
-              fontSize="2xl"
-              mt={2}
-              mb={2}
-            />
-            <Text as="b" textColor="white">
-              Create
-            </Text>
-          </Flex>
-        )}
-      </Flex>
-
-      <Modal
-        id="profile-photo-update-panel"
-        isOpen={profilePhotoUpdateModalOpen}
-        onClose={() => {
-          setCrop({ x: 0, y: 0 });
-          setZoom(1);
-          setCroppedAreaPixels(null);
-          setWillBeCroppedProfilePhoto("");
-          setProiflePhotoUpdateModalOpen(false);
-        }}
-      >
-        <ModalOverlay backdropFilter="auto" backdropBlur="8px" />
-        <ModalContent bg="gray.900">
-          <ModalHeader>
-            <Text color="white">Update Profile Photo</Text>
-          </ModalHeader>
-          <ModalCloseButton color="white" />
-          <ModalBody>
-            <Flex id="intial-add-delete-buttons" gap={2} align="center" mb={5}>
+          <Flex align="center">
+            <Flex mt={3}>
               <Button
                 variant="outline"
                 colorScheme="red"
-                onClick={async () => {
-                  await profilePhotoDelete();
-                  setOstensibleUserInformation((prev) => ({
-                    ...prev,
-                    profilePhoto: "",
-                  }));
-                }}
-                hidden={
-                  !!willBeCroppedProfilePhoto ||
-                  !!!ostensibleUserInformation.profilePhoto
-                }
-                isLoading={profilePhotoDeleteLoading}
+                size="sm"
+                onClick={onSignOut}
+                isLoading={signOutLoading}
               >
-                Delete Profile Photo
-              </Button>
-
-              <Button
-                variant="solid"
-                colorScheme="blue"
-                onClick={() => {
-                  inputRef.current?.click();
-                }}
-                hidden={!!willBeCroppedProfilePhoto}
-              >
-                Add Profile Photo
+                Sign Out
               </Button>
             </Flex>
-            {willBeCroppedProfilePhoto && (
-              <Flex id="crop-area" direction="column" gap={3} mt="5">
-                <Flex align="center" justify="flex-end" gap={2}>
-                  <Button
-                    size="sm"
-                    variant="solid"
-                    colorScheme="blue"
-                    onClick={async () => {
-                      // Get cropped image
-                      const croppedImage = await getCroppedImg(
-                        willBeCroppedProfilePhoto,
-                        croppedAreaPixels
-                      );
-                      // update states
-                      setSelectedProfilePhoto(croppedImage as string);
-                      setProiflePhotoUpdateModalOpen(false);
-                      setModifying(true);
-                      // reset states
-                      setCrop({ x: 0, y: 0 });
-                      setZoom(1);
-                      setCroppedAreaPixels(null);
-                      setWillBeCroppedProfilePhoto("");
-                      if (inputRef.current) inputRef.current.value = "";
-                    }}
-                  >
-                    Try
-                  </Button>
-                  <Button
-                    id="willBeCroppped-delete-button"
-                    size="sm"
-                    variant="outline"
-                    colorScheme="blue"
-                    onClick={() => {
-                      setCrop({ x: 0, y: 0 });
-                      setZoom(1);
-                      setCroppedAreaPixels(null);
-                      setWillBeCroppedProfilePhoto("");
-                      if (inputRef.current) inputRef.current.value = "";
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </Flex>
-                <Flex position="relative" width="100%" height="400px">
-                  <Cropper
-                    image={willBeCroppedProfilePhoto}
-                    crop={crop}
-                    zoom={zoom}
-                    aspect={1}
-                    onCropChange={setCrop}
-                    onCropComplete={onCropComplete}
-                    onZoomChange={setZoom}
-                    cropShape="round"
-                  />
-                </Flex>
-              </Flex>
-            )}
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-      <Input
-        id="profile-photo-input"
-        ref={inputRef}
-        type="file"
-        hidden
-        onChange={onSelectWillBeCroppedProfilePhoto}
-      />
-      {/* <Input
-        id="profile-photo-input"
-        ref={inputRef}
-        type="file"
-        hidden
-        onChange={(event) => {
-          setModifying(true);
-          onSelectProfilePhoto(event);
-        }}
-      /> */}
+          </Flex>
+        )}
+      </Flex>
     </>
   );
 }

@@ -154,7 +154,12 @@ export default function useProfilePhoto() {
       profilePhoto: "",
     });
     console.log("Profile Photo Deleted");
+    // State Updates
     setProfilePhotoDeleteLoading(false);
+    setCurrentUserState((prev) => ({
+      ...prev,
+      profilePhoto: "",
+    }));
   };
 
   /**
