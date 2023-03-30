@@ -1,7 +1,6 @@
-import { Flex, SkeletonCircle, SkeletonText, Icon } from "@chakra-ui/react";
-import { BsDot } from "react-icons/bs";
+import { Flex, SkeletonCircle, SkeletonText } from "@chakra-ui/react";
 
-export default function CommentItemSkeleton() {
+export default function LikeItemSkeleton() {
   return (
     <Flex align="center" gap={2} height="50px">
       <SkeletonCircle
@@ -19,7 +18,7 @@ export default function CommentItemSkeleton() {
             startColor="gray.100"
             endColor="gray.800"
           />
-          <Icon as={BsDot} color="gray.500" fontSize="13px" />
+
           <SkeletonText
             noOfLines={1}
             width="15px"
@@ -28,14 +27,6 @@ export default function CommentItemSkeleton() {
             endColor="gray.800"
           />
         </Flex>
-
-        <SkeletonText
-          noOfLines={1}
-          width="130px"
-          skeletonHeight="3"
-          startColor="gray.100"
-          endColor="gray.800"
-        />
       </Flex>
     </Flex>
   );

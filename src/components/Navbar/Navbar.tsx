@@ -11,6 +11,7 @@ export default function Navbar() {
   return (
     <>
       <Flex
+        id="small-screen-navbar"
         position="sticky"
         top="0"
         left="0"
@@ -33,36 +34,11 @@ export default function Navbar() {
         }}
       >
         <Box>
-          <Box
-            display={{
-              base: "none",
-              sm: "none",
-              md: "flex",
-              lg: "flex",
-            }}
-          >
-            <Text
-              color="white"
-              fontSize="20pt"
-              fontWeight={700}
-              cursor="pointer"
-              onClick={() => router.push("/")}
-            >
-              BlockSocial
-            </Text>
-          </Box>
-          <Flex
-            display={{
-              base: "flex",
-              sm: "flex",
-              md: "none",
-              lg: "none",
-            }}
-          >
+          <Flex>
             <Text
               color="white"
               fontWeight={700}
-              fontSize="30pt"
+              fontSize="27pt"
               cursor="pointer"
               onClick={() => router.push("/")}
             >
@@ -71,7 +47,7 @@ export default function Navbar() {
           </Flex>
         </Box>
 
-        <Box flex="1">
+        <Box flex="1" ml={1}>
           <SearchBar />
         </Box>
 
@@ -82,7 +58,9 @@ export default function Navbar() {
           </Flex>
         </Box>
       </Flex>
+
       <Flex
+        id="large-screen-navbar"
         display={{
           base: "none",
           sm: "none",

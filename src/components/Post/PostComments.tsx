@@ -10,7 +10,6 @@ import {
   ModalContent,
   ModalOverlay,
   SkeletonCircle,
-  SkeletonText,
   Stack,
   Text,
 } from "@chakra-ui/react";
@@ -23,29 +22,33 @@ import {
 } from "firebase/firestore";
 import React, { useEffect, useRef, useState } from "react";
 import { AiOutlineClose, AiOutlineSend } from "react-icons/ai";
-import { BsDot } from "react-icons/bs";
 import { CgProfile } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
-import { CommentData } from "../types/Post";
+import { CommentData, OpenPanelName } from "../types/Post";
 import CommentItem from "./CommentItem";
 import CommentItemSkeleton from "./CommentItemSkeleton";
 
 type Props = {
-  postCommentsData: {
+  postInfo: {
     postSenderUsername: string;
     postId: string;
+  };
+
+  commentsInfo: {
+    postCommentCount: number;
     postCommentsColPath: string;
   };
 
-  commentPanelOpenStateValue: boolean;
-  commentPanelOpenStateSetter: React.Dispatch<React.SetStateAction<boolean>>;
+  openPanelNameValue: OpenPanelName;
+  openPanelNameSetter: React.Dispatch<React.SetStateAction<OpenPanelName>>;
 };
 
 export default function PostComments({
-  postCommentsData,
-  commentPanelOpenStateSetter,
-  commentPanelOpenStateValue,
+  postInfo,
+  commentsInfo,
+  openPanelNameSetter,
+  openPanelNameValue,
 }: Props) {
   const [commentsDatas, setCommentsDatas] = useState<CommentData[]>([]);
 
@@ -60,20 +63,23 @@ export default function PostComments({
   const [gettingComments, setGettingComments] = useState(true);
 
   useEffect(() => {
-    if (commentPanelOpenStateValue) {
+    if (
+      openPanelNameValue === "comments" &&
+      commentsInfo.postCommentCount > 0
+    ) {
       console.log("Comments Loading");
       handleLoadComments();
     } else {
       console.log("Prevented Update");
     }
-  }, [commentPanelOpenStateValue]);
+  }, [openPanelNameValue]);
 
   const handleLoadComments = async () => {
     // get comment docs
 
     const postCommentsCollection = collection(
       firestore,
-      postCommentsData.postCommentsColPath
+      commentsInfo.postCommentsColPath
     );
     const commentDocQuery = query(
       postCommentsCollection,
@@ -99,9 +105,9 @@ export default function PostComments({
 
   return (
     <Modal
-      onClose={() => commentPanelOpenStateSetter(false)}
+      onClose={() => openPanelNameSetter("main")}
       size="full"
-      isOpen={commentPanelOpenStateValue}
+      isOpen={openPanelNameValue === "comments"}
     >
       <ModalOverlay />
       <ModalContent bg="black">
@@ -123,23 +129,27 @@ export default function PostComments({
             color="white"
             fontSize="15pt"
             cursor="pointer"
-            onClick={() => commentPanelOpenStateSetter(false)}
+            onClick={() => openPanelNameSetter("main")}
           />
         </Flex>
 
         <ModalBody>
           <Stack gap={1} hidden={gettingComments}>
-            {commentsDatas.map((cd) => (
+            {commentsDatas.map((cd, i) => (
               <CommentItem
-                key={`${cd.commentSenderUsername}${cd.creationTime.seconds}.${cd.creationTime.nanoseconds}`}
+                key={i}
                 commentData={cd}
+                openPanelNameSetter={openPanelNameSetter}
               />
             ))}
           </Stack>
           <Stack gap={1} hidden={!gettingComments}>
-            {Array.from({ length: 5 }, (_, index) => (
-              <CommentItemSkeleton key={index} />
-            ))}
+            {Array.from(
+              { length: commentsInfo.postCommentCount },
+              (_, index) => (
+                <CommentItemSkeleton key={index} />
+              )
+            )}
           </Stack>
         </ModalBody>
 
@@ -203,10 +213,10 @@ export default function PostComments({
               fontSize="20pt"
               onClick={() => {
                 sendComment(
-                  postCommentsData.postCommentsColPath,
+                  commentsInfo.postCommentsColPath,
                   currentComment,
-                  postCommentsData.postId,
-                  postCommentsData.postSenderUsername
+                  postInfo.postId,
+                  postInfo.postSenderUsername
                 );
                 if (commentInputRef.current) commentInputRef.current.value = "";
                 setCommentsDatas((prev) => [

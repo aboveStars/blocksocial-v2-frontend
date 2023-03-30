@@ -3,16 +3,20 @@ import { Flex, Icon, Text, Image, SkeletonCircle } from "@chakra-ui/react";
 import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { SetStateAction, useEffect, useState } from "react";
 import { BsDot } from "react-icons/bs";
 import { CgProfile } from "react-icons/cg";
-import { CommentData } from "../types/Post";
+import { CommentData, OpenPanelName } from "../types/Post";
 
 type Props = {
   commentData: CommentData;
+  openPanelNameSetter: React.Dispatch<SetStateAction<OpenPanelName>>;
 };
 
-export default function CommentItem({ commentData }: Props) {
+export default function CommentItem({
+  commentData,
+  openPanelNameSetter,
+}: Props) {
   const [commentSenderPhoto, setCommentSenderPhoto] = useState("");
   const [gettingCommentSenderPhoto, setGettingCommentSenderPhoto] =
     useState(false);
@@ -37,18 +41,17 @@ export default function CommentItem({ commentData }: Props) {
   };
 
   return (
-    <Flex
-      height="50px"
-      align="center"
-      gap={2}
-      cursor="pointer"
-      onClick={() => router.push(`/users/${commentData.commentSenderUsername}`)}
-    >
+    <Flex height="50px" align="center" gap={2}>
       <Image
         src={commentSenderPhoto}
         rounded="full"
         width="35px"
         height="35px"
+        cursor="pointer"
+        onClick={() => {
+          router.push(`/users/${commentData.commentSenderUsername}`);
+          openPanelNameSetter("main");
+        }}
         fallback={
           !!commentSenderPhoto || gettingCommentSenderPhoto ? (
             <SkeletonCircle
@@ -58,12 +61,29 @@ export default function CommentItem({ commentData }: Props) {
               endColor="gray.800"
             />
           ) : (
-            <Icon as={CgProfile} color="white" height="35px" width="35px" />
+            <Icon
+              as={CgProfile}
+              color="white"
+              height="35px"
+              width="35px"
+              cursor="pointer"
+              onClick={() => {
+                router.push(`/users/${commentData.commentSenderUsername}`);
+                openPanelNameSetter("main");
+              }}
+            />
           )
         }
       />
 
-      <Flex direction="column">
+      <Flex
+        direction="column"
+        cursor="pointer"
+        onClick={() => {
+          router.push(`/users/${commentData.commentSenderUsername}`);
+          openPanelNameSetter("main");
+        }}
+      >
         <Flex align="center">
           <Text fontSize="10pt" textColor="white" as="b">
             {commentData.commentSenderUsername}

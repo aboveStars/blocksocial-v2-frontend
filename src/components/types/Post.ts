@@ -37,3 +37,5 @@ export type CommentData = {
   comment: string;
   creationTime: Timestamp;
 };
+
+export type OpenPanelName = "main" | "comments" | "likes";

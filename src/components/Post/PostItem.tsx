@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { PostItemData, PostMainData } from "../types/Post";
+import { useState } from "react";
+import { OpenPanelName, PostItemData } from "../types/Post";
 import PostComments from "./PostComments";
+import PostLikes from "./PostLikes";
 import PostMain from "./PostMain";
 
 type Props = {
@@ -10,24 +11,33 @@ type Props = {
 export default function PostItem({ postItemData }: Props) {
   const { commentsCollectionPath, ...postMainData } = postItemData;
 
-  const [commentPanelOpenState, setCommentPanelOpenState] = useState(false);
+  const [openPanelName, setOpenPanelName] = useState<OpenPanelName>("main");
 
   return (
     <>
+      <PostMain
+        postMainData={postMainData}
+        openPanelNameSetter={setOpenPanelName}
+      />
       <PostComments
-        postCommentsData={{
-          postCommentsColPath: postItemData.commentsCollectionPath,
+        postInfo={{
           postSenderUsername: postItemData.senderUsername,
           postId: postItemData.id,
         }}
-        commentPanelOpenStateSetter={setCommentPanelOpenState}
-        commentPanelOpenStateValue={commentPanelOpenState}
+        commentsInfo={{
+          postCommentsColPath: postItemData.commentsCollectionPath,
+          postCommentCount: postItemData.commentCount,
+        }}
+        openPanelNameSetter={setOpenPanelName}
+        openPanelNameValue={openPanelName}
       />
-
-      <PostMain
-        postMainData={postMainData}
-        commentPanelOpenStateSetter={setCommentPanelOpenState}
-        commentPanelOpenStateValue={commentPanelOpenState}
+      <PostLikes
+        likeData={{
+          likeCount: postItemData.likeCount,
+          whoLiked: postItemData.whoLiked,
+        }}
+        openPanelNameSetter={setOpenPanelName}
+        openPanelNameValue={openPanelName}
       />
     </>
   );

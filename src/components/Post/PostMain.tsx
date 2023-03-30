@@ -11,7 +11,6 @@ import {
 import { useEffect, useState } from "react";
 
 import { AiFillHeart, AiOutlineComment, AiOutlineHeart } from "react-icons/ai";
-import { BiSend } from "react-icons/bi";
 import { BsDot, BsImage } from "react-icons/bs";
 
 import { firestore } from "@/firebase/clientApp";
@@ -24,18 +23,14 @@ import { CgProfile } from "react-icons/cg";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
-import { PostMainData } from "../types/Post";
+import { OpenPanelName, PostMainData } from "../types/Post";
 
 type Props = {
   postMainData: PostMainData;
-  commentPanelOpenStateSetter: React.Dispatch<React.SetStateAction<boolean>>;
-  commentPanelOpenStateValue: boolean;
+  openPanelNameSetter: React.Dispatch<React.SetStateAction<OpenPanelName>>;
 };
 
-export default function PostMain({
-  postMainData,
-  commentPanelOpenStateSetter,
-}: Props) {
+export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
   const [postSenderProfilePhotoURL, setPostSenderProfilePhotoURL] =
     useState("");
 
@@ -109,7 +104,7 @@ export default function PostMain({
   }, [postMainData, currentUserState]);
 
   return (
-    <Flex bg="black" direction="column">
+    <Flex bg="black" direction="column" p={1}>
       <Flex
         align="center"
         position="relative"
@@ -198,12 +193,12 @@ export default function PostMain({
       )}
 
       <Flex direction="column" bg="gray.900" borderRadius="0px 0px 10px 10px">
-        <Flex align="center" ml={2.5}>
+        <Flex align="center" ml={2} mt={2}>
           <Text fontSize="13pt" fontWeight="medium" textColor="white">
             {postMainData.description}
           </Text>
         </Flex>
-        <Flex align="center" justify="space-between" p={2}>
+        <Flex align="center" gap={3} p={2}>
           <Flex gap="1">
             {ostensiblePostData.whoLiked.includes(currentUserState.username) ? (
               <Icon
@@ -248,7 +243,13 @@ export default function PostMain({
               />
             )}
 
-            <Text textColor="white">{ostensiblePostData.likeCount}</Text>
+            <Text
+              textColor="white"
+              cursor="pointer"
+              onClick={() => openPanelNameSetter("likes")}
+            >
+              {ostensiblePostData.likeCount}
+            </Text>
           </Flex>
 
           <Flex gap="1">
@@ -257,14 +258,9 @@ export default function PostMain({
               color="white"
               fontSize="25px"
               cursor="pointer"
-              onClick={() => commentPanelOpenStateSetter(true)}
+              onClick={() => openPanelNameSetter("comments")}
             />
             <Text textColor="white">{postMainData.commentCount}</Text>
-          </Flex>
-
-          <Flex gap="1">
-            <Icon as={BiSend} color="white" fontSize="25px" />
-            <Text textColor="white">14</Text>
           </Flex>
         </Flex>
       </Flex>
