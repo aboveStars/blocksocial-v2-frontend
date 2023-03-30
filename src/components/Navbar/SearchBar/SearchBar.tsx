@@ -136,10 +136,10 @@ export default function SearchBar({}: Props) {
           width="100%"
           top="42px"
           minHeight="60px"
-          bg="rgba(0, 0, 0, 0.5)"
-          borderRadius="0px 0px 10px 10px"
+          bg="rgba(0, 0, 0, 0.8)"
           backdropFilter="auto"
           backdropBlur="10px"
+          borderRadius="0px 0px 10px 10px"
           tabIndex={0}
         >
           <Stack mt={1} mb={1}>

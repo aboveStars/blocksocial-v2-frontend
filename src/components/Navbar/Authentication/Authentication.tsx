@@ -10,6 +10,7 @@ import {
   Icon,
   Image,
   SkeletonCircle,
+  Spinner,
   Stack,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
@@ -90,6 +91,10 @@ export default function Authentication() {
             cursor="pointer"
             onClick={() => router.push(`/users/${currentUserState.username}`)}
           />
+        ) : currentUserState.loading ? (
+          <Flex align="center">
+            <Spinner size="md" color="white" />
+          </Flex>
         ) : (
           <>
             <Flex
