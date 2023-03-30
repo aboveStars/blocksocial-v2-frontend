@@ -29,6 +29,7 @@ import { PostMainData } from "../types/Post";
 type Props = {
   postMainData: PostMainData;
   commentPanelOpenStateSetter: React.Dispatch<React.SetStateAction<boolean>>;
+  commentPanelOpenStateValue: boolean;
 };
 
 export default function PostMain({

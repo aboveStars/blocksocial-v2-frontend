@@ -5,21 +5,31 @@ import {
   Icon,
   Image,
   Input,
-  InputGroup,
-  InputLeftElement,
-  InputRightElement,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalOverlay,
   SkeletonCircle,
+  SkeletonText,
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { collection, getDocs } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  orderBy,
+  query,
+  Timestamp,
+} from "firebase/firestore";
 import React, { useEffect, useRef, useState } from "react";
 import { AiOutlineClose, AiOutlineSend } from "react-icons/ai";
+import { BsDot } from "react-icons/bs";
 import { CgProfile } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
 import { CommentData } from "../types/Post";
 import CommentItem from "./CommentItem";
+import CommentItemSkeleton from "./CommentItemSkeleton";
 
 type Props = {
   postCommentsData: {
@@ -28,34 +38,48 @@ type Props = {
     postCommentsColPath: string;
   };
 
+  commentPanelOpenStateValue: boolean;
   commentPanelOpenStateSetter: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function PostComments({
   postCommentsData,
   commentPanelOpenStateSetter,
+  commentPanelOpenStateValue,
 }: Props) {
   const [commentsDatas, setCommentsDatas] = useState<CommentData[]>([]);
+
   const [currentComment, setCurrentComment] = useState("");
 
   const { sendComment } = useSendComment();
 
   const commentInputRef = useRef<HTMLInputElement>(null);
 
-  const currentUserProfilePhoto =
-    useRecoilValue(currentUserStateAtom).profilePhoto;
+  const currentUserState = useRecoilValue(currentUserStateAtom);
+
+  const [gettingComments, setGettingComments] = useState(true);
 
   useEffect(() => {
-    handleLoadComments();
-  }, [postCommentsData]);
+    if (commentPanelOpenStateValue) {
+      console.log("Comments Loading");
+      handleLoadComments();
+    } else {
+      console.log("Prevented Update");
+    }
+  }, [commentPanelOpenStateValue]);
 
   const handleLoadComments = async () => {
     // get comment docs
-    const postCommentsCollectionRef = collection(
+
+    const postCommentsCollection = collection(
       firestore,
       postCommentsData.postCommentsColPath
     );
-    const postCommentsDocs = await getDocs(postCommentsCollectionRef);
+    const commentDocQuery = query(
+      postCommentsCollection,
+      orderBy("creationTime", "desc")
+    );
+    const postCommentsDocs = await getDocs(commentDocQuery);
 
     const commentDatasArray: CommentData[] = [];
 
@@ -63,84 +87,120 @@ export default function PostComments({
       const commentDataObject: CommentData = {
         commentSenderUsername: doc.data().commentSenderUsername,
         comment: doc.data().comment,
+        creationTime: doc.data().creationTime,
       };
+
       commentDatasArray.push(commentDataObject);
     });
 
-    console.log(commentDatasArray);
-
     setCommentsDatas(commentDatasArray);
+    setGettingComments(false);
   };
 
   return (
-    <Flex direction="column" gap={2} p={3} bg="gray.900" rounded="10px">
-      <Flex id="footer" position="relative" align="center" height="45px">
-        <Flex position="absolute" left={0}>
-          <Text as="b" fontSize="15pt" textColor="white">
+    <Modal
+      onClose={() => commentPanelOpenStateSetter(false)}
+      size="full"
+      isOpen={commentPanelOpenStateValue}
+    >
+      <ModalOverlay />
+      <ModalContent bg="black">
+        <Flex
+          position="sticky"
+          top="0"
+          px={6}
+          align="center"
+          justify="space-between"
+          height="50px"
+          bg="black"
+        >
+          <Text textColor="white" fontSize="17pt" fontWeight="700">
             Comments
           </Text>
-        </Flex>
-        <Flex position="absolute" right={0}>
+
           <Icon
             as={AiOutlineClose}
             color="white"
+            fontSize="15pt"
             cursor="pointer"
             onClick={() => commentPanelOpenStateSetter(false)}
           />
         </Flex>
-      </Flex>
-      <Flex id="comments">
-        <Stack gap={1}>
-          {commentsDatas.map((cd) => (
-            <CommentItem key={cd.commentSenderUsername} commentData={cd} />
-          ))}
-        </Stack>
-      </Flex>
-      <Flex id="sendComment" align="center">
-        <InputGroup>
-          <InputLeftElement>
+
+        <ModalBody>
+          <Stack gap={1} hidden={gettingComments}>
+            {commentsDatas.map((cd) => (
+              <CommentItem
+                key={`${cd.commentSenderUsername}${cd.creationTime.seconds}.${cd.creationTime.nanoseconds}`}
+                commentData={cd}
+              />
+            ))}
+          </Stack>
+          <Stack gap={1} hidden={!gettingComments}>
+            {Array.from({ length: 5 }, (_, index) => (
+              <CommentItemSkeleton key={index} />
+            ))}
+          </Stack>
+        </ModalBody>
+
+        <Flex
+          position="sticky"
+          bottom={2}
+          width="100%"
+          height="70px"
+          bg="black"
+          px={3}
+        >
+          <Flex align="center" width="100%" border="1px" rounded="full" p={2}>
             <Image
-              src={currentUserProfilePhoto}
+              src={currentUserState.profilePhoto}
               rounded="full"
-              width="30px"
-              height="30px"
+              width="50px"
+              height="50px"
               fallback={
-                currentUserProfilePhoto ? (
-                  <SkeletonCircle
-                    width="35px"
-                    height="35px"
-                    startColor="gray.100"
-                    endColor="gray.800"
-                  />
+                currentUserState.profilePhoto ? (
+                  <Flex>
+                    <SkeletonCircle
+                      size="50px"
+                      startColor="gray.100"
+                      endColor="gray.800"
+                    />
+                  </Flex>
                 ) : (
                   <Icon
                     as={CgProfile}
                     color="white"
-                    height="35px"
-                    width="35px"
+                    height="50px"
+                    width="50px"
                   />
                 )
               }
             />
-          </InputLeftElement>
-          <Input
-            ref={commentInputRef}
-            placeholder="Add a comment..."
-            textColor="white"
-            focusBorderColor="gray.800"
-            borderColor="gray.800"
-            _hover={{
-              borderColor: "gray.800",
-            }}
-            onChange={(event) => setCurrentComment(event.target.value)}
-            ml="1"
-            height="40px"
-          />
-          <InputRightElement>
+            <Input
+              ref={commentInputRef}
+              placeholder="Add a comment..."
+              _placeholder={{
+                fontSize: "10pt",
+              }}
+              textColor="white"
+              focusBorderColor="gray.900"
+              borderColor="gray.900"
+              _hover={{
+                borderColor: "gray.900",
+              }}
+              onChange={(event) => setCurrentComment(event.target.value)}
+              ml="3"
+              height="40px"
+              rounded="full"
+              tabIndex={-1}
+            />
             <Icon
               as={AiOutlineSend}
               color="white"
+              ml={2}
+              mr={1}
               cursor="pointer"
+              fontSize="20pt"
               onClick={() => {
                 sendComment(
                   postCommentsData.postCommentsColPath,
@@ -149,11 +209,19 @@ export default function PostComments({
                   postCommentsData.postSenderUsername
                 );
                 if (commentInputRef.current) commentInputRef.current.value = "";
+                setCommentsDatas((prev) => [
+                  {
+                    comment: currentComment,
+                    commentSenderUsername: currentUserState.username,
+                    creationTime: new Timestamp(Date.now() / 1000, 0),
+                  },
+                  ...prev,
+                ]);
               }}
             />
-          </InputRightElement>
-        </InputGroup>
-      </Flex>
-    </Flex>
+          </Flex>
+        </Flex>
+      </ModalContent>
+    </Modal>
   );
 }

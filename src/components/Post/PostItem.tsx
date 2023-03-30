@@ -14,21 +14,21 @@ export default function PostItem({ postItemData }: Props) {
 
   return (
     <>
-      {commentPanelOpenState ? (
-        <PostComments
-          postCommentsData={{
-            postCommentsColPath: postItemData.commentsCollectionPath,
-            postSenderUsername: postItemData.senderUsername,
-            postId: postItemData.id,
-          }}
-          commentPanelOpenStateSetter={setCommentPanelOpenState}
-        />
-      ) : (
-        <PostMain
-          postMainData={postMainData}
-          commentPanelOpenStateSetter={setCommentPanelOpenState}
-        />
-      )}
+      <PostComments
+        postCommentsData={{
+          postCommentsColPath: postItemData.commentsCollectionPath,
+          postSenderUsername: postItemData.senderUsername,
+          postId: postItemData.id,
+        }}
+        commentPanelOpenStateSetter={setCommentPanelOpenState}
+        commentPanelOpenStateValue={commentPanelOpenState}
+      />
+
+      <PostMain
+        postMainData={postMainData}
+        commentPanelOpenStateSetter={setCommentPanelOpenState}
+        commentPanelOpenStateValue={commentPanelOpenState}
+      />
     </>
   );
 }

@@ -7,7 +7,9 @@ import {
   getDocs,
   increment,
   query,
+  serverTimestamp,
   setDoc,
+  Timestamp,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -33,6 +35,7 @@ export default function useSendComment() {
     const commentObject: CommentData = {
       commentSenderUsername: currentUserUsername,
       comment: comment,
+      creationTime: serverTimestamp() as Timestamp,
     };
 
     await setDoc(newCommentDocRef, commentObject);

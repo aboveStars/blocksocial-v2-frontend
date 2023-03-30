@@ -35,4 +35,5 @@ export type PostMainData = {
 export type CommentData = {
   commentSenderUsername: string;
   comment: string;
+  creationTime: Timestamp;
 };
