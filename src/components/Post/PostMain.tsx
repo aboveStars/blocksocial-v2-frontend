@@ -106,6 +106,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
   return (
     <Flex bg="black" direction="column" p={1}>
       <Flex
+        id="postHeader"
         align="center"
         position="relative"
         gap={1}
@@ -157,7 +158,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
           </Flex>
         </Flex>
 
-        <Flex position="absolute" right="2">
+        <Flex position="absolute" right="2" id="followButtonOnPost">
           <Button
             variant="solid"
             colorScheme="blue"
@@ -166,7 +167,8 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
             hidden={
               !currentUserState.username ||
               isCurrentUserFollowThisPostSender ||
-              currentUserState.username == postMainData.senderUsername
+              currentUserState.username == postMainData.senderUsername ||
+              router.asPath.includes("users")
             }
           >
             Follow

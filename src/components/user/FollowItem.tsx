@@ -99,7 +99,7 @@ export default function FollowItem({
   };
 
   return (
-    <Flex position="relative" align="center">
+    <Flex align="center" justify="space-between">
       <Flex
         cursor="pointer"
         onClick={() => {
@@ -139,7 +139,7 @@ export default function FollowItem({
         </Flex>
       </Flex>
 
-      <Flex position="absolute" right="1">
+      <Flex>
         <Button
           size="sm"
           variant="solid"

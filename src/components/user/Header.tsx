@@ -13,7 +13,7 @@ import {
   ModalOverlay,
   SkeletonCircle,
   Stack,
-  Text
+  Text,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
@@ -72,8 +72,6 @@ export default function Header({ userInformation }: Props) {
     setWillBeCroppedProfilePhoto,
     onSelectWillBeCroppedProfilePhoto,
   } = useProfilePhoto();
-
-  
 
   const [poorProfilePhoto, setPoorProfilePhoto] = useState(false);
 
@@ -248,6 +246,12 @@ export default function Header({ userInformation }: Props) {
     <>
       <Modal
         id="followings-followers-modal"
+        size={{
+          base: "full",
+          sm: "full",
+          md: "md",
+          lg: "md",
+        }}
         isOpen={followingsFollowersModalState.isOpen}
         onClose={() =>
           setFollowingsFollowesrModalState((prev) => ({
@@ -257,7 +261,7 @@ export default function Header({ userInformation }: Props) {
         }
       >
         <ModalOverlay backdropFilter="auto" backdropBlur="8px" />
-        <ModalContent bg="gray.900">
+        <ModalContent bg="black">
           <ModalHeader>
             <Text color="white">
               "{userInformation.username}" {followingsFollowersModalState.modal}

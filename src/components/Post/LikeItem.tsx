@@ -77,70 +77,72 @@ export default function LikeItem({
   };
 
   return (
-    <Flex height="60px" align="center" gap={2}>
-      <Image
-        src={likerUserInformation.likerProfilePhoto}
-        rounded="full"
-        width="50px"
-        height="50px"
-        cursor="pointer"
-        onClick={() => {
-          router.push(`/users/${likerUsername}`);
-          openPanelNameSetter("main");
-        }}
-        fallback={
-          !!likerUserInformation.likerProfilePhoto ||
-          gettingLikerInformation ? (
-            <SkeletonCircle
-              width="50px"
-              height="50px"
-              startColor="gray.100"
-              endColor="gray.800"
-            />
-          ) : (
-            <Icon
-              as={CgProfile}
-              color="white"
-              height="50px"
-              width="50px"
-              cursor="pointer"
-              onClick={() => {
-                router.push(`/users/${likerUsername}`);
-                openPanelNameSetter("main");
-              }}
-            />
-          )
-        }
-      />
-
-      <Flex
-        direction="column"
-        cursor="pointer"
-        onClick={() => {
-          router.push(`/users/${likerUsername}`);
-          openPanelNameSetter("main");
-        }}
-      >
-        <Text fontSize="13pt" textColor="white" as="b">
-          {likerUsername}
-        </Text>
-        <Text
-          fontSize="10pt"
-          textColor="white"
-          as="i"
-          hidden={gettingLikerInformation}
-        >
-          {likerUserInformation.likerFullname}
-        </Text>
-
-        <SkeletonText
-          noOfLines={1}
-          hidden={!gettingLikerInformation}
-          skeletonHeight="2.5"
-          width="80px"
+    <Flex height="60px" align="center" justify="space-between">
+      <Flex gap={2}>
+        <Image
+          src={likerUserInformation.likerProfilePhoto}
+          rounded="full"
+          width="50px"
+          height="50px"
+          cursor="pointer"
+          onClick={() => {
+            router.push(`/users/${likerUsername}`);
+            openPanelNameSetter("main");
+          }}
+          fallback={
+            !!likerUserInformation.likerProfilePhoto ||
+            gettingLikerInformation ? (
+              <SkeletonCircle
+                width="50px"
+                height="50px"
+                startColor="gray.100"
+                endColor="gray.800"
+              />
+            ) : (
+              <Icon
+                as={CgProfile}
+                color="white"
+                height="50px"
+                width="50px"
+                cursor="pointer"
+                onClick={() => {
+                  router.push(`/users/${likerUsername}`);
+                  openPanelNameSetter("main");
+                }}
+              />
+            )
+          }
         />
+
+        <Flex
+          direction="column"
+          cursor="pointer"
+          onClick={() => {
+            router.push(`/users/${likerUsername}`);
+            openPanelNameSetter("main");
+          }}
+        >
+          <Text fontSize="13pt" textColor="white" as="b">
+            {likerUsername}
+          </Text>
+          <Text
+            fontSize="10pt"
+            textColor="white"
+            as="i"
+            hidden={gettingLikerInformation}
+          >
+            {likerUserInformation.likerFullname}
+          </Text>
+
+          <SkeletonText
+            noOfLines={1}
+            hidden={!gettingLikerInformation}
+            skeletonHeight="2.5"
+            width="80px"
+          />
+        </Flex>
       </Flex>
-      <Flex ml={2}>
+      <Flex id="follow-area">
         <Button
           size="sm"
           variant="solid"
@@ -149,7 +151,8 @@ export default function LikeItem({
           hidden={
             currentUserState.followings.includes(likerUsername) ||
             !!!likerUserInformation.likerFullname ||
-            likerUsername === currentUserState.username
+            likerUsername === currentUserState.username ||
+            router.asPath.includes(likerUsername)
           }
         >
           Follow

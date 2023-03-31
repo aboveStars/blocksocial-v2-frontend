@@ -106,7 +106,12 @@ export default function PostComments({
   return (
     <Modal
       onClose={() => openPanelNameSetter("main")}
-      size="full"
+      size={{
+        base: "full",
+        sm: "full",
+        md: "md",
+        lg: "md",
+      }}
       isOpen={openPanelNameValue === "comments"}
     >
       <ModalOverlay />
@@ -154,12 +159,14 @@ export default function PostComments({
         </ModalBody>
 
         <Flex
+          id="comment-send-area"
           position="sticky"
           bottom={2}
           width="100%"
           height="70px"
           bg="black"
           px={3}
+          hidden={!currentUserState.isThereCurrentUser}
         >
           <Flex align="center" width="100%" border="1px" rounded="full" p={2}>
             <Image
@@ -212,6 +219,7 @@ export default function PostComments({
               cursor="pointer"
               fontSize="20pt"
               onClick={() => {
+                if (currentComment.length === 0) return;
                 sendComment(
                   commentsInfo.postCommentsColPath,
                   currentComment,

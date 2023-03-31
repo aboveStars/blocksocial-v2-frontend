@@ -32,7 +32,12 @@ export default function PostLikes({
   return (
     <Modal
       onClose={() => openPanelNameSetter("main")}
-      size="full"
+      size={{
+        base: "full",
+        sm: "full",
+        md: "md",
+        lg: "md",
+      }}
       isOpen={openPanelNameValue === "likes"}
     >
       <ModalOverlay />
