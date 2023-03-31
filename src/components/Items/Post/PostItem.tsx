@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { OpenPanelName, PostItemData } from "../types/Post";
-import PostComments from "./PostComments";
-import PostLikes from "./PostLikes";
-import PostMain from "./PostMain";
+import { OpenPanelName, PostItemData } from "../../types/Post";
+import PostComments from "../../Modals/Post/PostComments";
+import PostMain from "../../Post/PostMain";
+import PostLikes from "../../Modals/Post/PostLikes";
 
 type Props = {
   postItemData: PostItemData;

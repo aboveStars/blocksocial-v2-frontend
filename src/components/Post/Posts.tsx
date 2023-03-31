@@ -1,5 +1,6 @@
 import { Stack } from "@chakra-ui/react";
-import PostItem from "../Post/PostItem";
+import PostItem from "../Items/Post/PostItem";
+
 import { PostItemData } from "../types/Post";
 
 type Props = {

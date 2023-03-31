@@ -4,7 +4,7 @@ import PostCreateModal from "../Modals/Post/PostCreateModal";
 import { PostItemData } from "../types/Post";
 import { UserInformation } from "../types/User";
 import Header from "../user/Header";
-import Posts from "../user/Posts";
+import Posts from "../Post/Posts";
 
 type Props = {
   userInformation: UserInformation;

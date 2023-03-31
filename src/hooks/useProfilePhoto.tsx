@@ -7,7 +7,7 @@ import {
   ref,
   uploadString,
 } from "firebase/storage";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRecoilState } from "recoil";
 
 export default function useProfilePhoto() {

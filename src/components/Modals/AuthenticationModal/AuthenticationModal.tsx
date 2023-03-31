@@ -26,7 +26,11 @@ export default function AuthenticationModal() {
   };
   return (
     <>
-      <Modal isOpen={authModalState.open} onClose={handleClose}>
+      <Modal
+        isOpen={authModalState.open}
+        onClose={handleClose}
+        autoFocus={false}
+      >
         <ModalOverlay backdropFilter="auto" backdropBlur="5px" />
         <ModalContent>
           <ModalHeader textAlign="center">

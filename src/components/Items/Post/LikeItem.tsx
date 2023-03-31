@@ -14,9 +14,9 @@ import router from "next/router";
 import { SetStateAction, useEffect, useState } from "react";
 import { CgProfile } from "react-icons/cg";
 import { useRecoilState, useSetRecoilState } from "recoil";
-import { authModalStateAtom } from "../atoms/authModalAtom";
-import { currentUserStateAtom } from "../atoms/currentUserAtom";
-import { OpenPanelName } from "../types/Post";
+import { authModalStateAtom } from "../../atoms/authModalAtom";
+import { currentUserStateAtom } from "../../atoms/currentUserAtom";
+import { OpenPanelName } from "../../types/Post";
 
 type Props = {
   likerUsername: string;

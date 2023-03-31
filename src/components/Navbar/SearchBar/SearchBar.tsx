@@ -135,7 +135,6 @@ export default function SearchBar({}: Props) {
           position="absolute"
           width="100%"
           top="42px"
-          minHeight="60px"
           bg="rgba(0, 0, 0, 0.8)"
           backdropFilter="auto"
           backdropBlur="10px"

@@ -24,10 +24,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { AiOutlineClose, AiOutlineSend } from "react-icons/ai";
 import { CgProfile } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
-import { currentUserStateAtom } from "../atoms/currentUserAtom";
-import { CommentData, OpenPanelName } from "../types/Post";
-import CommentItem from "./CommentItem";
-import CommentItemSkeleton from "./CommentItemSkeleton";
+import { currentUserStateAtom } from "../../atoms/currentUserAtom";
+import { CommentData, OpenPanelName } from "../../types/Post";
+import CommentItem from "../../Items/Post/CommentItem";
+import CommentItemSkeleton from "../../Skeletons/CommentItemSkeleton";
 
 type Props = {
   postInfo: {
@@ -113,6 +113,7 @@ export default function PostComments({
         lg: "md",
       }}
       isOpen={openPanelNameValue === "comments"}
+      autoFocus={false}
     >
       <ModalOverlay />
       <ModalContent bg="black">
@@ -209,7 +210,6 @@ export default function PostComments({
               ml="3"
               height="40px"
               rounded="full"
-              tabIndex={-1}
             />
             <Icon
               as={AiOutlineSend}

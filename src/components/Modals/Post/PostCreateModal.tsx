@@ -103,6 +103,7 @@ export default function PostCreateModal({}: Props) {
 
         if (imageInputRef.current) imageInputRef.current.value = "";
       }}
+      autoFocus={false}
     >
       <ModalOverlay backdropFilter="auto" backdropBlur="8px" />
       <ModalContent bg="gray.900">
@@ -181,7 +182,6 @@ export default function PostCreateModal({}: Props) {
                 onCropChange={setCrop}
                 onCropComplete={onCropComplete}
                 onZoomChange={setZoom}
-                
               />
             </Flex>
           </Flex>

@@ -10,10 +10,9 @@ import {
 } from "@chakra-ui/react";
 import { SetStateAction } from "react";
 import { AiOutlineClose } from "react-icons/ai";
-import { OpenPanelName } from "../types/Post";
-import CommentItemSkeleton from "./CommentItemSkeleton";
-import LikeItem from "./LikeItem";
-import LikeItemSkeleton from "./LikeItemSkeleton";
+import { OpenPanelName } from "../../types/Post";
+import LikeItem from "../../Items/Post/LikeItem";
+import LikeItemSkeleton from "../../Skeletons/LikeItemSkeleton";
 
 type Props = {
   likeData: {
@@ -39,6 +38,7 @@ export default function PostLikes({
         lg: "md",
       }}
       isOpen={openPanelNameValue === "likes"}
+      autoFocus={false}
     >
       <ModalOverlay />
       <ModalContent bg="black">
