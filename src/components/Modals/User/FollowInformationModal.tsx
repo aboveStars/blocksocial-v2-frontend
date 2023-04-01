@@ -59,7 +59,7 @@ export default function FollowInformationModal({
           bg="black"
         >
           <Text textColor="white" fontSize="17pt" fontWeight="700">
-            "{ostensibleUserInformation.username}"{" "}
+            "{ostensibleUserInformation.username}"
             {followInformationModalStateValue.modal}
           </Text>
 
