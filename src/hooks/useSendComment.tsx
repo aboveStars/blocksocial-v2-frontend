@@ -4,15 +4,13 @@ import { firestore } from "@/firebase/clientApp";
 import {
   collection,
   doc,
-  getDocs,
   increment,
-  query,
   serverTimestamp,
   setDoc,
   Timestamp,
   updateDoc,
-  where,
 } from "firebase/firestore";
+import { useState } from "react";
 import { useRecoilValue } from "recoil";
 
 export default function useSendComment() {
@@ -25,9 +23,7 @@ export default function useSendComment() {
    */
   const sendComment = async (
     commentCollectionPath: string,
-    comment: string,
-    postId: string,
-    postSenderUserName: string
+    comment: string
   ) => {
     // Send Post
     const newCommentDocRef = doc(collection(firestore, commentCollectionPath));
@@ -39,21 +35,17 @@ export default function useSendComment() {
     };
 
     await setDoc(newCommentDocRef, commentObject);
-    console.log("Comment Sent");
 
     // Update Comment Count
-    const q = query(
-      collection(firestore, `users/${postSenderUserName}/posts/`),
-      where("id", "==", postId)
-    );
-    const postDocId = (await getDocs(q)).docs[0].id;
-    const postDocRef = doc(
-      firestore,
-      `users/${postSenderUserName}/posts/${postDocId}`
-    );
-    await updateDoc(postDocRef, {
+    const commentColPath = commentCollectionPath;
+    const subStringtoDeleteIndex = commentColPath.indexOf("comments");
+    const postDocPath = commentColPath.substring(0, subStringtoDeleteIndex);
+
+    await updateDoc(doc(firestore, postDocPath), {
       commentCount: increment(1),
     });
+
+    console.log("Comment Sent");
   };
   return {
     sendComment,

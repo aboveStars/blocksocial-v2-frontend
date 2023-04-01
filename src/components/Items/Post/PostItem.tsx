@@ -13,23 +13,24 @@ export default function PostItem({ postItemData }: Props) {
 
   const [openPanelName, setOpenPanelName] = useState<OpenPanelName>("main");
 
+  // Update realtime comment count when add or delete (locally)
+  const [commentCount, setCommentCount] = useState(postItemData.commentCount);
+
   return (
     <>
       <PostMain
-        postMainData={postMainData}
+        postMainData={{ ...postMainData, commentCount: commentCount }}
         openPanelNameSetter={setOpenPanelName}
+        commentCountSetter={setCommentCount}
       />
       <PostComments
-        postInfo={{
-          postSenderUsername: postItemData.senderUsername,
-          postId: postItemData.id,
-        }}
         commentsInfo={{
           postCommentsColPath: postItemData.commentsCollectionPath,
-          postCommentCount: postItemData.commentCount,
+          postCommentCount: commentCount,
         }}
         openPanelNameSetter={setOpenPanelName}
         openPanelNameValue={openPanelName}
+        commentCountSetter={setCommentCount}
       />
       <PostLikes
         likeData={{

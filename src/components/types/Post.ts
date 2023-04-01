@@ -38,4 +38,16 @@ export type CommentData = {
   creationTime: Timestamp;
 };
 
+export type CommentDataWithCommentDocPath = {
+  commentDocPath: string;
+  commentSenderUsername: string;
+  comment: string;
+  creationTime: Timestamp;
+};
+
 export type OpenPanelName = "main" | "comments" | "likes";
+
+export type LikeData = {
+  likeCount: number;
+  whoLiked: string[];
+};

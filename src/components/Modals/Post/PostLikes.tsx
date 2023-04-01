@@ -8,17 +8,17 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { SetStateAction } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
-import { OpenPanelName } from "../../types/Post";
+import { LikeData, OpenPanelName } from "../../types/Post";
 import LikeItem from "../../Items/Post/LikeItem";
 import LikeItemSkeleton from "../../Skeletons/LikeItemSkeleton";
+import useSortByUsername from "@/hooks/useSortByUsername";
+import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { useRecoilValue } from "recoil";
 
 type Props = {
-  likeData: {
-    likeCount: number;
-    whoLiked: string[];
-  };
+  likeData: LikeData;
   openPanelNameSetter: React.Dispatch<SetStateAction<OpenPanelName>>;
   openPanelNameValue: OpenPanelName;
 };
@@ -28,6 +28,37 @@ export default function PostLikes({
   openPanelNameSetter,
   openPanelNameValue,
 }: Props) {
+  const [reviewedLikeData, setReviewedLikeData] = useState<LikeData>({
+    likeCount: 0,
+    whoLiked: [],
+  });
+
+  const { sortLikesByUsername } = useSortByUsername();
+
+  const currentUserState = useRecoilValue(currentUserStateAtom);
+
+  useEffect(() => {
+    getLikes();
+  }, [likeData]);
+  /**
+   *  All like information already come with props, but in future, that will not.
+   *Now this is just for sorting likes with our username
+   */
+  const getLikes = () => {
+    if (likeData.whoLiked.includes(currentUserState.username)) {
+      const sortedWhoLiked = sortLikesByUsername(
+        likeData.whoLiked,
+        currentUserState.username
+      );
+      setReviewedLikeData({
+        likeCount: likeData.likeCount,
+        whoLiked: sortedWhoLiked,
+      });
+    } else {
+      setReviewedLikeData(likeData);
+    }
+  };
+
   return (
     <Modal
       onClose={() => openPanelNameSetter("main")}
@@ -65,8 +96,8 @@ export default function PostLikes({
         </Flex>
 
         <ModalBody>
-          <Stack gap={1} hidden={likeData.likeCount === 0}>
-            {likeData.whoLiked.map((w, i) => (
+          <Stack gap={1} hidden={reviewedLikeData.likeCount === 0}>
+            {reviewedLikeData.whoLiked.map((w, i) => (
               <LikeItem
                 likerUsername={w}
                 openPanelNameSetter={openPanelNameSetter}
@@ -74,8 +105,8 @@ export default function PostLikes({
               />
             ))}
           </Stack>
-          <Stack gap={1} hidden={likeData.likeCount !== 0}>
-            {Array.from({ length: likeData.likeCount }, (_, index) => (
+          <Stack gap={1} hidden={reviewedLikeData.likeCount !== 0}>
+            {Array.from({ length: reviewedLikeData.likeCount }, (_, index) => (
               <LikeItemSkeleton key={index} />
             ))}
           </Stack>

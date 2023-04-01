@@ -25,6 +25,7 @@ import { UserInformation } from "../types/User";
 import useAuthOperations from "@/hooks/useSignUpOperations";
 import FollowInformationModal from "../Modals/User/FollowInformationModal";
 import ProfilePhotoUpdateModal from "../Modals/User/ProfilePhotoUpdateModal";
+import useSortByUsername from "@/hooks/useSortByUsername";
 
 type Props = {
   userInformation: UserInformation;
@@ -83,6 +84,9 @@ export default function Header({ userInformation }: Props) {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const { sortFollowersByUsername, sortFollowingsByUsername } =
+    useSortByUsername();
+
   /**
    * userData is already being controlled then, comes here
    * Current user uid, but direcly comes here. So we check it
@@ -120,56 +124,23 @@ export default function Header({ userInformation }: Props) {
   const handleUserInformation = () => {
     let readyUserInformation: UserInformation = userInformation;
     if (userInformation.followings.includes(currentUserState.username)) {
-      const editedFollowingsForIndexChanging = userInformation.followings;
-
-      // get current user index
-      const currentUserIndexAtArray = editedFollowingsForIndexChanging.indexOf(
+      const reviewedFollowings = sortFollowingsByUsername(
+        userInformation.followings,
         currentUserState.username
       );
-
-      // remove current user and return it
-      const currentUserAtArray = editedFollowingsForIndexChanging.splice(
-        currentUserIndexAtArray,
-        1
-      )[0];
-
-      // new index we want our user to put
-      const currentUserRightIndex = 0;
-      // put our user again to array at first place
-      editedFollowingsForIndexChanging.splice(
-        currentUserRightIndex,
-        0,
-        currentUserAtArray
-      );
-
       readyUserInformation = {
         ...readyUserInformation,
-        followings: editedFollowingsForIndexChanging,
+        followings: reviewedFollowings,
       };
     }
     if (userInformation.followers.includes(currentUserState.username)) {
-      const editedFollowersForIndexChanging = userInformation.followers;
-      // get current user index
-      const currentUserIndexAtArray = editedFollowersForIndexChanging.indexOf(
+      const reviewedFollowers = sortFollowersByUsername(
+        userInformation.followers,
         currentUserState.username
       );
-      // remove current user and return it
-      const currentUserAtArray = editedFollowersForIndexChanging.splice(
-        currentUserIndexAtArray,
-        1
-      )[0];
-      // new index we want our user to put
-      const currentUserRightIndex = 0;
-      // put our user again to array at first place
-      editedFollowersForIndexChanging.splice(
-        currentUserRightIndex,
-        0,
-        currentUserAtArray
-      );
-
       readyUserInformation = {
         ...readyUserInformation,
-        followers: editedFollowersForIndexChanging,
+        followers: reviewedFollowers,
       };
     }
 

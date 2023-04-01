@@ -24,10 +24,12 @@ import { useRecoilState, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
 import { OpenPanelName, PostMainData } from "../types/Post";
+import usePostDelete from "@/hooks/usePostDelete";
 
 type Props = {
   postMainData: PostMainData;
   openPanelNameSetter: React.Dispatch<React.SetStateAction<OpenPanelName>>;
+  commentCountSetter : React.Dispatch<React.SetStateAction<number>>
 };
 
 export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
@@ -54,6 +56,9 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
     isCurrentUserFollowThisPostSender,
     setIsCurrentUserFollowThisPostSender,
   ] = useState(true);
+
+  const { postDelete, postDeletionLoading } = usePostDelete();
+  const [isThisPostDeleted, setIsThisPostDeleted] = useState(false);
 
   /**
    * Simply gets postSender's pp and fullname.
@@ -104,7 +109,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
   }, [postMainData, currentUserState]);
 
   return (
-    <Flex bg="black" direction="column" p={1}>
+    <Flex bg="black" direction="column" p={1} hidden={isThisPostDeleted}>
       <Flex
         id="postHeader"
         align="center"
@@ -172,6 +177,19 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
             }
           >
             Follow
+          </Button>
+          <Button
+            variant="outline"
+            colorScheme="red"
+            size="sm"
+            onClick={async () => {
+              await postDelete(postMainData.id);
+              setIsThisPostDeleted(true);
+            }}
+            isLoading={postDeletionLoading}
+            hidden={currentUserState.username !== postMainData.senderUsername}
+          >
+            Delete
           </Button>
         </Flex>
       </Flex>
@@ -254,14 +272,12 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
             </Text>
           </Flex>
 
-          <Flex gap="1">
-            <Icon
-              as={AiOutlineComment}
-              color="white"
-              fontSize="25px"
-              cursor="pointer"
-              onClick={() => openPanelNameSetter("comments")}
-            />
+          <Flex
+            gap="1"
+            cursor="pointer"
+            onClick={() => openPanelNameSetter("comments")}
+          >
+            <Icon as={AiOutlineComment} color="white" fontSize="25px" />
             <Text textColor="white">{postMainData.commentCount}</Text>
           </Flex>
         </Flex>

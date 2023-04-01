@@ -25,16 +25,12 @@ import { AiOutlineClose, AiOutlineSend } from "react-icons/ai";
 import { CgProfile } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
 import { currentUserStateAtom } from "../../atoms/currentUserAtom";
-import { CommentData, OpenPanelName } from "../../types/Post";
+import { CommentDataWithCommentDocPath, OpenPanelName } from "../../types/Post";
 import CommentItem from "../../Items/Post/CommentItem";
 import CommentItemSkeleton from "../../Skeletons/CommentItemSkeleton";
+import useSortByUsername from "@/hooks/useSortByUsername";
 
 type Props = {
-  postInfo: {
-    postSenderUsername: string;
-    postId: string;
-  };
-
   commentsInfo: {
     postCommentCount: number;
     postCommentsColPath: string;
@@ -42,15 +38,17 @@ type Props = {
 
   openPanelNameValue: OpenPanelName;
   openPanelNameSetter: React.Dispatch<React.SetStateAction<OpenPanelName>>;
+  commentCountSetter: React.Dispatch<React.SetStateAction<number>>;
 };
 
 export default function PostComments({
-  postInfo,
   commentsInfo,
   openPanelNameSetter,
   openPanelNameValue,
+  commentCountSetter,
 }: Props) {
-  const [commentsDatas, setCommentsDatas] = useState<CommentData[]>([]);
+  const [commentsDatasWithCommentDocPath, setCommentsDatasWithCommentDocPath] =
+    useState<CommentDataWithCommentDocPath[]>([]);
 
   const [currentComment, setCurrentComment] = useState("");
 
@@ -62,15 +60,15 @@ export default function PostComments({
 
   const [gettingComments, setGettingComments] = useState(true);
 
+  const { sortCommentsByUsername } = useSortByUsername();
+
   useEffect(() => {
-    if (
-      openPanelNameValue === "comments" &&
-      commentsInfo.postCommentCount > 0
-    ) {
-      console.log("Comments Loading");
+    if (openPanelNameValue !== "comments") return;
+
+    if (commentsInfo.postCommentCount > 0) {
       handleLoadComments();
     } else {
-      console.log("Prevented Update");
+      setGettingComments(false);
     }
   }, [openPanelNameValue]);
 
@@ -87,19 +85,33 @@ export default function PostComments({
     );
     const postCommentsDocs = await getDocs(commentDocQuery);
 
-    const commentDatasArray: CommentData[] = [];
+    const commentDatasWithCommentDocPathArray: CommentDataWithCommentDocPath[] =
+      [];
 
     postCommentsDocs.forEach((doc) => {
-      const commentDataObject: CommentData = {
+      const commentDataObject: CommentDataWithCommentDocPath = {
+        commentDocPath: `${commentsInfo.postCommentsColPath}/${doc.id}`,
         commentSenderUsername: doc.data().commentSenderUsername,
         comment: doc.data().comment,
         creationTime: doc.data().creationTime,
       };
 
-      commentDatasArray.push(commentDataObject);
+      commentDatasWithCommentDocPathArray.push(commentDataObject);
     });
 
-    setCommentsDatas(commentDatasArray);
+    // Sorts if there is a current user
+    if (currentUserState.isThereCurrentUser) {
+      const sortedCommentDatasWithCommentDocPathArray = sortCommentsByUsername(
+        commentDatasWithCommentDocPathArray,
+        currentUserState.username
+      );
+
+      setCommentsDatasWithCommentDocPath(
+        sortedCommentDatasWithCommentDocPathArray
+      );
+    } else
+      setCommentsDatasWithCommentDocPath(commentDatasWithCommentDocPathArray);
+
     setGettingComments(false);
   };
 
@@ -141,11 +153,12 @@ export default function PostComments({
 
         <ModalBody>
           <Stack gap={1} hidden={gettingComments}>
-            {commentsDatas.map((cd, i) => (
+            {commentsDatasWithCommentDocPath.map((cdwcdi, i) => (
               <CommentItem
                 key={i}
-                commentData={cd}
+                commentDataWithCommentDocId={cdwcdi}
                 openPanelNameSetter={openPanelNameSetter}
+                commentCountSetter={commentCountSetter}
               />
             ))}
           </Stack>
@@ -206,7 +219,9 @@ export default function PostComments({
               _hover={{
                 borderColor: "gray.900",
               }}
-              onChange={(event) => setCurrentComment(event.target.value)}
+              onChange={(event) => {
+                setCurrentComment(event.target.value);
+              }}
               ml="3"
               height="40px"
               rounded="full"
@@ -220,21 +235,19 @@ export default function PostComments({
               fontSize="20pt"
               onClick={() => {
                 if (currentComment.length === 0) return;
-                sendComment(
-                  commentsInfo.postCommentsColPath,
-                  currentComment,
-                  postInfo.postId,
-                  postInfo.postSenderUsername
-                );
+                sendComment(commentsInfo.postCommentsColPath, currentComment);
                 if (commentInputRef.current) commentInputRef.current.value = "";
-                setCommentsDatas((prev) => [
+                setCommentsDatasWithCommentDocPath((prev) => [
                   {
+                    commentDocPath: "",
                     comment: currentComment,
                     commentSenderUsername: currentUserState.username,
                     creationTime: new Timestamp(Date.now() / 1000, 0),
                   },
                   ...prev,
                 ]);
+
+                commentCountSetter((prev) => prev + 1);
               }}
             />
           </Flex>
