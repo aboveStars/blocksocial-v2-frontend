@@ -8,7 +8,7 @@ import {
   SkeletonText,
   Text,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { AiFillHeart, AiOutlineComment, AiOutlineHeart } from "react-icons/ai";
 import { BsDot, BsImage } from "react-icons/bs";
@@ -29,7 +29,7 @@ import usePostDelete from "@/hooks/usePostDelete";
 type Props = {
   postMainData: PostMainData;
   openPanelNameSetter: React.Dispatch<React.SetStateAction<OpenPanelName>>;
-  commentCountSetter : React.Dispatch<React.SetStateAction<number>>
+  commentCountSetter: React.Dispatch<React.SetStateAction<number>>;
 };
 
 export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
@@ -59,6 +59,8 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
 
   const { postDelete, postDeletionLoading } = usePostDelete();
   const [isThisPostDeleted, setIsThisPostDeleted] = useState(false);
+
+  const imageSkeletonRef = useRef<HTMLDivElement>(null);
 
   /**
    * Simply gets postSender's pp and fullname.
@@ -107,6 +109,12 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
     );
     setIsCurrentUserFollowThisPostSender(followingStatus);
   }, [postMainData, currentUserState]);
+
+  // Skeleton Height Adjustment
+  useEffect(() => {
+    if (imageSkeletonRef.current)
+      imageSkeletonRef.current.style.height = `${imageSkeletonRef.current?.clientWidth}px`;
+  }, []);
 
   return (
     <Flex bg="black" direction="column" p={1} hidden={isThisPostDeleted}>
@@ -200,7 +208,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
           width="100%"
           fallback={
             <Flex align="center" justify="center">
-              <Skeleton height="500px" width="100%" />
+              <Skeleton ref={imageSkeletonRef} height="500px" width="100%" />
               <Icon
                 as={BsImage}
                 position="absolute"
@@ -212,7 +220,12 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
         />
       )}
 
-      <Flex direction="column" bg="gray.900" borderRadius="0px 0px 10px 10px">
+      <Flex
+        id="post-footer"
+        direction="column"
+        bg="gray.900"
+        borderRadius="0px 0px 10px 10px"
+      >
         <Flex align="center" ml={2} mt={2}>
           <Text fontSize="13pt" fontWeight="medium" textColor="white">
             {postMainData.description}

@@ -2,7 +2,14 @@ import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import MainPageLayout from "@/components/Layout/MainPageLayout";
 import { PostItemData } from "@/components/types/Post";
 import { firestore } from "@/firebase/clientApp";
-import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+} from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
 import safeJsonStringify from "safe-json-stringify";
@@ -13,12 +20,18 @@ export default function Home() {
     []
   );
 
+  /**
+   * To make people index colorful, getting famous usernames from database
+   */
+  const getCelebrities = async () => {
+    const cDocRef = doc(firestore, `popular/celebrities`);
+    const cDoc = await getDoc(cDocRef);
+
+    if (cDoc.exists()) return cDoc.data().people;
+    else return "";
+  };
+
   useEffect(() => {
-    if (!currentUserState.username) {
-      console.log("Please Log-In to see somethings");
-      setPostDatasInServer([]);
-      return;
-    }
     handleMainPage();
   }, [currentUserState.username]);
 
@@ -39,11 +52,21 @@ export default function Home() {
   const handleMainPage = async () => {
     // get current user followings
     const currentUserFollowings: string[] = currentUserState.followings;
+    const celebrities = await getCelebrities();
+
+    const mainIndexSource = Array.from(
+      new Set(currentUserFollowings.concat(celebrities))
+    );
+
+    // Filter to celebrities don't see themselves
+    const mainIndexSourceFiltered = mainIndexSource.filter(
+      (u) => u !== currentUserState.username
+    );
 
     // get followings's posts
     let postsDatas: PostItemData[] = [];
 
-    for (const username of currentUserFollowings) {
+    for (const username of mainIndexSourceFiltered) {
       const followedUserPostDatasCollection = collection(
         firestore,
         `users/${username}/posts`
@@ -65,7 +88,7 @@ export default function Home() {
           image: doc.data().image,
           likeCount: doc.data().likeCount,
           whoLiked: doc.data().whoLiked,
-          commentCount : doc.data().commentCount,
+          commentCount: doc.data().commentCount,
           commentsCollectionPath: `users/${doc.data().senderUsername}/posts/${
             doc.id
           }/comments`,

@@ -1,6 +1,6 @@
-import { Box, Flex } from "@chakra-ui/react";
-import { PostItemData } from "../types/Post";
+import { Flex } from "@chakra-ui/react";
 import Posts from "../Post/Posts";
+import { PostItemData } from "../types/Post";
 
 type Props = {
   postItemsDatas: PostItemData[];
