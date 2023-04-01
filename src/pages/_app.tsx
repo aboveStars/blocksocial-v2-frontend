@@ -5,10 +5,12 @@ import Layout from "@/components/Layout/Layout";
 import { theme } from "@/components/chakra/theme";
 import { RecoilRoot } from "recoil";
 import NextNProgress from "nextjs-progressbar";
+import { Analytics } from "@vercel/analytics/react";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
+      <Analytics />
       <RecoilRoot>
         <ChakraProvider theme={theme}>
           <Head>
