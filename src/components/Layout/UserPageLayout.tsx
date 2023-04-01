@@ -1,10 +1,9 @@
-import { Flex, Text } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
 
-import PostCreateModal from "../Modals/Post/PostCreateModal";
+import Posts from "../Post/Posts";
 import { PostItemData } from "../types/Post";
 import { UserInformation } from "../types/User";
 import Header from "../user/Header";
-import Posts from "../Post/Posts";
 
 type Props = {
   userInformation: UserInformation;
@@ -17,7 +16,7 @@ export default function UserPageLayout({
 }: Props) {
   return (
     <>
-      <PostCreateModal />
+      
       <Flex width="100%">
         <Flex
           grow={1}

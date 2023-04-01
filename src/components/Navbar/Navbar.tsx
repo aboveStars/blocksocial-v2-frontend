@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Authentication from "./Authentication/Authentication";
 import PostCreateButton from "./SearchBar/PostCreateButton";
 
+
 import SearchBar from "./SearchBar/SearchBar";
 
 export default function Navbar() {
@@ -95,6 +96,7 @@ export default function Navbar() {
           <SearchBar />
         </Flex>
         <Flex justify="flex-end" width="100%" align="center" gap={3}>
+        
           <PostCreateButton />
           <Authentication />
         </Flex>

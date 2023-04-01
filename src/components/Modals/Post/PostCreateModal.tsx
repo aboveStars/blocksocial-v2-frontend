@@ -15,14 +15,12 @@ import {
   ModalOverlay,
   Text,
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Cropper from "react-easy-crop";
 import { useRecoilState } from "recoil";
 import { postCreateModalStateAtom } from "../../atoms/postCreateModalAtom";
 
-type Props = {};
-
-export default function PostCreateModal({}: Props) {
+export default function PostCreateModal() {
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const [crop, setCrop] = useState({ x: 0, y: 0 });
