@@ -92,7 +92,6 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
   useEffect(() => {
     if (postMainData) {
       handleGetPostSenderData(postMainData.senderUsername);
-      setOstensiblePostData(postMainData);
     }
   }, [postMainData]);
 
@@ -279,7 +278,9 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
             <Text
               textColor="white"
               cursor="pointer"
-              onClick={() => openPanelNameSetter("likes")}
+              onClick={() => {
+                openPanelNameSetter("likes");
+              }}
             >
               {ostensiblePostData.likeCount}
             </Text>
@@ -288,7 +289,9 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
           <Flex
             gap="1"
             cursor="pointer"
-            onClick={() => openPanelNameSetter("comments")}
+            onClick={() => {
+              openPanelNameSetter("comments");
+            }}
           >
             <Icon as={AiOutlineComment} color="white" fontSize="25px" />
             <Text textColor="white">{postMainData.commentCount}</Text>

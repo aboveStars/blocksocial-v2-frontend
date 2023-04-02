@@ -15,6 +15,7 @@ export default function PostItem({ postItemData }: Props) {
 
   // Update realtime comment count when add or delete (locally)
   const [commentCount, setCommentCount] = useState(postItemData.commentCount);
+  
 
   return (
     <>
@@ -35,7 +36,7 @@ export default function PostItem({ postItemData }: Props) {
       <PostLikes
         likeData={{
           likeCount: postItemData.likeCount,
-          whoLiked: postItemData.whoLiked,
+          likeDocPath : postItemData.likeDocPath
         }}
         openPanelNameSetter={setOpenPanelName}
         openPanelNameValue={openPanelName}

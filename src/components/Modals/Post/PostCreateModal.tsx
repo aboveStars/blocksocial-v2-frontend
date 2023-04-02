@@ -14,6 +14,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
+  Textarea,
 } from "@chakra-ui/react";
 import { useCallback, useRef, useState } from "react";
 import Cropper from "react-easy-crop";
@@ -51,7 +52,7 @@ export default function PostCreateModal() {
     image: "",
   });
 
-  const onTextsChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onTextsChanged = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPostCreateForm((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
@@ -111,14 +112,9 @@ export default function PostCreateModal() {
         <ModalCloseButton color="white" />
 
         <ModalBody>
-          <Text color="white">Description</Text>
-          <Input
-            name="description"
-            onChange={onTextsChanged}
-            textColor="white"
-          />
-
-          <Text textColor="white">Photo</Text>
+          <Text textColor="white" mb={1}>
+            Photo
+          </Text>
 
           <Flex
             id="post-image-crop-area"
@@ -237,6 +233,17 @@ export default function PostCreateModal() {
                 onChange={onSelectWillBeCroppedPhoto}
               />
             </>
+          </Flex>
+
+          <Flex direction="column" mt={1} gap="1">
+            <Text color="white">Description</Text>
+            <Textarea
+              resize="vertical"
+              name="description"
+              onChange={onTextsChanged}
+              textColor="white"
+              size="sm"
+            />
           </Flex>
         </ModalBody>
 

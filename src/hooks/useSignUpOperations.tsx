@@ -23,9 +23,7 @@ const useSignUpOperations = () => {
   const [error, setError] = useState("");
 
   const [createUserWithEmailAndPassword, , , signUpBackendError] =
-    useCreateUserWithEmailAndPassword(auth, {
-      sendEmailVerification: true,
-    });
+    useCreateUserWithEmailAndPassword(auth);
 
   const { getFriendlyAuthError } = useAuthErrorCodes();
 

@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 import Authentication from "./Authentication/Authentication";
 import PostCreateButton from "./SearchBar/PostCreateButton";
 
-
 import SearchBar from "./SearchBar/SearchBar";
 
 export default function Navbar() {
@@ -75,7 +74,7 @@ export default function Navbar() {
         width="100%"
         height="50px"
         py="2"
-        px="3"
+        px="7"
         bg="rgba(0, 0, 0, 0.8)"
         backdropFilter="auto"
         backdropBlur="10px"
@@ -96,7 +95,6 @@ export default function Navbar() {
           <SearchBar />
         </Flex>
         <Flex justify="flex-end" width="100%" align="center" gap={3}>
-        
           <PostCreateButton />
           <Authentication />
         </Flex>

@@ -5,6 +5,7 @@ import {
   ModalBody,
   ModalContent,
   ModalOverlay,
+  Spinner,
   Stack,
   Text,
 } from "@chakra-ui/react";
@@ -16,6 +17,8 @@ import LikeItemSkeleton from "../../Skeletons/LikeItemSkeleton";
 import useSortByUsername from "@/hooks/useSortByUsername";
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { useRecoilValue } from "recoil";
+import { doc, getDoc } from "firebase/firestore";
+import { firestore } from "@/firebase/clientApp";
 
 type Props = {
   likeData: LikeData;
@@ -28,35 +31,41 @@ export default function PostLikes({
   openPanelNameSetter,
   openPanelNameValue,
 }: Props) {
-  const [reviewedLikeData, setReviewedLikeData] = useState<LikeData>({
-    likeCount: 0,
-    whoLiked: [],
-  });
+  const [likeDatas, setLikeDatas] = useState<string[]>([]);
 
   const { sortLikesByUsername } = useSortByUsername();
 
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
+  const [gettingLikes, setGettingLikes] = useState(true);
+
   useEffect(() => {
     getLikes();
   }, [likeData]);
-  /**
-   *  All like information already come with props, but in future, that will not.
-   *Now this is just for sorting likes with our username
-   */
-  const getLikes = () => {
-    if (likeData.whoLiked.includes(currentUserState.username)) {
+
+  const getLikes = async () => {
+    setGettingLikes(true);
+    const likeDocRef = doc(firestore, likeData.likeDocPath);
+    const likeDoc = await getDoc(likeDocRef);
+    if (!likeDoc.exists()) {
+      console.log("Post Not Found");
+      setGettingLikes(false);
+      return;
+    }
+
+    let tempLikeDatas = likeDoc.data().whoLiked;
+
+    if (tempLikeDatas.includes(currentUserState.username)) {
       const sortedWhoLiked = sortLikesByUsername(
-        likeData.whoLiked,
+        tempLikeDatas,
         currentUserState.username
       );
-      setReviewedLikeData({
-        likeCount: likeData.likeCount,
-        whoLiked: sortedWhoLiked,
-      });
-    } else {
-      setReviewedLikeData(likeData);
+
+      tempLikeDatas = sortedWhoLiked;
     }
+
+    setLikeDatas(tempLikeDatas);
+    setGettingLikes(false);
   };
 
   return (
@@ -96,8 +105,8 @@ export default function PostLikes({
         </Flex>
 
         <ModalBody>
-          <Stack gap={1} hidden={reviewedLikeData.likeCount === 0}>
-            {reviewedLikeData.whoLiked.map((w, i) => (
+          <Stack gap={1} hidden={gettingLikes}>
+            {likeDatas.map((w, i) => (
               <LikeItem
                 likerUsername={w}
                 openPanelNameSetter={openPanelNameSetter}
@@ -105,11 +114,15 @@ export default function PostLikes({
               />
             ))}
           </Stack>
-          <Stack gap={1} hidden={reviewedLikeData.likeCount !== 0}>
-            {Array.from({ length: reviewedLikeData.likeCount }, (_, index) => (
-              <LikeItemSkeleton key={index} />
-            ))}
-          </Stack>
+
+          <Text
+            fontSize="10pt"
+            textColor="white"
+            hidden={likeDatas.length !== 0 || gettingLikes}
+          >
+            No likes yet.
+          </Text>
+          <Spinner color="white" hidden={!gettingLikes} />
         </ModalBody>
       </ModalContent>
     </Modal>

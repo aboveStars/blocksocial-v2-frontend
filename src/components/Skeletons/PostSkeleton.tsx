@@ -26,6 +26,7 @@ export default function PostSkeleton() {
       width="100%"
       bg="gray.900"
       borderRadius="10px"
+      p="1"
     >
       <Flex id="header-skeleton" align="center" gap={2} height="58px" p={1}>
         <SkeletonCircle size="50px" />

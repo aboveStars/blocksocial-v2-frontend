@@ -58,10 +58,14 @@ export default function FollowInformationModal({
           height="50px"
           bg="black"
         >
-          <Text textColor="white" fontSize="17pt" fontWeight="700">
-            &ldquo;{ostensibleUserInformation.username}&ldquo;
-            {followInformationModalStateValue.modal}
-          </Text>
+          <Flex textColor="white" fontSize="17pt" fontWeight="700" gap={2}>
+            <Text> &ldquo;{ostensibleUserInformation.username}&ldquo;</Text>
+            <Text>
+              {followInformationModalStateValue.modal === "followings"
+                ? "follows"
+                : `${followInformationModalStateValue.modal}`}
+            </Text>
+          </Flex>
 
           <Icon
             as={AiOutlineClose}

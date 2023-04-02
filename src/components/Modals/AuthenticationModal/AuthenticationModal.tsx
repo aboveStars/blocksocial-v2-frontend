@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { useRecoilState } from "recoil";
 import LogIn from "./LogIn";
+import ResetPassword from "./ResetPassword";
 
 import SignUp from "./SignUp";
 
@@ -58,6 +59,7 @@ export default function AuthenticationModal() {
               </Text>
               {authModalState.view == "signUp" && <SignUp />}
               {authModalState.view == "logIn" && <LogIn />}
+              {authModalState.view === "resetPassword" && <ResetPassword />}
             </Flex>
           </ModalBody>
         </ModalContent>

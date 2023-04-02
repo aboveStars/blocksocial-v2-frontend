@@ -67,27 +67,28 @@ export default function Home() {
     let postsDatas: PostItemData[] = [];
 
     for (const username of mainIndexSourceFiltered) {
-      const followedUserPostDatasCollection = collection(
+      const mainIndexSourcePostDatasCollection = collection(
         firestore,
         `users/${username}/posts`
       );
-      const followedUserPostDatasQuery = query(
-        followedUserPostDatasCollection,
+      const mainIndexSourcePostDatasQuery = query(
+        mainIndexSourcePostDatasCollection,
         orderBy("creationTime", "desc")
       );
-      const followedUserPostsDatasSnapshot = await getDocs(
-        followedUserPostDatasQuery
+      const mainIndexSourcePostsDatasSnapshot = await getDocs(
+        mainIndexSourcePostDatasQuery
       );
 
-      const followedUserPostsDatas: PostItemData[] = [];
+      const mainIndexSourcePostsDatas: PostItemData[] = [];
 
-      for (const doc of followedUserPostsDatasSnapshot.docs) {
+      for (const doc of mainIndexSourcePostsDatasSnapshot.docs) {
         const postDataObject: PostItemData = {
           senderUsername: doc.data().senderUsername,
           description: doc.data().description,
           image: doc.data().image,
           likeCount: doc.data().likeCount,
-          whoLiked: doc.data().whoLiked,
+          whoLiked : doc.data().whoLiked,
+          likeDocPath: `users/${doc.data().senderUsername}/posts/${doc.id}`,
           commentCount: doc.data().commentCount,
           commentsCollectionPath: `users/${doc.data().senderUsername}/posts/${
             doc.id
@@ -98,9 +99,9 @@ export default function Home() {
         const serializablePostData: PostItemData = JSON.parse(
           safeJsonStringify(postDataObject)
         );
-        followedUserPostsDatas.push(serializablePostData);
+        mainIndexSourcePostsDatas.push(serializablePostData);
       }
-      postsDatas.push(...followedUserPostsDatas);
+      postsDatas.push(...mainIndexSourcePostsDatas);
     }
 
     // shuffle posts

@@ -69,10 +69,13 @@ export default function PostComments({
       handleLoadComments();
     } else {
       setGettingComments(false);
+      setCommentsDatasWithCommentDocPath([]);
     }
   }, [openPanelNameValue]);
 
   const handleLoadComments = async () => {
+    setGettingComments(true);
+
     // get comment docs
 
     const postCommentsCollection = collection(
@@ -170,6 +173,13 @@ export default function PostComments({
               )
             )}
           </Stack>
+          <Text
+            fontSize="10pt"
+            textColor="white"
+            hidden={!(!gettingComments && commentsInfo.postCommentCount === 0)}
+          >
+            No comments yet.
+          </Text>
         </ModalBody>
 
         <Flex

@@ -1,7 +1,14 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
 import useLoginOperations from "@/hooks/useLoginOperations";
 
-import { Button, Flex, Input, Text } from "@chakra-ui/react";
+import {
+  Button,
+  Flex,
+  FormControl,
+  FormLabel,
+  Input,
+  Text,
+} from "@chakra-ui/react";
 import React, { useState } from "react";
 import { useSetRecoilState } from "recoil";
 
@@ -31,40 +38,45 @@ export default function LogIn() {
   return (
     <>
       <form onSubmit={onSubmit}>
-        <Input
-          required
-          name="email"
-          placeholder="Email"
-          type="email"
-          mb={2}
-          onChange={onChange}
-          _placeholder={{
-            color: "gray.500",
-            fontSize: "10pt",
-          }}
-          _hover={{
-            border: "1px solid",
-            borderColor: "blue.500",
-          }}
-          bg="gray.50"
-        />
-        <Input
-          required
-          name="password"
-          placeholder="Password"
-          type="password"
-          mb={1}
-          onChange={onChange}
-          _placeholder={{
-            color: "gray.500",
-            fontSize: "10pt",
-          }}
-          _hover={{
-            border: "1px solid",
-            borderColor: "blue.500",
-          }}
-          bg="gray.50"
-        />
+        <Flex direction="column" gap={1}>
+          <FormControl variant="floating">
+            <Input
+              required
+              name="email"
+              placeholder=" "
+              type="email"
+              mb={2}
+              onChange={onChange}
+              _hover={{
+                border: "1px solid",
+                borderColor: "blue.500",
+              }}
+              bg="gray.50"
+            />
+            <FormLabel textColor="gray.500" fontSize="10pt">
+              Email
+            </FormLabel>
+          </FormControl>
+
+          <FormControl variant="floating">
+            <Input
+              required
+              name="password"
+              placeholder=" "
+              type="password"
+              mb={1}
+              onChange={onChange}
+              _hover={{
+                border: "1px solid",
+                borderColor: "blue.500",
+              }}
+              bg="gray.50"
+            />
+            <FormLabel textColor="gray.500" fontSize="10pt">
+              Password
+            </FormLabel>
+          </FormControl>
+        </Flex>
 
         <Button
           width="100%"
@@ -88,7 +100,7 @@ export default function LogIn() {
         </Text>
 
         <Flex fontSize="9pt" justify="center">
-          <Text mr={1}>New Here?</Text>
+          <Text mr={1}>New here?</Text>
           <Text
             color="blue.500"
             fontWeight={700}
@@ -101,7 +113,7 @@ export default function LogIn() {
           </Text>
         </Flex>
         <Flex fontSize="9pt" justify="center">
-          <Text mr={1}>Forgot Password?</Text>
+          <Text mr={1}>Forgot password?</Text>
           <Text
             color="blue.500"
             fontWeight={700}

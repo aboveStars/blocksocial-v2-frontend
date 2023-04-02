@@ -12,6 +12,7 @@ export type PostItemData = {
   image: string;
   likeCount: number;
   whoLiked: string[];
+  likeDocPath: string;
   commentCount: number;
   commentsCollectionPath: string;
 
@@ -49,5 +50,5 @@ export type OpenPanelName = "main" | "comments" | "likes";
 
 export type LikeData = {
   likeCount: number;
-  whoLiked: string[];
+  likeDocPath: string;
 };

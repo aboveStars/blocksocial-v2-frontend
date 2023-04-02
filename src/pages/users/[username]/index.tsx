@@ -83,7 +83,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       description: doc.data().description,
       image: doc.data().image,
       likeCount: doc.data().likeCount,
-      whoLiked: doc.data().whoLiked,
+      whoLiked : doc.data().whoLiked,
+      likeDocPath: `users/${doc.data().senderUsername}/posts/${doc.id}`,
       commentCount: doc.data().commentCount,
       commentsCollectionPath: `users/${doc.data().senderUsername}/posts/${
         doc.id

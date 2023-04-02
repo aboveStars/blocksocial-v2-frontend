@@ -4,6 +4,8 @@ import useAuthOperations from "@/hooks/useSignUpOperations";
 import {
   Button,
   Flex,
+  FormControl,
+  FormLabel,
   Icon,
   Input,
   InputGroup,
@@ -39,20 +41,36 @@ export default function SignUp() {
 
   const [passwordWeak, setPassordWeak] = useState(false);
 
+  const [fullnameRight, setFullnameRight] = useState(true);
+
+  const [emailRight, setEmailRight] = useState(true);
+
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
     // Checking all requirements, again beacuse I don't trust react
+
+    const emailRegex =
+      /^[A-Za-z0-9._%+-]+@(gmail|yahoo|outlook|aol|icloud|protonmail|yandex|mail|zoho)\.(com|net|org)$/i;
+    if (!emailRegex.test(signUpForm.email)) {
+      setEmailRight(false);
+      return;
+    }
+    const fullnameRegex = /^[\p{L}_ ]{3,20}$/u;
+    if (!fullnameRegex.test(signUpForm.fullname)) {
+      setFullnameRight(false);
+      return;
+    }
     const usernameRegex = /^[a-z0-9]+$/;
     if (!usernameRegex.test(signUpForm.username)) {
-      setUserNameTakenState((prev) => true);
+      setUserNameTakenState(true);
       return;
     }
 
     const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
     if (!passwordRegex.test(signUpForm.password)) {
-      setPassordWeak((prev) => true);
+      setPassordWeak(true);
       return;
     }
 
@@ -67,10 +85,22 @@ export default function SignUp() {
   const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     setError((prev) => "");
 
+    if (event.target.name === "email") {
+      const emailRegex =
+        /^[A-Za-z0-9._%+-]+@(gmail|yahoo|outlook|aol|icloud|protonmail|yandex|mail|zoho)\.(com|net|org)$/i;
+
+      if (!emailRegex.test(event.target.value)) {
+        setEmailRight(false);
+      } else {
+        setEmailRight(true);
+      }
+    }
+
     if (event.target.name === "username") {
       setUsernameLowercaseValue(event.target.value.toLowerCase());
       let regexFailFlag = false;
-      const usernameRegex = /^[a-z0-9]+$/;
+      const usernameRegex = /^[a-z0-9_]{3,18}$/;
+
       if (!usernameRegex.test(event.target.value.toLowerCase())) {
         setUserNameTakenState((prev) => true);
         regexFailFlag = true;
@@ -81,6 +111,16 @@ export default function SignUp() {
 
         if (isTaken !== undefined) setUserNameTakenState((prev) => isTaken);
         setUserNameTakenStateLoading((prev) => false);
+      }
+    }
+
+    if (event.target.name === "fullname") {
+      const fullnameRegex = /^[\p{L}_ ]{3,20}$/u;
+
+      if (!fullnameRegex.test(event.target.value)) {
+        setFullnameRight(false);
+      } else {
+        setFullnameRight(true);
       }
     }
 
@@ -100,107 +140,153 @@ export default function SignUp() {
   return (
     <>
       <form onSubmit={onSubmit}>
-        <Input
-          required
-          name="email"
-          placeholder="E-Mail"
-          type="email"
-          mb={2}
-          onChange={onChange}
-          _placeholder={{
-            color: "gray.500",
-            fontSize: "10pt",
-          }}
-          _hover={{
-            border: "1px solid",
-            borderColor: "blue.500",
-          }}
-          bg="gray.50"
-        />
-        <Input
-          required
-          name="fullname"
-          placeholder="Full Name"
-          type="text"
-          mb={2}
-          onChange={onChange}
-          _placeholder={{
-            color: "gray.500",
-            fontSize: "10pt",
-          }}
-          _hover={{
-            border: "1px solid",
-            borderColor: "blue.500",
-          }}
-          bg="gray.50"
-        />
-
-        <InputGroup>
-          <InputRightElement>
-            {userNameTakenStateLoading ? (
-              <Spinner size="sm" ml={1.5} />
-            ) : userNameTakenState ? (
-              <Icon ml={5} as={BiError} fontSize="20px" mr={3} color="red" />
-            ) : signUpForm.username ? (
-              <Icon
-                ml={5}
-                as={AiOutlineCheckCircle}
-                fontSize="20px"
-                mr={3}
-                color="green"
+        <Flex gap={1} direction="column">
+          <InputGroup>
+            <FormControl variant="floating">
+              <Input
+                id="email-input"
+                required
+                name="email"
+                type="email"
+                mb={2}
+                onChange={onChange}
+                _hover={{
+                  border: "1px solid",
+                  borderColor: "blue.500",
+                }}
+                borderColor={emailRight ? "gray.200" : "red"}
+                bg="gray.50"
+                placeholder=" "
+                fontSize="10pt"
               />
-            ) : (
-              <></>
-            )}
-          </InputRightElement>
-          <Input
-            required
-            name="username"
-            placeholder="Username"
-            type="text"
-            mb={2}
-            value={userNameLowerCaseValue}
-            onChange={onChange}
-            borderColor={userNameTakenState ? "red" : "gray.200"}
-            _placeholder={{
-              color: "gray.500",
-              fontSize: "10pt",
-            }}
-            _hover={{
-              border: "1px solid",
-              borderColor: "blue.500",
-            }}
-            bg="gray.50"
-          />
-        </InputGroup>
+              <FormLabel textColor="gray.500" fontSize="10pt">
+                Email
+              </FormLabel>
 
-        <InputGroup>
-          <InputRightElement>
-            {passwordWeak && (
-              <Icon ml={5} as={BiError} fontSize="20px" mr={3} color="red" />
-            )}
-          </InputRightElement>
+              <InputRightElement>
+                {!emailRight && (
+                  <Icon
+                    ml={5}
+                    as={BiError}
+                    fontSize="20px"
+                    mr={3}
+                    color="red"
+                  />
+                )}
+              </InputRightElement>
+            </FormControl>
+          </InputGroup>
 
-          <Input
-            required
-            name="password"
-            placeholder="Password"
-            type="password"
-            mb={1}
-            onChange={onChange}
-            borderColor={passwordWeak ? "red" : "gray.200"}
-            _placeholder={{
-              color: "gray.500",
-              fontSize: "10pt",
-            }}
-            _hover={{
-              border: "1px solid",
-              borderColor: "blue.500",
-            }}
-            bg="gray.50"
-          />
-        </InputGroup>
+          <InputGroup>
+            <FormControl variant="floating">
+              <Input
+                id="fullname-input"
+                required
+                name="fullname"
+                type="text"
+                mb={2}
+                onChange={onChange}
+                _hover={{
+                  border: "1px solid",
+                  borderColor: "blue.500",
+                }}
+                borderColor={fullnameRight ? "gray.200" : "red"}
+                bg="gray.50"
+                placeholder=" "
+              />
+              <FormLabel
+                htmlFor="email-input"
+                textColor="gray.500"
+                fontSize="10pt"
+              >
+                Full Name
+              </FormLabel>
+            </FormControl>
 
+            <InputRightElement>
+              {!fullnameRight && (
+                <Icon ml={5} as={BiError} fontSize="20px" mr={3} color="red" />
+              )}
+            </InputRightElement>
+          </InputGroup>
+
+          <InputGroup>
+            <InputRightElement>
+              {userNameTakenStateLoading ? (
+                <Spinner size="sm" ml={1.5} />
+              ) : userNameTakenState ? (
+                <Icon ml={5} as={BiError} fontSize="20px" mr={3} color="red" />
+              ) : signUpForm.username ? (
+                <Icon
+                  ml={5}
+                  as={AiOutlineCheckCircle}
+                  fontSize="20px"
+                  mr={3}
+                  color="green"
+                />
+              ) : (
+                <></>
+              )}
+            </InputRightElement>
+            <FormControl variant="floating">
+              <Input
+                id="username-input"
+                required
+                name="username"
+                type="text"
+                mb={2}
+                value={userNameLowerCaseValue}
+                onChange={onChange}
+                borderColor={userNameTakenState ? "red" : "gray.200"}
+                _hover={{
+                  border: "1px solid",
+                  borderColor: "blue.500",
+                }}
+                bg="gray.50"
+                placeholder=" "
+              />
+              <FormLabel
+                htmlFor="email-input"
+                textColor="gray.500"
+                fontSize="10pt"
+              >
+                Username
+              </FormLabel>
+            </FormControl>
+          </InputGroup>
+
+          <InputGroup>
+            <InputRightElement>
+              {passwordWeak && (
+                <Icon ml={5} as={BiError} fontSize="20px" mr={3} color="red" />
+              )}
+            </InputRightElement>
+            <FormControl variant="floating">
+              <Input
+                id="password-input"
+                required
+                name="password"
+                type="password"
+                mb={1}
+                onChange={onChange}
+                borderColor={passwordWeak ? "red" : "gray.200"}
+                _hover={{
+                  border: "1px solid",
+                  borderColor: "blue.500",
+                }}
+                bg="gray.50"
+                placeholder=" "
+              />
+              <FormLabel
+                htmlFor="email-input"
+                textColor="gray.500"
+                fontSize="10pt"
+              >
+                Password
+              </FormLabel>
+            </FormControl>
+          </InputGroup>
+        </Flex>
         <Button
           width="100%"
           height="36px"
@@ -210,7 +296,9 @@ export default function SignUp() {
           textColor="white"
           type="submit"
           isLoading={onSignUpLoading || userNameTakenStateLoading}
-          isDisabled={userNameTakenState || passwordWeak}
+          isDisabled={
+            userNameTakenState || passwordWeak || !fullnameRight || !emailRight
+          }
           _hover={{
             bg: !userNameTakenState && "black",
             textColor: !userNameTakenState && "white",

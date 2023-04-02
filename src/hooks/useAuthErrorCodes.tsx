@@ -295,8 +295,7 @@ const useAuthErrorCodes = () => {
         return response;
 
       case "auth/user-not-found":
-        response =
-          "There is no existing user record corresponding to the provided identifier.";
+        response = "User not found.";
         return response;
 
       default:

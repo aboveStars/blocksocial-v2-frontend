@@ -23,7 +23,7 @@ export default function Footer() {
         }}
       >
         <Text as="b" textColor="gray.300" fontSize="8pt">
-          Give ⭐️ at GitHub
+          Give ⭐️ on GitHub
         </Text>
       </Flex>
       <Text as="i" textColor="gray.400" fontSize="5pt">
