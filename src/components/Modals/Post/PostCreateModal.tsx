@@ -102,6 +102,12 @@ export default function PostCreateModal() {
 
         if (imageInputRef.current) imageInputRef.current.value = "";
       }}
+      size={{
+        base: "full",
+        sm: "full",
+        md: "md",
+        lg: "md",
+      }}
       autoFocus={false}
     >
       <ModalOverlay backdropFilter="auto" backdropBlur="8px" />

@@ -15,7 +15,7 @@ export default function Posts({ postsItemDatas }: Props) {
     <>
       <Stack gap={3} mt={2} width="100%">
         {postsItemDatas.length === 0 && !router.asPath.includes("users") ? (
-          Array.from({ length: 5 }, (_, index) => <PostSkeleton key={index} />)
+          Array.from({ length: 2 }, (_, index) => <PostSkeleton key={index} />)
         ) : (
           <>
             {postsItemDatas.map((postItemData, index) => (

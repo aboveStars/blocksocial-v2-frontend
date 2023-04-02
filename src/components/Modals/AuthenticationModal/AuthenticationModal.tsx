@@ -40,21 +40,9 @@ export default function AuthenticationModal() {
             {authModalState.view == "resetPassword" && "Reset Password"}
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Flex
-              direction="column"
-              align="center"
-              justifyContent="center"
-              justify="center"
-              width="70%"
-              pb="6"
-            >
-              <Text fontSize="2xl" fontWeight={700} mb={5}>
+          <ModalBody>
+            <Flex direction="column" pb="6">
+              <Text fontSize="2xl" fontWeight={700} mb={5} align="center">
                 BlockSocial
               </Text>
               {authModalState.view == "signUp" && <SignUp />}

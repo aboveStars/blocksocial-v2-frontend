@@ -157,7 +157,7 @@ export default function SignUp() {
                 borderColor={emailRight ? "gray.200" : "red"}
                 bg="gray.50"
                 placeholder=" "
-                fontSize="10pt"
+
               />
               <FormLabel textColor="gray.500" fontSize="10pt">
                 Email
