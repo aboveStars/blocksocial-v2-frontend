@@ -1,11 +1,12 @@
 import React from "react";
 
-type Props = {};
-
-export default function SystemStatus({}: Props) {
+export default function SystemStatus() {
   return (
     <div>
-      <script src="https://blocksocial.statuspage.io/embed/script.js"></script>
+      <script
+        async
+        src="https://blocksocial.statuspage.io/embed/script.js"
+      ></script>
     </div>
   );
 }
