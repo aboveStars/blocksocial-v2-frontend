@@ -16,7 +16,6 @@ export default function UserPageLayout({
 }: Props) {
   return (
     <>
-      
       <Flex width="100%">
         <Flex
           grow={1}

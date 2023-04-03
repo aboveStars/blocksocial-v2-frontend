@@ -144,7 +144,6 @@ export default function SignUp() {
           <InputGroup>
             <FormControl variant="floating">
               <Input
-                id="email-input"
                 required
                 name="email"
                 type="email"
@@ -157,7 +156,6 @@ export default function SignUp() {
                 borderColor={emailRight ? "gray.200" : "red"}
                 bg="gray.50"
                 placeholder=" "
-
               />
               <FormLabel textColor="gray.500" fontSize="10pt">
                 Email
@@ -180,7 +178,6 @@ export default function SignUp() {
           <InputGroup>
             <FormControl variant="floating">
               <Input
-                id="fullname-input"
                 required
                 name="fullname"
                 type="text"
@@ -230,7 +227,6 @@ export default function SignUp() {
             </InputRightElement>
             <FormControl variant="floating">
               <Input
-                id="username-input"
                 required
                 name="username"
                 type="text"
@@ -263,7 +259,6 @@ export default function SignUp() {
             </InputRightElement>
             <FormControl variant="floating">
               <Input
-                id="password-input"
                 required
                 name="password"
                 type="password"

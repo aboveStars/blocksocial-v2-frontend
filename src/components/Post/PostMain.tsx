@@ -1,8 +1,19 @@
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   Button,
   Flex,
   Icon,
+  IconButton,
   Image,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Skeleton,
   SkeletonCircle,
   SkeletonText,
@@ -10,7 +21,12 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 
-import { AiFillHeart, AiOutlineComment, AiOutlineHeart } from "react-icons/ai";
+import {
+  AiFillHeart,
+  AiOutlineComment,
+  AiOutlineHeart,
+  AiOutlineMenu,
+} from "react-icons/ai";
 import { BsDot, BsImage } from "react-icons/bs";
 
 import { firestore } from "@/firebase/clientApp";
@@ -61,6 +77,9 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
   const [isThisPostDeleted, setIsThisPostDeleted] = useState(false);
 
   const imageSkeletonRef = useRef<HTMLDivElement>(null);
+
+  const leastDestructiveRef = useRef<HTMLButtonElement>(null);
+  const [showDeleteUserDialog, setShowDeleteUserDialog] = useState(false);
 
   /**
    * Simply gets postSender's pp and fullname.
@@ -170,7 +189,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
           </Flex>
         </Flex>
 
-        <Flex position="absolute" right="2" id="followButtonOnPost">
+        <Flex position="absolute" right="3" id="followButtonOnPost">
           <Button
             variant="solid"
             colorScheme="blue"
@@ -185,19 +204,71 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
           >
             Follow
           </Button>
-          <Button
-            variant="outline"
-            colorScheme="red"
-            size="sm"
-            onClick={async () => {
-              await postDelete(postMainData.id);
-              setIsThisPostDeleted(true);
-            }}
-            isLoading={postDeletionLoading}
+
+          <Flex
             hidden={currentUserState.username !== postMainData.senderUsername}
+            width="100%"
           >
-            Delete
-          </Button>
+            <Menu computePositionOnMount>
+              <MenuButton>
+                <Icon as={AiOutlineMenu} color="white" />
+              </MenuButton>
+              <MenuList>
+                <MenuItem onClick={() => openPanelNameSetter("nft")}>
+                  Make NFT
+                </MenuItem>
+                <MenuItem onClick={() => setShowDeleteUserDialog(true)}>
+                  Delete
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Flex>
+
+          <AlertDialog
+            isOpen={showDeleteUserDialog}
+            leastDestructiveRef={leastDestructiveRef}
+            onClose={() => setShowDeleteUserDialog(false)}
+            returnFocusOnClose={false}
+          >
+            <AlertDialogOverlay>
+              <AlertDialogContent>
+                <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                  Delete Post
+                </AlertDialogHeader>
+
+                <AlertDialogBody>
+                  Are you sure? You can't undo this action afterwards.
+                </AlertDialogBody>
+
+                <AlertDialogFooter gap={2}>
+                  <Button
+                    ref={leastDestructiveRef}
+                    onClick={() => setShowDeleteUserDialog(false)}
+                    variant="solid"
+                    size="md"
+                    colorScheme="blue"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="outline"
+                    colorScheme="red"
+                    size="md"
+                    onClick={async () => {
+                      await postDelete(postMainData.id);
+                      setIsThisPostDeleted(true);
+                    }}
+                    isLoading={postDeletionLoading}
+                    hidden={
+                      currentUserState.username !== postMainData.senderUsername
+                    }
+                  >
+                    Delete
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialogOverlay>
+          </AlertDialog>
         </Flex>
       </Flex>
 

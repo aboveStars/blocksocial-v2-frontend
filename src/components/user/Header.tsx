@@ -26,6 +26,7 @@ import useAuthOperations from "@/hooks/useSignUpOperations";
 import FollowInformationModal from "../Modals/User/FollowInformationModal";
 import ProfilePhotoUpdateModal from "../Modals/User/ProfilePhotoUpdateModal";
 import useSortByUsername from "@/hooks/useSortByUsername";
+import NFTAdministrationPanel from "../Modals/User/NFTAdministrationPanel";
 
 type Props = {
   userInformation: UserInformation;
@@ -86,6 +87,9 @@ export default function Header({ userInformation }: Props) {
 
   const { sortFollowersByUsername, sortFollowingsByUsername } =
     useSortByUsername();
+
+  const [nftAdministrationPanelShow, setNftAdministrationPanelShow] =
+    useState(false);
 
   /**
    * userData is already being controlled then, comes here
@@ -194,12 +198,6 @@ export default function Header({ userInformation }: Props) {
 
   return (
     <>
-      <FollowInformationModal
-        followInformationModalStateSetter={setFollowingsFollowesrModalState}
-        followInformationModalStateValue={followingsFollowersModalState}
-        ostensibleUserInformation={ostensibleUserInformation}
-      />
-
       <ProfilePhotoUpdateModal
         modifyingSetter={setModifying}
         ostensibleUserInformationValue={ostensibleUserInformation}
@@ -218,6 +216,18 @@ export default function Header({ userInformation }: Props) {
         type="file"
         hidden
         onChange={onSelectWillBeCroppedProfilePhoto}
+      />
+
+      <FollowInformationModal
+        followInformationModalStateSetter={setFollowingsFollowesrModalState}
+        followInformationModalStateValue={followingsFollowersModalState}
+        ostensibleUserInformation={ostensibleUserInformation}
+      />
+
+      <NFTAdministrationPanel
+        nftAdministrationPanelOpenSetter={setNftAdministrationPanelShow}
+        nftAdministrationPanelOpenValue={nftAdministrationPanelShow}
+        currentUserUsername = {currentUserState.username}
       />
 
       <Flex direction="column" justify="center" align="center" mt={3}>
@@ -385,7 +395,15 @@ export default function Header({ userInformation }: Props) {
 
         {isCurrentUserPage && (
           <Flex align="center">
-            <Flex mt={3}>
+            <Flex mt={3} direction="column" gap={2}>
+              <Button
+                size="sm"
+                variant="solid"
+                colorScheme="cyan"
+                onClick={() => setNftAdministrationPanelShow(true)}
+              >
+                NFT
+              </Button>
               <Button
                 variant="outline"
                 colorScheme="red"

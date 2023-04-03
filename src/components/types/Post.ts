@@ -20,6 +20,16 @@ export type PostItemData = {
   id: string;
 };
 
+export type SmallPostItemData = {
+  description: string;
+  image: string;
+  likeCount: number;
+
+  commentCount: number;
+
+  creationTime: Timestamp;
+};
+
 export type PostMainData = {
   senderUsername: string;
 
@@ -46,9 +56,16 @@ export type CommentDataWithCommentDocPath = {
   creationTime: Timestamp;
 };
 
-export type OpenPanelName = "main" | "comments" | "likes";
+export type OpenPanelName = "main" | "comments" | "likes" | "nft";
 
 export type LikeData = {
   likeCount: number;
   likeDocPath: string;
 };
+
+export type SendNftStatus =
+  | "initial"
+  | "sendingRequest"
+  | "waitingForConfirmation"
+  | "updatingPost"
+  | "final";

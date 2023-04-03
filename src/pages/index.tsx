@@ -54,6 +54,11 @@ export default function Home() {
     const currentUserFollowings: string[] = currentUserState.followings;
     const celebrities = await getCelebrities();
 
+    if (currentUserFollowings.length === 0 && celebrities.length === 0) {
+      console.log("Poor index");
+      return;
+    }
+
     const mainIndexSource = Array.from(
       new Set(currentUserFollowings.concat(celebrities))
     );
@@ -87,7 +92,7 @@ export default function Home() {
           description: doc.data().description,
           image: doc.data().image,
           likeCount: doc.data().likeCount,
-          whoLiked : doc.data().whoLiked,
+          whoLiked: doc.data().whoLiked,
           likeDocPath: `users/${doc.data().senderUsername}/posts/${doc.id}`,
           commentCount: doc.data().commentCount,
           commentsCollectionPath: `users/${doc.data().senderUsername}/posts/${

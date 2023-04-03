@@ -3,6 +3,7 @@ import { OpenPanelName, PostItemData } from "../../types/Post";
 import PostComments from "../../Modals/Post/PostComments";
 import PostMain from "../../Post/PostMain";
 import PostLikes from "../../Modals/Post/PostLikes";
+import PostMakeNFT from "@/components/Modals/Post/PostMakeNFT";
 
 type Props = {
   postItemData: PostItemData;
@@ -15,7 +16,6 @@ export default function PostItem({ postItemData }: Props) {
 
   // Update realtime comment count when add or delete (locally)
   const [commentCount, setCommentCount] = useState(postItemData.commentCount);
-  
 
   return (
     <>
@@ -36,10 +36,14 @@ export default function PostItem({ postItemData }: Props) {
       <PostLikes
         likeData={{
           likeCount: postItemData.likeCount,
-          likeDocPath : postItemData.likeDocPath
+          likeDocPath: postItemData.likeDocPath,
         }}
         openPanelNameSetter={setOpenPanelName}
         openPanelNameValue={openPanelName}
+      />
+      <PostMakeNFT
+        openPanelNameValue={openPanelName}
+        openPanelNameValueSetter={setOpenPanelName}
       />
     </>
   );
