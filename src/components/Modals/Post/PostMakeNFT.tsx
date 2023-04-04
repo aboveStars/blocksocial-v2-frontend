@@ -1,10 +1,10 @@
 import { OpenPanelName, SendNftStatus } from "@/components/types/Post";
 import { fakeWaiting } from "@/components/utils/FakeWaiting";
+import useSmartContractTransactions from "@/hooks/useSmartContractTransactions";
 import {
   Button,
   Flex,
   Icon,
-  Link,
   Modal,
   ModalBody,
   ModalContent,
@@ -33,6 +33,9 @@ export default function PostMakeNFT({
   const [confirmed, setConfirmed] = useState(false);
   const [postUpdated, setPostUpdated] = useState(false);
 
+  const { getTokenCount, getTokenURI, mintNft } =
+    useSmartContractTransactions();
+
   const handleSendNFT = async () => {
     console.log("Sending NFT Process started");
     setSendNftStatus("sendingRequest");
@@ -48,6 +51,14 @@ export default function PostMakeNFT({
     setPostUpdated(true);
 
     setSendNftStatus("final");
+
+    const tc = await getTokenCount();
+    console.log("Token Count:", tc);
+
+    const tokenUri = await getTokenURI(Number(tc) - 1);
+    console.log("Last token uri:", tokenUri);
+
+
   };
 
   useEffect(() => {
