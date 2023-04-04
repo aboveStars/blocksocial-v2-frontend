@@ -1,11 +1,11 @@
-import { Contract, ethers } from "ethers";
+import { ethers } from "ethers";
 
-const contractAddress = "0x78B8CC3260f06822Bd98c74165BB67DCEE01753A";
 import contractAbi from "./ContractABI.json";
+import { mumbaiContractAddress } from "./ContractAddresses";
 
 const provider = new ethers.AlchemyProvider(
-  "sepolia",
-  process.env.NEXT_PUBLIC_SEPOLIA_API
+  "maticmum",
+  process.env.NEXT_PUBLIC_MUMBAI_API
 );
 
 const wallet = new ethers.Wallet(
@@ -14,7 +14,7 @@ const wallet = new ethers.Wallet(
 );
 
 const blockSocialSmartContract = new ethers.Contract(
-  contractAddress,
+  mumbaiContractAddress,
   contractAbi.abi,
   wallet
 );

@@ -1,4 +1,8 @@
-import { OpenPanelName, SendNftStatus } from "@/components/types/Post";
+import {
+  OpenPanelName,
+  PostMainData,
+  SendNftStatus,
+} from "@/components/types/Post";
 import { fakeWaiting } from "@/components/utils/FakeWaiting";
 import useSmartContractTransactions from "@/hooks/useSmartContractTransactions";
 import {
@@ -21,44 +25,37 @@ import { FiExternalLink } from "react-icons/fi";
 type Props = {
   openPanelNameValue: OpenPanelName;
   openPanelNameValueSetter: React.Dispatch<SetStateAction<OpenPanelName>>;
+  postInformation: PostMainData;
 };
 
 export default function PostMakeNFT({
   openPanelNameValue,
   openPanelNameValueSetter,
+  postInformation,
 }: Props) {
-  const [sendNftStatus, setSendNftStatus] = useState<SendNftStatus>("initial");
-
-  const [requestSent, setRequestSent] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
-  const [postUpdated, setPostUpdated] = useState(false);
-
-  const { getTokenCount, getTokenURI, mintNft } =
-    useSmartContractTransactions();
+  const {
+    mintNft,
+    sendNftStatus,
+    setSendNftStatus,
+    requestSent,
+    setRequestSent,
+    confirmed,
+    setConfirmed,
+    postUpdated,
+    setPostUpdated,
+    metadataUploaded,
+    setMetadataUploaded,
+  } = useSmartContractTransactions();
 
   const handleSendNFT = async () => {
-    console.log("Sending NFT Process started");
-    setSendNftStatus("sendingRequest");
-    await fakeWaiting(1);
-    setRequestSent(true);
-
-    setSendNftStatus("waitingForConfirmation");
-    await fakeWaiting(1);
-    setConfirmed(true);
-
-    setSendNftStatus("updatingPost");
-    await fakeWaiting(1);
-    setPostUpdated(true);
-
-    setSendNftStatus("final");
-
-    const tc = await getTokenCount();
-    console.log("Token Count:", tc);
-
-    const tokenUri = await getTokenURI(Number(tc) - 1);
-    console.log("Last token uri:", tokenUri);
-
-
+    console.log("SendNFTFires");
+    await mintNft(
+      "Title",
+      postInformation.description,
+      postInformation.senderUsername,
+      postInformation.image
+    );
+    console.log("SendNFTSuccessfull");
   };
 
   useEffect(() => {
@@ -70,6 +67,7 @@ export default function PostMakeNFT({
     setRequestSent(false);
     setConfirmed(false);
     setPostUpdated(false);
+    setMetadataUploaded(false);
   };
 
   return (
@@ -120,6 +118,15 @@ export default function PostMakeNFT({
           </Text>
           <Stack hidden={sendNftStatus === "initial"} mt={3} ml={3}>
             <Flex align="center" gap={3}>
+              <Text textColor="white">Uploading Metadata</Text>
+              {sendNftStatus === "uploadingMetadata" && (
+                <Spinner color="white" size="sm" />
+              )}
+              {metadataUploaded && (
+                <Icon as={AiOutlineCheckCircle} fontSize="20px" color="green" />
+              )}
+            </Flex>
+            <Flex align="center" hidden={!metadataUploaded} gap={3}>
               <Text textColor="white">Sending request to blockchain</Text>
               {sendNftStatus === "sendingRequest" && (
                 <Spinner color="white" size="sm" />
@@ -128,6 +135,7 @@ export default function PostMakeNFT({
                 <Icon as={AiOutlineCheckCircle} fontSize="20px" color="green" />
               )}
             </Flex>
+
             <Flex align="center" gap={3} hidden={!requestSent}>
               <Text textColor="white">
                 Waiting for confirmations from blockchain
@@ -158,7 +166,7 @@ export default function PostMakeNFT({
               cursor="pointer"
               onClick={() => {
                 window.open(
-                  "https://opensea.io/assets/matic/0x24a11e702cd90f034ea44faf1e180c0c654ac5d9/11754",
+                  "https://testnets.opensea.io/assets/mumbai/0x0c0f47f2de87b0e8925a55d14b32ad6c0621047f/0",
                   "blank"
                 );
               }}

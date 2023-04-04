@@ -65,6 +65,7 @@ export type LikeData = {
 
 export type SendNftStatus =
   | "initial"
+  | "uploadingMetadata"
   | "sendingRequest"
   | "waitingForConfirmation"
   | "updatingPost"

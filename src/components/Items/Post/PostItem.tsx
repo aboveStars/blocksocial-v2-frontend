@@ -44,6 +44,7 @@ export default function PostItem({ postItemData }: Props) {
       <PostMakeNFT
         openPanelNameValue={openPanelName}
         openPanelNameValueSetter={setOpenPanelName}
+        postInformation={postMainData}
       />
     </>
   );
