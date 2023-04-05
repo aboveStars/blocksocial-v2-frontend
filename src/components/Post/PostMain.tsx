@@ -6,6 +6,7 @@ import {
   AlertDialogHeader,
   AlertDialogOverlay,
   Button,
+  Container,
   Flex,
   Icon,
   IconButton,
@@ -295,77 +296,101 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
         direction="column"
         bg="gray.900"
         borderRadius="0px 0px 10px 10px"
+        height="auto"
       >
-        <Flex align="center" ml={2} mt={2}>
+        <Flex ml={2} mt={2}>
           <Text fontSize="13pt" fontWeight="medium" textColor="white">
             {postMainData.description}
           </Text>
         </Flex>
-        <Flex align="center" gap={3} p={2}>
-          <Flex gap="1">
-            {ostensiblePostData.whoLiked.includes(currentUserState.username) ? (
-              <Icon
-                as={AiFillHeart}
-                color="red"
-                fontSize="25px"
-                cursor="pointer"
-                onClick={() => {
-                  like(postMainData.id, postMainData.senderUsername, -1);
-                  setOstensiblePostData((prev) => ({
-                    ...prev,
-                    likeCount: prev.likeCount - 1,
-                    whoLiked: prev.whoLiked.filter(
-                      (wL) => wL !== currentUserState.username
-                    ),
-                  }));
-                }}
-              />
-            ) : (
-              <Icon
-                as={AiOutlineHeart}
-                color="white"
-                fontSize="25px"
-                cursor="pointer"
-                onClick={() => {
-                  if (!currentUserState.username) {
-                    console.log("Only Users can like");
-                    setAuthModalState((prev) => ({
+        <Flex>
+          <Flex gap={3} p={2}>
+            <Flex gap="1">
+              {ostensiblePostData.whoLiked.includes(
+                currentUserState.username
+              ) ? (
+                <Icon
+                  as={AiFillHeart}
+                  color="red"
+                  fontSize="25px"
+                  cursor="pointer"
+                  onClick={() => {
+                    like(postMainData.id, postMainData.senderUsername, -1);
+                    setOstensiblePostData((prev) => ({
                       ...prev,
-                      open: true,
-                      view: "logIn",
+                      likeCount: prev.likeCount - 1,
+                      whoLiked: prev.whoLiked.filter(
+                        (wL) => wL !== currentUserState.username
+                      ),
                     }));
-                    return;
-                  }
-                  like(postMainData.id, postMainData.senderUsername, 1);
-                  setOstensiblePostData((prev) => ({
-                    ...prev,
-                    likeCount: prev.likeCount + 1,
-                    whoLiked: prev.whoLiked.concat(currentUserState.username),
-                  }));
-                }}
-              />
-            )}
+                  }}
+                />
+              ) : (
+                <Icon
+                  as={AiOutlineHeart}
+                  color="white"
+                  fontSize="25px"
+                  cursor="pointer"
+                  onClick={() => {
+                    if (!currentUserState.username) {
+                      console.log("Only Users can like");
+                      setAuthModalState((prev) => ({
+                        ...prev,
+                        open: true,
+                        view: "logIn",
+                      }));
+                      return;
+                    }
+                    like(postMainData.id, postMainData.senderUsername, 1);
+                    setOstensiblePostData((prev) => ({
+                      ...prev,
+                      likeCount: prev.likeCount + 1,
+                      whoLiked: prev.whoLiked.concat(currentUserState.username),
+                    }));
+                  }}
+                />
+              )}
 
-            <Text
-              textColor="white"
+              <Text
+                textColor="white"
+                cursor="pointer"
+                onClick={() => {
+                  openPanelNameSetter("likes");
+                }}
+              >
+                {ostensiblePostData.likeCount}
+              </Text>
+            </Flex>
+
+            <Flex
+              gap="1"
               cursor="pointer"
               onClick={() => {
-                openPanelNameSetter("likes");
+                openPanelNameSetter("comments");
               }}
             >
-              {ostensiblePostData.likeCount}
-            </Text>
+              <Icon as={AiOutlineComment} color="white" fontSize="25px" />
+              <Text textColor="white">{postMainData.commentCount}</Text>
+            </Flex>
           </Flex>
 
           <Flex
-            gap="1"
+            justify="flex-end"
+            align="center"
+            width="100%"
+            mb={2}
+            mr="2"
             cursor="pointer"
             onClick={() => {
-              openPanelNameSetter("comments");
+              window.open(postMainData.nftUrl);
             }}
+            hidden={!!!postMainData.nftUrl}
           >
-            <Icon as={AiOutlineComment} color="white" fontSize="25px" />
-            <Text textColor="white">{postMainData.commentCount}</Text>
+            <Image
+              src="https://storage.googleapis.com/opensea-static/Logomark/Logomark-Blue.png"
+              width="30px"
+              height="30px"
+            />
           </Flex>
         </Flex>
       </Flex>

@@ -45,6 +45,10 @@ export default function PostItem({ postItemData }: Props) {
         openPanelNameValue={openPanelName}
         openPanelNameValueSetter={setOpenPanelName}
         postInformation={postMainData}
+        postDocPath={postItemData.commentsCollectionPath.substring(
+          0,
+          postItemData.commentsCollectionPath.indexOf("comments")
+        )}
       />
     </>
   );

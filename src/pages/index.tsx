@@ -98,6 +98,7 @@ export default function Home() {
           commentsCollectionPath: `users/${doc.data().senderUsername}/posts/${
             doc.id
           }/comments`,
+          nftUrl: doc.data().nftUrl,
           creationTime: doc.data().creationTime,
           id: doc.data().id,
         };

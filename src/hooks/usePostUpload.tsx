@@ -58,6 +58,7 @@ const usePostCreate = () => {
       likeCount: 0,
       whoLiked: [],
       commentCount : 0,
+      nftUrl : "",
       creationTime: serverTimestamp() as Timestamp,
       id: postName.toString(), // this is not good
     };

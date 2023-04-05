@@ -157,7 +157,12 @@ export default function SignUp() {
                 bg="gray.50"
                 placeholder=" "
               />
-              <FormLabel textColor="gray.500" fontSize="10pt">
+              <FormLabel
+                bg="rgba(248,250,252,1)"
+                textColor="gray.500"
+                fontSize="10pt"
+                my="2.5"
+              >
                 Email
               </FormLabel>
 
@@ -192,9 +197,10 @@ export default function SignUp() {
                 placeholder=" "
               />
               <FormLabel
-                htmlFor="email-input"
+                bg="rgba(248,250,252,1)"
                 textColor="gray.500"
                 fontSize="10pt"
+                my="2.5"
               >
                 Full Name
               </FormLabel>
@@ -242,9 +248,10 @@ export default function SignUp() {
                 placeholder=" "
               />
               <FormLabel
-                htmlFor="email-input"
+                bg="rgba(248,250,252,1)"
                 textColor="gray.500"
                 fontSize="10pt"
+                my="2.5"
               >
                 Username
               </FormLabel>
@@ -273,9 +280,10 @@ export default function SignUp() {
                 placeholder=" "
               />
               <FormLabel
-                htmlFor="email-input"
+                bg="rgba(248,250,252,1)"
                 textColor="gray.500"
                 fontSize="10pt"
+                my="2.5"
               >
                 Password
               </FormLabel>

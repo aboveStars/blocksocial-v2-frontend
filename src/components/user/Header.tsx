@@ -399,10 +399,11 @@ export default function Header({ userInformation }: Props) {
               <Button
                 size="sm"
                 variant="solid"
-                colorScheme="cyan"
+                bg = "gray.900"
+                textColor="white"
                 onClick={() => setNftAdministrationPanelShow(true)}
               >
-                NFT
+                NFT Administration
               </Button>
               <Button
                 variant="outline"

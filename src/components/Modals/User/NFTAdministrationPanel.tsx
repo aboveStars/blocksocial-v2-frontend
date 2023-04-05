@@ -72,7 +72,7 @@ export default function NFTAdministrationPanel({
         <ModalBody bg="gray.900">
           <Flex direction="column">
             <Text textColor="white" fontSize="13pt" fontWeight="500">
-              Active NFT's
+              Active NFTs
             </Text>
             <Stack textColor="white" fontSize="10pt" mt={2}>
               <Text> NFT 1</Text>

@@ -1,14 +1,12 @@
-import {
-  OpenPanelName,
-  PostMainData,
-  SendNftStatus,
-} from "@/components/types/Post";
-import { fakeWaiting } from "@/components/utils/FakeWaiting";
+import { OpenPanelName, PostMainData } from "@/components/types/Post";
 import useSmartContractTransactions from "@/hooks/useSmartContractTransactions";
 import {
   Button,
   Flex,
+  FormControl,
+  FormLabel,
   Icon,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
@@ -17,6 +15,7 @@ import {
   Spinner,
   Stack,
   Text,
+  Image,
 } from "@chakra-ui/react";
 import React, { SetStateAction, useEffect, useState } from "react";
 import { AiOutlineCheckCircle, AiOutlineClose } from "react-icons/ai";
@@ -26,12 +25,14 @@ type Props = {
   openPanelNameValue: OpenPanelName;
   openPanelNameValueSetter: React.Dispatch<SetStateAction<OpenPanelName>>;
   postInformation: PostMainData;
+  postDocPath: string;
 };
 
 export default function PostMakeNFT({
   openPanelNameValue,
   openPanelNameValueSetter,
   postInformation,
+  postDocPath,
 }: Props) {
   const {
     mintNft,
@@ -45,15 +46,27 @@ export default function PostMakeNFT({
     setPostUpdated,
     metadataUploaded,
     setMetadataUploaded,
+    openSeaLink,
+    setOpenSeaLink,
   } = useSmartContractTransactions();
+
+  const [nftTitle, setNftTitle] = useState("");
+  const [nftDescription, setNftDescription] = useState(
+    postInformation.description
+  );
 
   const handleSendNFT = async () => {
     console.log("SendNFTFires");
+
     await mintNft(
-      "Title",
+      nftTitle,
       postInformation.description,
       postInformation.senderUsername,
-      postInformation.image
+      postInformation.image,
+      postDocPath,
+      postInformation.creationTime,
+      postInformation.likeCount,
+      postInformation.commentCount
     );
     console.log("SendNFTSuccessfull");
   };
@@ -62,12 +75,24 @@ export default function PostMakeNFT({
     console.log(sendNftStatus);
   }, [sendNftStatus]);
 
+  useEffect(() => {
+    console.log(nftDescription);
+  }, [nftDescription]);
+
   const resetStatesAfterNFTCreation = () => {
     setSendNftStatus("initial");
     setRequestSent(false);
     setConfirmed(false);
     setPostUpdated(false);
     setMetadataUploaded(false);
+    setOpenSeaLink("");
+    setNftTitle("");
+    setNftDescription(postInformation.description);
+  };
+
+  const resetStatesAfterAbandon = () => {
+    setNftTitle("");
+    setNftDescription(postInformation.description);
   };
 
   return (
@@ -76,6 +101,13 @@ export default function PostMakeNFT({
       onClose={() => {
         openPanelNameValueSetter("main");
         resetStatesAfterNFTCreation();
+      }}
+      autoFocus={false}
+      size={{
+        base: "full",
+        sm: "full",
+        md: "lg",
+        lg: "lg",
       }}
     >
       <ModalOverlay backdropFilter="auto" backdropBlur="8px" />
@@ -89,6 +121,7 @@ export default function PostMakeNFT({
           justify="space-between"
           height="50px"
           bg="black"
+          zIndex="banner"
         >
           <Text textColor="white" fontSize="17pt" as="b">
             Create NFT
@@ -108,73 +141,145 @@ export default function PostMakeNFT({
         </Flex>
 
         <ModalBody>
-          <Text
-            textColor="white"
-            fontWeight="500"
-            fontSize="10pt"
-            hidden={!(sendNftStatus === "initial")}
-          >
-            Do you want to send this posts as NFT to Blockchain ?
-          </Text>
-          <Stack hidden={sendNftStatus === "initial"} mt={3} ml={3}>
-            <Flex align="center" gap={3}>
-              <Text textColor="white">Uploading Metadata</Text>
-              {sendNftStatus === "uploadingMetadata" && (
-                <Spinner color="white" size="sm" />
-              )}
-              {metadataUploaded && (
-                <Icon as={AiOutlineCheckCircle} fontSize="20px" color="green" />
-              )}
-            </Flex>
-            <Flex align="center" hidden={!metadataUploaded} gap={3}>
-              <Text textColor="white">Sending request to blockchain</Text>
-              {sendNftStatus === "sendingRequest" && (
-                <Spinner color="white" size="sm" />
-              )}
-              {requestSent && (
-                <Icon as={AiOutlineCheckCircle} fontSize="20px" color="green" />
-              )}
-            </Flex>
+          <Flex direction="column" p={1} gap="3">
+            <FormControl variant="floating">
+              <Input
+                required
+                name="title"
+                placeholder=" "
+                mb={2}
+                onChange={(event) => {
+                  setNftTitle(event.target.value);
+                }}
+                _hover={{
+                  border: "1px solid",
+                  borderColor: "blue.500",
+                }}
+                textColor="white"
+                bg="black"
+              />
+              <FormLabel
+                bg="rgba(0,0,0)"
+                textColor="gray.500"
+                fontSize="12pt"
+                my={2}
+              >
+                Title
+              </FormLabel>
+            </FormControl>
+            <Image src={postInformation.image} />
+            <FormControl variant="floating">
+              <Input
+                required
+                name="title"
+                placeholder=" "
+                mb={2}
+                value={nftDescription}
+                onChange={(event) => {
+                  setNftDescription(event.target.value);
+                }}
+                _hover={{
+                  border: "1px solid",
+                  borderColor: "blue.500",
+                }}
+                bg="black"
+                textColor="white"
+              />
+              <FormLabel
+                textColor="gray.500"
+                fontSize="12pt"
+                bg="rgba(0,0,0)"
+                my={2}
+              >
+                Description
+              </FormLabel>
+            </FormControl>
+            <Stack hidden={sendNftStatus === "initial"} mt={1} ml="3">
+              <Flex align="center" gap={3}>
+                <Text textColor="gray.400" fontSize="12pt" as="b">
+                  Preparing NFT&apos;s details
+                </Text>
+                {sendNftStatus === "uploadingMetadata" && (
+                  <Spinner color="gray.400" size="sm" />
+                )}
+                {metadataUploaded && (
+                  <Icon
+                    as={AiOutlineCheckCircle}
+                    fontSize="19px"
+                    color="green"
+                  />
+                )}
+              </Flex>
+              <Flex align="center" hidden={!metadataUploaded} gap={3}>
+                <Text textColor="gray.400" fontSize="12pt" as="b">
+                  Uploading NFT
+                </Text>
+                {sendNftStatus === "sendingRequest" && (
+                  <Spinner color="gray.400" size="sm" />
+                )}
+                {requestSent && (
+                  <Icon
+                    as={AiOutlineCheckCircle}
+                    fontSize="19px"
+                    color="green"
+                  />
+                )}
+              </Flex>
 
-            <Flex align="center" gap={3} hidden={!requestSent}>
-              <Text textColor="white">
-                Waiting for confirmations from blockchain
-              </Text>
-              {sendNftStatus === "waitingForConfirmation" && (
-                <Spinner color="white" size="sm" />
-              )}
-              {confirmed && (
-                <Icon as={AiOutlineCheckCircle} fontSize="20px" color="green" />
-              )}
-            </Flex>
-            <Flex align="center" gap={3} hidden={!confirmed}>
-              <Text textColor="white">Updating post</Text>
-              {sendNftStatus === "updatingPost" && (
-                <Spinner color="white" size="sm" />
-              )}
-              {postUpdated && (
-                <Icon as={AiOutlineCheckCircle} fontSize="20px" color="green" />
-              )}
-            </Flex>
-          </Stack>
-
-          {sendNftStatus === "final" && (
-            <Flex
-              align="center"
-              mt={3}
-              gap="1"
-              cursor="pointer"
-              onClick={() => {
-                window.open(
-                  "https://testnets.opensea.io/assets/mumbai/0x0c0f47f2de87b0e8925a55d14b32ad6c0621047f/0",
-                  "blank"
-                );
-              }}
-            >
-              <Text color="white">Visit your new NFT on OpenSea!</Text>
-              <Icon as={FiExternalLink} color="white" mx={0.5} />
-            </Flex>
-          )}
+              <Flex align="center" gap={3} hidden={!requestSent}>
+                <Text textColor="gray.400" fontSize="12pt" as="b">
+                  Verifying NFT
+                </Text>
+                {sendNftStatus === "waitingForConfirmation" && (
+                  <Spinner color="gray.400" size="sm" />
+                )}
+                {confirmed && (
+                  <Icon
+                    as={AiOutlineCheckCircle}
+                    fontSize="19px"
+                    color="green"
+                  />
+                )}
+              </Flex>
+              <Flex align="center" gap={3} hidden={!confirmed}>
+                <Text textColor="gray.400" fontSize="12pt" as="b">
+                  Adding NFT to Your Account
+                </Text>
+                {sendNftStatus === "updatingPost" && (
+                  <Spinner color="gray.400" size="sm" />
+                )}
+                {postUpdated && (
+                  <Icon
+                    as={AiOutlineCheckCircle}
+                    fontSize="19px"
+                    color="green"
+                  />
+                )}
+              </Flex>
+            </Stack>
+            {sendNftStatus === "final" && (
+              <Flex
+                align="center"
+                mt={3}
+                gap="1"
+                cursor="pointer"
+                onClick={() => {
+                  window.open(openSeaLink, "blank");
+                }}
+                ml="1"
+              >
+                <Text color="white" fontSize="15pt" as="b">
+                  Visit your new NFT on OpenSea!
+                </Text>
+                <Icon
+                  as={FiExternalLink}
+                  color="white"
+                  fontSize="15pt"
+                  mx={0.5}
+                />
+              </Flex>
+            )}
+          </Flex>
         </ModalBody>
 
         <ModalFooter gap={3}>
@@ -194,7 +299,9 @@ export default function PostMakeNFT({
               <Button
                 variant="outline"
                 colorScheme="blue"
-                onClick={() => openPanelNameValueSetter("main")}
+                onClick={() => {
+                  openPanelNameValueSetter("main");
+                }}
                 isDisabled={!(sendNftStatus === "initial")}
               >
                 Cancel
@@ -207,7 +314,7 @@ export default function PostMakeNFT({
                 }}
                 isLoading={!(sendNftStatus === "initial")}
               >
-                Send NFT!
+                Create!
               </Button>
             </>
           )}

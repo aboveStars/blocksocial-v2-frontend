@@ -16,6 +16,8 @@ export type PostItemData = {
   commentCount: number;
   commentsCollectionPath: string;
 
+  nftUrl?: string;
+
   creationTime: Timestamp;
   id: string;
 };
@@ -38,6 +40,8 @@ export type PostMainData = {
   likeCount: number;
   whoLiked: string[];
   commentCount: number;
+
+  nftUrl?: string;
 
   creationTime: Timestamp;
   id: string;
