@@ -186,7 +186,7 @@ export default function PostCreateModal() {
             </Flex>
           </Flex>
 
-          <Image src={postCreateForm.image} hidden={!!!postCreateForm.image} />
+          <Image alt="" src={postCreateForm.image} hidden={!!!postCreateForm.image} />
           <Button
             variant="outline"
             onClick={() => {

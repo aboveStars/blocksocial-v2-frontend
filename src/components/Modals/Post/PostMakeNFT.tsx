@@ -167,7 +167,7 @@ export default function PostMakeNFT({
                 Title
               </FormLabel>
             </FormControl>
-            <Image src={postInformation.image} />
+            <Image alt="" src={postInformation.image} />
             <FormControl variant="floating">
               <Input
                 required

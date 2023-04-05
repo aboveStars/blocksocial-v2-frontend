@@ -148,6 +148,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
         borderRadius="10px 10px 0px 0px"
       >
         <Image
+        alt=""
           src={postSenderProfilePhotoURL}
           width="50px"
           height="50px"
@@ -238,7 +239,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
                 </AlertDialogHeader>
 
                 <AlertDialogBody>
-                  Are you sure? You can't undo this action afterwards.
+                  Are you sure? You can&apos;t undo this action afterwards.
                 </AlertDialogBody>
 
                 <AlertDialogFooter gap={2}>
@@ -275,6 +276,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
 
       {postMainData.image && (
         <Image
+        alt=""
           src={postMainData.image}
           width="100%"
           fallback={
@@ -387,6 +389,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
             hidden={!!!postMainData.nftUrl}
           >
             <Image
+            alt=""
               src="https://storage.googleapis.com/opensea-static/Logomark/Logomark-Blue.png"
               width="30px"
               height="30px"

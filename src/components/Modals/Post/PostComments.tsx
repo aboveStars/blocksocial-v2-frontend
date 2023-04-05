@@ -194,6 +194,7 @@ export default function PostComments({
         >
           <Flex align="center" width="100%" border="1px" rounded="full" p={2}>
             <Image
+              alt=""
               src={currentUserState.profilePhoto}
               rounded="full"
               width="50px"

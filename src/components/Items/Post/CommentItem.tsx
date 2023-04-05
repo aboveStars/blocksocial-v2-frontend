@@ -75,6 +75,7 @@ export default function CommentItem({
     <Flex justify="space-between" align="center" hidden={isThisCommentDeleted}>
       <Flex id="comment" height="50px" align="center" gap={2}>
         <Image
+          alt=""
           src={commentSenderPhoto}
           rounded="full"
           width="35px"
@@ -175,7 +176,8 @@ export default function CommentItem({
               </AlertDialogHeader>
 
               <AlertDialogBody>
-                You need to open comment dialog again to delete this comment due to technical issues.
+                You need to open comment dialog again to delete this comment due
+                to technical issues.
               </AlertDialogBody>
 
               <AlertDialogFooter>

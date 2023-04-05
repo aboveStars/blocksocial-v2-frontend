@@ -238,6 +238,7 @@ export default function Header({ userInformation }: Props) {
           align="center"
         >
           <Image
+          alt=""
             src={
               selectedProfilePhoto
                 ? selectedProfilePhoto

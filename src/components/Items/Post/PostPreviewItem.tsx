@@ -8,6 +8,7 @@ export default function PostPreviewItem({}: Props) {
   return (
     <Flex direction="column">
       <Image
+        alt=""
         src={""}
         width="50px"
         height="50px"

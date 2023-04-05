@@ -63,6 +63,7 @@ export default function Authentication() {
       <Flex>
         {currentUserState.isThereCurrentUser ? (
           <Image
+            alt=""
             src={currentUserState.profilePhoto}
             rounded="full"
             width="40px"
