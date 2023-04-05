@@ -100,7 +100,9 @@ export default function PostMakeNFT({
       isOpen={openPanelNameValue === "nft"}
       onClose={() => {
         openPanelNameValueSetter("main");
-        resetStatesAfterNFTCreation();
+        // To prevent lose unfinished progress
+        if (sendNftStatus === "initial" || sendNftStatus === "final")
+          resetStatesAfterNFTCreation();
       }}
       autoFocus={false}
       size={{
@@ -134,8 +136,8 @@ export default function PostMakeNFT({
             cursor="pointer"
             onClick={() => {
               openPanelNameValueSetter("main");
-              // reset states
-              resetStatesAfterNFTCreation();
+              if (sendNftStatus === "final" || sendNftStatus === "initial")
+                resetStatesAfterNFTCreation();
             }}
           />
         </Flex>
@@ -300,7 +302,7 @@ export default function PostMakeNFT({
                 variant="outline"
                 colorScheme="blue"
                 onClick={() => {
-                  openPanelNameValueSetter("main");
+                  resetStatesAfterAbandon();
                 }}
                 isDisabled={!(sendNftStatus === "initial")}
               >

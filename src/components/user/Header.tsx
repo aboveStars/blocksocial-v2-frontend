@@ -227,7 +227,7 @@ export default function Header({ userInformation }: Props) {
       <NFTAdministrationPanel
         nftAdministrationPanelOpenSetter={setNftAdministrationPanelShow}
         nftAdministrationPanelOpenValue={nftAdministrationPanelShow}
-        currentUserUsername = {currentUserState.username}
+        currentUserUsername={currentUserState.username}
       />
 
       <Flex direction="column" justify="center" align="center" mt={3}>
@@ -238,7 +238,7 @@ export default function Header({ userInformation }: Props) {
           align="center"
         >
           <Image
-          alt=""
+            alt=""
             src={
               selectedProfilePhoto
                 ? selectedProfilePhoto
@@ -400,8 +400,8 @@ export default function Header({ userInformation }: Props) {
               <Button
                 size="sm"
                 variant="solid"
-                bg = "gray.900"
-                textColor="white"
+                bg="white"
+                textColor="black"
                 onClick={() => setNftAdministrationPanelShow(true)}
               >
                 NFT Administration
