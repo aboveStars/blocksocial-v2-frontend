@@ -12,7 +12,7 @@ const useAuthErrorCodes = () => {
 
         return response;
 
-      case "auth/email-already-in-use":
+      case "auth/email-already-exists":
         response = "The provided email is already in use.";
 
         return response;

@@ -7,7 +7,7 @@ import {
   Input,
   SkeletonCircle,
   Stack,
-  Text,
+  Text
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
@@ -20,13 +20,15 @@ import { CgProfile } from "react-icons/cg";
 import useFollow from "@/hooks/useFollow";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
-import { UserInformation } from "../types/User";
+import { defaultCurrentUserState, UserInformation } from "../types/User";
 
-import useAuthOperations from "@/hooks/useSignUpOperations";
-import FollowInformationModal from "../Modals/User/FollowInformationModal";
-import ProfilePhotoUpdateModal from "../Modals/User/ProfilePhotoUpdateModal";
 import useSortByUsername from "@/hooks/useSortByUsername";
+import FollowInformationModal from "../Modals/User/FollowInformationModal";
 import NFTAdministrationPanel from "../Modals/User/NFTAdministrationPanel";
+import ProfilePhotoUpdateModal from "../Modals/User/ProfilePhotoUpdateModal";
+
+import { auth } from "@/firebase/clientApp";
+import { signOut } from "firebase/auth";
 
 type Props = {
   userInformation: UserInformation;
@@ -81,8 +83,6 @@ export default function Header({ userInformation }: Props) {
   const [profilePhotoUpdateModalOpen, setProiflePhotoUpdateModalOpen] =
     useState(false);
 
-  const { onSignOut, signOutLoading } = useAuthOperations();
-
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { sortFollowersByUsername, sortFollowingsByUsername } =
@@ -90,6 +90,8 @@ export default function Header({ userInformation }: Props) {
 
   const [nftAdministrationPanelShow, setNftAdministrationPanelShow] =
     useState(false);
+
+  const [signOutLoading, setSignOutLoading] = useState(false);
 
   /**
    * userData is already being controlled then, comes here
@@ -194,6 +196,26 @@ export default function Header({ userInformation }: Props) {
       followingCount: prev.followingCount - 1,
       followings: prev.followings.filter((f) => f !== userInformation.username),
     }));
+  };
+
+  const handleSignOut = async () => {
+    setSignOutLoading(true);
+
+    // Firebase sign-out
+    await signOut(auth);
+
+    // Clear States
+    setCurrentUserState({
+      ...defaultCurrentUserState,
+      loading: false,
+    });
+    setAuthModalState((prev) => ({
+      ...prev,
+      open: true,
+      view: "logIn",
+    }));
+
+    setSignOutLoading(false);
   };
 
   return (
@@ -410,7 +432,7 @@ export default function Header({ userInformation }: Props) {
                 variant="outline"
                 colorScheme="red"
                 size="sm"
-                onClick={onSignOut}
+                onClick={handleSignOut}
                 isLoading={signOutLoading}
               >
                 Sign Out

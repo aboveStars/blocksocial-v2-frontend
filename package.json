@@ -20,6 +20,7 @@
     "eslint-config-next": "13.2.4",
     "ethers": "^6.2.3",
     "firebase": "^9.18.0",
+    "firebase-admin": "^11.5.0",
     "framer-motion": "^10.6.0",
     "moment": "^2.29.4",
     "next": "13.2.4",

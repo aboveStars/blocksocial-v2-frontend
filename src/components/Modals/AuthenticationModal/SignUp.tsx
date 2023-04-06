@@ -1,6 +1,4 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
-
-import useAuthOperations from "@/hooks/useSignUpOperations";
 import {
   Button,
   Flex,
@@ -18,8 +16,13 @@ import React, { useState } from "react";
 
 import { useSetRecoilState } from "recoil";
 
+import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { CurrentUser, UserInformation } from "@/components/types/User";
+import { AuthError } from "firebase/auth";
+import { doc, FirestoreError, getDoc } from "firebase/firestore";
 import { AiOutlineCheckCircle } from "react-icons/ai";
 import { BiError } from "react-icons/bi";
+import { firestore } from "@/firebase/clientApp";
 
 export default function SignUp() {
   const [signUpForm, setSignUpForm] = useState({
@@ -31,104 +34,224 @@ export default function SignUp() {
 
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
 
-  const { onSignUpLoading, onSignUp, isUserNameTaken, error, setError } =
-    useAuthOperations();
-
   const [userNameLowerCaseValue, setUsernameLowercaseValue] = useState("");
   const [userNameTakenState, setUserNameTakenState] = useState(false);
   const [userNameTakenStateLoading, setUserNameTakenStateLoading] =
     useState(false);
+  const [userNameRight, setUserNameRight] = useState(true);
 
-  const [passwordWeak, setPassordWeak] = useState(false);
+  const [passwordStrong, setPassordStrong] = useState(true);
 
   const [fullnameRight, setFullnameRight] = useState(true);
 
   const [emailRight, setEmailRight] = useState(true);
 
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
+  const setCurrentUserState = useSetRecoilState(currentUserStateAtom);
+  const [signUpLoading, setSignUpLoading] = useState(false);
+  const [error, setError] = useState("");
 
-    // Checking all requirements, again beacuse I don't trust react
+  const isUserNameTaken = async (susUsername: string) => {
+    if (!susUsername) return false;
+
+    const susDocRef = doc(firestore, "usernames", susUsername);
+    const susDocSnap = await getDoc(susDocRef);
+
+    const existingStatus = susDocSnap.exists();
+
+    return existingStatus;
+  };
+
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSignUpLoading(true);
+    setError("");
 
     const emailRegex =
       /^[A-Za-z0-9._%+-]+@(gmail|yahoo|outlook|aol|icloud|protonmail|yandex|mail|zoho)\.(com|net|org)$/i;
     if (!emailRegex.test(signUpForm.email)) {
       setEmailRight(false);
+      setSignUpLoading(false);
+      setError("Email is invalid");
       return;
     }
     const fullnameRegex = /^[\p{L}_ ]{3,20}$/u;
     if (!fullnameRegex.test(signUpForm.fullname)) {
       setFullnameRight(false);
+      setSignUpLoading(false);
+      setError("Fullname is invalid");
       return;
     }
     const usernameRegex = /^[a-z0-9]+$/;
     if (!usernameRegex.test(signUpForm.username)) {
+      setUserNameRight(false);
+      setSignUpLoading(false);
+      setError("Username is invalid");
+      return;
+    }
+    const taken = await isUserNameTaken(signUpForm.username);
+    if (taken) {
       setUserNameTakenState(true);
+      setSignUpLoading(false);
+      setError("Username is taken");
       return;
     }
 
     const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
     if (!passwordRegex.test(signUpForm.password)) {
-      setPassordWeak(true);
+      setPassordStrong(false);
+      setSignUpLoading(false);
+      setError("Password is invalid");
       return;
     }
 
-    onSignUp(
-      signUpForm.email,
-      signUpForm.password,
-      signUpForm.username,
-      signUpForm.fullname
-    );
+    const response = await fetch("/api/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(signUpForm),
+    });
+
+    if (!response.ok) {
+      // error handling
+
+      // 400 code for client problems. Same as we check in here. (This is 3rd time but in server this time :) )
+      if (response.status === 400) {
+        // 500 code for Firebase errors (auth/firestore)
+
+        const { error } = await response.json();
+
+        if (error === "BadEmail") {
+          console.error(error);
+          setError("Invalid Email");
+        }
+        if (error === "BadFullname") {
+          console.error(error);
+          setError("Invalid Fullname");
+        }
+        if (error === "BadUsername") {
+          console.error(error);
+          setError("Invalid Username");
+        }
+        if (error === "TakenUsername") {
+          console.error(error);
+          setError("Taken Username");
+        }
+        if (error === "BadFullname") {
+          console.error(error);
+          setError("Invalid Fullname");
+        }
+      } else if (response.status === 500) {
+        const { firebaseError } = await response.json();
+        console.error("Firebase Error Code: ", firebaseError);
+        setError((firebaseError as FirestoreError | AuthError).message);
+      }
+
+      setSignUpLoading(false);
+      return;
+    }
+
+    const newUserData: UserInformation = await response.json();
+
+    setAuthModalState((prev) => ({
+      ...prev,
+      open: false,
+    }));
+
+    const currentUserDataTemp: CurrentUser = {
+      ...newUserData,
+      loading: false,
+      isThereCurrentUser: true,
+    };
+
+    setCurrentUserState(currentUserDataTemp);
+
+    setSignUpLoading(false);
   };
 
   const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    setError((prev) => "");
+    setError("");
+    let zeroFlag = false;
 
     if (event.target.name === "email") {
-      const emailRegex =
-        /^[A-Za-z0-9._%+-]+@(gmail|yahoo|outlook|aol|icloud|protonmail|yandex|mail|zoho)\.(com|net|org)$/i;
-
-      if (!emailRegex.test(event.target.value)) {
-        setEmailRight(false);
-      } else {
+      if (event.target.value.length === 0) {
+        // To prevent bad ui
         setEmailRight(true);
+        zeroFlag = true;
+      }
+      if (!zeroFlag) {
+        const emailRegex =
+          /^[A-Za-z0-9._%+-]+@(gmail|yahoo|outlook|aol|icloud|protonmail|yandex|mail|zoho)\.(com|net|org)$/i;
+
+        if (!emailRegex.test(event.target.value)) {
+          setEmailRight(false);
+        } else {
+          setEmailRight(true);
+        }
       }
     }
 
     if (event.target.name === "username") {
-      setUsernameLowercaseValue(event.target.value.toLowerCase());
-      let regexFailFlag = false;
-      const usernameRegex = /^[a-z0-9_]{3,18}$/;
+      if (event.target.value.length === 0) {
+        // To prevent bad ui
+        setUserNameRight(true);
+        setUsernameLowercaseValue("");
+        setUserNameTakenState(false);
 
-      if (!usernameRegex.test(event.target.value.toLowerCase())) {
-        setUserNameTakenState((prev) => true);
-        regexFailFlag = true;
+        zeroFlag = true;
       }
-      if (!regexFailFlag) {
-        setUserNameTakenStateLoading((prev) => true);
-        const isTaken = await isUserNameTaken(event.target.value);
 
-        if (isTaken !== undefined) setUserNameTakenState((prev) => isTaken);
-        setUserNameTakenStateLoading((prev) => false);
+      if (!zeroFlag) {
+        setUsernameLowercaseValue(event.target.value.toLowerCase());
+        let regexFailFlag = false;
+        const usernameRegex = /^[a-z0-9_]{3,18}$/;
+
+        if (!usernameRegex.test(event.target.value.toLowerCase())) {
+          setUserNameRight(false);
+          regexFailFlag = true;
+        }
+        if (!regexFailFlag) {
+          setUserNameRight(true);
+
+          setUserNameTakenStateLoading(true);
+          const isTaken = await isUserNameTaken(event.target.value);
+
+          setUserNameTakenState(isTaken);
+          setUserNameTakenStateLoading(false);
+        }
       }
     }
 
     if (event.target.name === "fullname") {
-      const fullnameRegex = /^[\p{L}_ ]{3,20}$/u;
-
-      if (!fullnameRegex.test(event.target.value)) {
-        setFullnameRight(false);
-      } else {
+      if (event.target.value.length === 0) {
+        // To prevent bad ui
         setFullnameRight(true);
+        zeroFlag = true;
+      }
+
+      if (!zeroFlag) {
+        const fullnameRegex = /^[\p{L}_ ]{3,20}$/u;
+
+        if (!fullnameRegex.test(event.target.value)) {
+          setFullnameRight(false);
+        } else {
+          setFullnameRight(true);
+        }
       }
     }
 
     if (event.target.name === "password") {
-      const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
-      if (!regex.test(event.target.value)) {
-        setPassordWeak((prev) => true);
-      } else setPassordWeak((prev) => false);
+      if (event.target.value.length === 0) {
+        // To prevent bad ui
+        setPassordStrong(true);
+        zeroFlag = true;
+      }
+      if (!zeroFlag) {
+        const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+        if (!regex.test(event.target.value)) {
+          setPassordStrong(false);
+        } else setPassordStrong(true);
+      }
     }
 
     setSignUpForm((prev) => ({
@@ -217,18 +340,18 @@ export default function SignUp() {
             <InputRightElement>
               {userNameTakenStateLoading ? (
                 <Spinner size="sm" ml={1.5} />
-              ) : userNameTakenState ? (
+              ) : userNameTakenState || !userNameRight ? (
                 <Icon ml={5} as={BiError} fontSize="20px" mr={3} color="red" />
-              ) : signUpForm.username ? (
-                <Icon
-                  ml={5}
-                  as={AiOutlineCheckCircle}
-                  fontSize="20px"
-                  mr={3}
-                  color="green"
-                />
               ) : (
-                <></>
+                signUpForm.username.length !== 0 && (
+                  <Icon
+                    ml={5}
+                    as={AiOutlineCheckCircle}
+                    fontSize="20px"
+                    mr={3}
+                    color="green"
+                  />
+                )
               )}
             </InputRightElement>
             <FormControl variant="floating">
@@ -239,7 +362,9 @@ export default function SignUp() {
                 mb={2}
                 value={userNameLowerCaseValue}
                 onChange={onChange}
-                borderColor={userNameTakenState ? "red" : "gray.200"}
+                borderColor={
+                  userNameTakenState || !userNameRight ? "red" : "gray.200"
+                }
                 _hover={{
                   border: "1px solid",
                   borderColor: "blue.500",
@@ -260,7 +385,7 @@ export default function SignUp() {
 
           <InputGroup>
             <InputRightElement>
-              {passwordWeak && (
+              {!passwordStrong && (
                 <Icon ml={5} as={BiError} fontSize="20px" mr={3} color="red" />
               )}
             </InputRightElement>
@@ -271,7 +396,7 @@ export default function SignUp() {
                 type="password"
                 mb={1}
                 onChange={onChange}
-                borderColor={passwordWeak ? "red" : "gray.200"}
+                borderColor={!passwordStrong ? "red" : "gray.200"}
                 _hover={{
                   border: "1px solid",
                   borderColor: "blue.500",
@@ -298,9 +423,13 @@ export default function SignUp() {
           bg="black"
           textColor="white"
           type="submit"
-          isLoading={onSignUpLoading || userNameTakenStateLoading}
+          isLoading={signUpLoading || userNameTakenStateLoading}
           isDisabled={
-            userNameTakenState || passwordWeak || !fullnameRight || !emailRight
+            !userNameRight ||
+            userNameTakenState ||
+            !passwordStrong ||
+            !fullnameRight ||
+            !emailRight
           }
           _hover={{
             bg: !userNameTakenState && "black",
