@@ -2,8 +2,16 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 import { UserInformation } from "@/components/types/User";
 import * as admin from "firebase-admin";
-const serviceAccount = require(process.env
-  .NEXT_PUBLIC_GOOGLE_APPLICATION_CREDENTIALS as string);
+
+const buffer = Buffer.from(
+  process.env.NEXT_PUBLIC_GOOGLE_APPLICATION_CREDENTIALS_BASE64 as string,
+  "base64"
+);
+
+const decryptedService = buffer.toString("utf-8");
+const decryptedServiceJson = JSON.parse(decryptedService);
+
+const serviceAccount = decryptedServiceJson;
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
