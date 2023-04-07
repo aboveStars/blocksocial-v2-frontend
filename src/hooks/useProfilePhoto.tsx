@@ -1,10 +1,11 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { firestore, storage } from "@/firebase/clientApp";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, FirestoreError, updateDoc } from "firebase/firestore";
 import {
   deleteObject,
   getDownloadURL,
   ref,
+  StorageError,
   uploadString,
 } from "firebase/storage";
 import React, { useState } from "react";
@@ -54,7 +55,7 @@ export default function useProfilePhoto() {
     let errorHappened: boolean = false;
     setProfilePhotoUploadError(false);
 
-    setProfilePhotoUploadLoading((prev) => true);
+    setProfilePhotoUploadLoading(true);
 
     const username = currentUserState.username;
     const fileName = Date.now();
@@ -145,15 +146,25 @@ export default function useProfilePhoto() {
 
   const profilePhotoDelete = async () => {
     setProfilePhotoDeleteLoading(true);
-    const currentUserDocRef = doc(
-      firestore,
-      `users/${currentUserState.username}`
-    );
-    console.log("Profile Photo Deleting");
-    await updateDoc(currentUserDocRef, {
-      profilePhoto: "",
+
+    const response = await fetch("/api/profilePhotoChange", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username: currentUserState.username }),
     });
-    console.log("Profile Photo Deleted");
+
+    if (!response.ok) {
+      const { firebaseError } = await response.json();
+      console.error((firebaseError as FirestoreError).message);
+      setProfilePhotoDeleteLoading(false);
+      return;
+    }
+
+    const { username: profilePhotoDeletedUsername } = await response.json();
+    console.log(`Profile photo of ${profilePhotoDeletedUsername} is deleted!`);
+
     // State Updates
     setProfilePhotoDeleteLoading(false);
     setCurrentUserState((prev) => ({
