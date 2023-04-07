@@ -18,7 +18,9 @@ if (!admin.apps.length) {
 }
 
 const firestore = admin.firestore();
-const bucket = admin.storage().bucket();
+const bucket = admin
+  .storage()
+  .bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET_ID as string);
 
 export default async function handler(
   req: NextApiRequest,
@@ -35,6 +37,36 @@ export default async function handler(
     }
     res.status(200).json({ username: username });
   } else if (req.method === "POST") {
+    const { username } = req.body;
+    const { image: imageDataURL } = req.body;
+
+    // Upload file to storage
+
+    try {
+      const photoId = Date.now().toString();
+      const file = bucket.file(`users/${username}/profilePhotos/${photoId}`);
+      const buffer = Buffer.from(imageDataURL.split(",")[1], "base64");
+
+      await file.save(buffer, {
+        metadata: {
+          contentType: "image/jpeg",
+        },
+      });
+
+      await file.makePublic();
+      const publicURL = file.publicUrl();
+
+      await firestore.doc(`users/${username}`).update({
+        profilePhoto: publicURL,
+      });
+
+      res
+        .status(200)
+        .json({ username: username, newProfilePhotoURL: publicURL });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ firebaseError: error });
+    }
   } else {
     res.status(405).json({ error: "Method not allowed" });
   }

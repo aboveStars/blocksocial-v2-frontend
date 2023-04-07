@@ -7,7 +7,7 @@ import {
   Input,
   SkeletonCircle,
   Stack,
-  Text
+  Text,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
@@ -63,6 +63,7 @@ export default function Header({ userInformation }: Props) {
     onSelectWillBeCroppedProfilePhoto,
     setSelectedProfilePhoto,
     setWillBeCroppedProfilePhoto,
+    profilePhotoError,
   } = useProfilePhoto();
 
   const [poorProfilePhoto, setPoorProfilePhoto] = useState(false);
@@ -339,6 +340,9 @@ export default function Header({ userInformation }: Props) {
               Cancel
             </Button>
           </Stack>
+          <Text fontSize="10pt" color="red" hidden={!!!profilePhotoError}>
+            {profilePhotoError}
+          </Text>
         </Flex>
 
         <Flex direction="column" align="center" mt={1}>
