@@ -80,18 +80,19 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   userPostDatasSnapshot.forEach((doc) => {
     const postObject: PostItemData = {
       senderUsername: doc.data().senderUsername,
+
       description: doc.data().description,
       image: doc.data().image,
+
       likeCount: doc.data().likeCount,
-      whoLiked : doc.data().whoLiked,
-      likeDocPath: `users/${doc.data().senderUsername}/posts/${doc.id}`,
+      whoLiked: doc.data().whoLiked,
+
+      postDocPath: `users/${doc.data().senderUsername}/posts/${doc.id}`,
+
       commentCount: doc.data().commentCount,
-      commentsCollectionPath: `users/${doc.data().senderUsername}/posts/${
-        doc.id
-      }/comments`,
-      nftUrl : doc.data().nftUrl,
+
+      nftUrl: doc.data().nftUrl,
       creationTime: doc.data().creationTime,
-      id: doc.data().id,
     };
     const serializablePostObject: PostItemData = JSON.parse(
       safeJsonStringify(postObject)

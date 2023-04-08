@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { OpenPanelName, PostItemData } from "../../types/Post";
 import PostComments from "../../Modals/Post/PostComments";
-import PostMain from "../../Post/PostMain";
+import PostFront from "../../Post/PostFront";
 import PostLikes from "../../Modals/Post/PostLikes";
 import PostMakeNFT from "@/components/Modals/Post/PostMakeNFT";
 
@@ -10,8 +10,6 @@ type Props = {
 };
 
 export default function PostItem({ postItemData }: Props) {
-  const { commentsCollectionPath, ...postMainData } = postItemData;
-
   const [openPanelName, setOpenPanelName] = useState<OpenPanelName>("main");
 
   // Update realtime comment count when add or delete (locally)
@@ -19,14 +17,14 @@ export default function PostItem({ postItemData }: Props) {
 
   return (
     <>
-      <PostMain
-        postMainData={{ ...postMainData, commentCount: commentCount }}
+      <PostFront
+        postFrontData={{ ...postItemData, commentCount: commentCount }}
         openPanelNameSetter={setOpenPanelName}
         commentCountSetter={setCommentCount}
       />
       <PostComments
         commentsInfo={{
-          postCommentsColPath: postItemData.commentsCollectionPath,
+          postCommentsColPath: `${postItemData.postDocPath}/comments`,
           postCommentCount: commentCount,
         }}
         openPanelNameSetter={setOpenPanelName}
@@ -36,7 +34,7 @@ export default function PostItem({ postItemData }: Props) {
       <PostLikes
         likeData={{
           likeCount: postItemData.likeCount,
-          likeDocPath: postItemData.likeDocPath,
+          likeDocPath: postItemData.postDocPath,
         }}
         openPanelNameSetter={setOpenPanelName}
         openPanelNameValue={openPanelName}
@@ -44,11 +42,8 @@ export default function PostItem({ postItemData }: Props) {
       <PostMakeNFT
         openPanelNameValue={openPanelName}
         openPanelNameValueSetter={setOpenPanelName}
-        postInformation={postMainData}
-        postDocPath={postItemData.commentsCollectionPath.substring(
-          0,
-          postItemData.commentsCollectionPath.indexOf("comments")
-        )}
+        postInformation={postItemData}
+        postDocPath={postItemData.postDocPath}
       />
     </>
   );

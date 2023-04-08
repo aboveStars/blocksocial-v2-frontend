@@ -89,18 +89,19 @@ export default function Home() {
       for (const doc of mainIndexSourcePostsDatasSnapshot.docs) {
         const postDataObject: PostItemData = {
           senderUsername: doc.data().senderUsername,
+
           description: doc.data().description,
           image: doc.data().image,
+
           likeCount: doc.data().likeCount,
           whoLiked: doc.data().whoLiked,
-          likeDocPath: `users/${doc.data().senderUsername}/posts/${doc.id}`,
+
+          postDocPath : `users/${doc.data().senderUsername}/posts/${doc.id}`,
+
           commentCount: doc.data().commentCount,
-          commentsCollectionPath: `users/${doc.data().senderUsername}/posts/${
-            doc.id
-          }/comments`,
+
           nftUrl: doc.data().nftUrl,
           creationTime: doc.data().creationTime,
-          id: doc.data().id,
         };
         const serializablePostData: PostItemData = JSON.parse(
           safeJsonStringify(postDataObject)

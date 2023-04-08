@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
 import * as admin from "firebase-admin";
-import { PostMainData } from "@/components/types/Post";
+import { PostServerData } from "@/components/types/Post";
 import { serverTimestamp, Timestamp } from "firebase/firestore";
 import safeJsonStringify from "safe-json-stringify";
 
@@ -54,7 +54,7 @@ export default async function handler(
         postImagePublicURL = file.publicUrl();
       }
 
-      const newPostData: PostMainData = {
+      const newPostData: PostServerData = {
         senderUsername: username,
         description: description,
         image: postImagePublicURL,
@@ -63,7 +63,6 @@ export default async function handler(
         commentCount: 0,
         nftUrl: "",
         creationTime: Date.now(),
-        id: Date.now().toString(),
       };
 
       const serializeableNewPostData = JSON.parse(

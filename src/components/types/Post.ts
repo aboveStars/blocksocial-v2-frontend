@@ -5,21 +5,54 @@ export type PostCreateForm = {
   image: string;
 };
 
-export type PostItemData = {
+export type PostServerData = {
   senderUsername: string;
 
   description: string;
   image: string;
   likeCount: number;
   whoLiked: string[];
-  likeDocPath: string;
   commentCount: number;
-  commentsCollectionPath: string;
 
   nftUrl?: string;
 
   creationTime: number;
-  id: string;
+};
+
+export type PostItemData = {
+  senderUsername: string;
+
+  description: string;
+  image: string;
+
+  likeCount: number;
+  whoLiked: string[];
+
+  commentCount: number;
+
+  postDocPath: string;
+
+  nftUrl?: string;
+
+  creationTime: number;
+};
+
+export type PostFrontData = {
+  senderUsername: string;
+
+  description: string;
+  image: string;
+
+  likeCount: number;
+  whoLiked: string[];
+
+  commentCount: number;
+
+  postDocPath: string;
+
+  nftUrl?: string;
+
+  creationTime: number;
 };
 
 export type SmallPostItemData = {
@@ -30,21 +63,6 @@ export type SmallPostItemData = {
   commentCount: number;
 
   creationTime: number;
-};
-
-export type PostMainData = {
-  senderUsername: string;
-
-  description: string;
-  image: string;
-  likeCount: number;
-  whoLiked: string[];
-  commentCount: number;
-
-  nftUrl?: string;
-
-  creationTime: number;
-  id: string;
 };
 
 export type CommentData = {

@@ -40,16 +40,19 @@ import { CgProfile } from "react-icons/cg";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
-import { OpenPanelName, PostMainData } from "../types/Post";
+import { OpenPanelName, PostFrontData } from "../types/Post";
 import usePostDelete from "@/hooks/usePostDelete";
 
 type Props = {
-  postMainData: PostMainData;
+  postFrontData: PostFrontData;
   openPanelNameSetter: React.Dispatch<React.SetStateAction<OpenPanelName>>;
   commentCountSetter: React.Dispatch<React.SetStateAction<number>>;
 };
 
-export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
+export default function PostFront({
+  postFrontData,
+  openPanelNameSetter,
+}: Props) {
   const [postSenderProfilePhotoURL, setPostSenderProfilePhotoURL] =
     useState("");
 
@@ -61,7 +64,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
     useRecoilState(currentUserStateAtom);
 
   // To update post values locally
-  const [ostensiblePostData, setOstensiblePostData] = useState(postMainData);
+  const [ostensiblePostData, setOstensiblePostData] = useState(postFrontData);
 
   const router = useRouter();
 
@@ -100,34 +103,34 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
 
   const handleFollowOnPost = () => {
     // Follow
-    follow(postMainData.senderUsername, 1);
+    follow(postFrontData.senderUsername, 1);
     // Current User Update (locally)
     setCurrentUserState((prev) => ({
       ...prev,
       followingCount: prev.followingCount + 1,
-      followings: prev.followings.concat(postMainData.senderUsername),
+      followings: prev.followings.concat(postFrontData.senderUsername),
     }));
   };
 
   useEffect(() => {
-    if (postMainData) {
-      handleGetPostSenderData(postMainData.senderUsername);
+    if (postFrontData) {
+      handleGetPostSenderData(postFrontData.senderUsername);
     }
-  }, [postMainData]);
+  }, [postFrontData]);
 
   /**
    * I gave UID just because, I can not trust 'currentUserState'
    * There is no UID usage in here so.
    */
   useEffect(() => {
-    if (!postMainData || !currentUserState.uid) {
+    if (!postFrontData || !currentUserState.uid) {
       return;
     }
     const followingStatus: boolean = currentUserState.followings.includes(
-      postMainData.senderUsername
+      postFrontData.senderUsername
     );
     setIsCurrentUserFollowThisPostSender(followingStatus);
-  }, [postMainData, currentUserState]);
+  }, [postFrontData, currentUserState]);
 
   // Skeleton Height Adjustment
   useEffect(() => {
@@ -166,12 +169,12 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
             )
           }
           cursor="pointer"
-          onClick={() => router.push(`/users/${postMainData.senderUsername}`)}
+          onClick={() => router.push(`/users/${postFrontData.senderUsername}`)}
         />
         <Flex direction="column">
           <Flex align="center">
             <Text textColor="white" as="b" fontSize="12pt">
-              {postMainData.senderUsername}
+              {postFrontData.senderUsername}
             </Text>
           </Flex>
 
@@ -184,7 +187,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
             <Icon as={BsDot} color="white" fontSize="13px" />
 
             <Text as="i" fontSize="9pt" textColor="gray.500">
-              {moment(new Date(postMainData.creationTime)).fromNow()}
+              {moment(new Date(postFrontData.creationTime)).fromNow()}
             </Text>
           </Flex>
         </Flex>
@@ -198,7 +201,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
             hidden={
               !currentUserState.username ||
               isCurrentUserFollowThisPostSender ||
-              currentUserState.username == postMainData.senderUsername ||
+              currentUserState.username == postFrontData.senderUsername ||
               router.asPath.includes("users")
             }
           >
@@ -206,7 +209,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
           </Button>
 
           <Flex
-            hidden={currentUserState.username !== postMainData.senderUsername}
+            hidden={currentUserState.username !== postFrontData.senderUsername}
             width="100%"
           >
             <Menu computePositionOnMount>
@@ -255,12 +258,12 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
                     colorScheme="red"
                     size="md"
                     onClick={async () => {
-                      await postDelete(postMainData.id);
+                      await postDelete(postFrontData.postDocPath);
                       setIsThisPostDeleted(true);
                     }}
                     isLoading={postDeletionLoading}
                     hidden={
-                      currentUserState.username !== postMainData.senderUsername
+                      currentUserState.username !== postFrontData.senderUsername
                     }
                   >
                     Delete
@@ -272,10 +275,10 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
         </Flex>
       </Flex>
 
-      {postMainData.image && (
+      {postFrontData.image && (
         <Image
           alt=""
-          src={postMainData.image}
+          src={postFrontData.image}
           width="100%"
           fallback={
             <Flex align="center" justify="center">
@@ -300,7 +303,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
       >
         <Flex ml={2} mt={2}>
           <Text fontSize="13pt" fontWeight="medium" textColor="white">
-            {postMainData.description}
+            {postFrontData.description}
           </Text>
         </Flex>
         <Flex>
@@ -315,7 +318,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
                   fontSize="25px"
                   cursor="pointer"
                   onClick={() => {
-                    like(postMainData.id, postMainData.senderUsername, -1);
+                    like(postFrontData.postDocPath, -1);
                     setOstensiblePostData((prev) => ({
                       ...prev,
                       likeCount: prev.likeCount - 1,
@@ -341,7 +344,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
                       }));
                       return;
                     }
-                    like(postMainData.id, postMainData.senderUsername, 1);
+                    like(postFrontData.postDocPath, 1);
                     setOstensiblePostData((prev) => ({
                       ...prev,
                       likeCount: prev.likeCount + 1,
@@ -370,7 +373,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
               }}
             >
               <Icon as={AiOutlineComment} color="white" fontSize="25px" />
-              <Text textColor="white">{postMainData.commentCount}</Text>
+              <Text textColor="white">{postFrontData.commentCount}</Text>
             </Flex>
           </Flex>
 
@@ -382,9 +385,9 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
             mr="2"
             cursor="pointer"
             onClick={() => {
-              window.open(postMainData.nftUrl);
+              window.open(postFrontData.nftUrl);
             }}
-            hidden={!!!postMainData.nftUrl}
+            hidden={!!!postFrontData.nftUrl}
           >
             <Image
               alt=""
