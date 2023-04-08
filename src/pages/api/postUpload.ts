@@ -1,8 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-import * as admin from "firebase-admin";
 import { PostServerData } from "@/components/types/Post";
-import { serverTimestamp, Timestamp } from "firebase/firestore";
+import * as admin from "firebase-admin";
 import safeJsonStringify from "safe-json-stringify";
 
 const buffer = Buffer.from(
