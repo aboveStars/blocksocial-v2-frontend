@@ -260,6 +260,7 @@ export default function PostFront({
                     onClick={async () => {
                       await postDelete(postFrontData.postDocPath);
                       setIsThisPostDeleted(true);
+                      setShowDeleteUserDialog(false);
                     }}
                     isLoading={postDeletionLoading}
                     hidden={

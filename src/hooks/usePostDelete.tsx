@@ -1,5 +1,3 @@
-import { firestore } from "@/firebase/clientApp";
-import { deleteDoc, doc } from "firebase/firestore";
 import { useState } from "react";
 
 export default function usePostDelete() {
@@ -9,10 +7,26 @@ export default function usePostDelete() {
     setPostDeletionLoading(true);
     console.log("Post Deletion is started");
 
-    const postDocRefToDelete = doc(firestore, postDocPath);
-    await deleteDoc(postDocRefToDelete);
-    console.log("Post successfully finished");
-    setPostDeletionLoading(false);
+    const response = await fetch("/api/postDelete", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ postDocPath: postDocPath }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 500) {
+        const { firebaseError } = await response.json();
+        console.error("Firebase Error while deleting post", firebaseError);
+      } else {
+        const { error } = await response.json();
+        console.error("Non-Firebase Error while deleting post", error);
+      }
+    } else {
+      console.log("Post successfully finished");
+      setPostDeletionLoading(false);
+    }
   };
   return {
     postDelete,

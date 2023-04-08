@@ -1,5 +1,5 @@
-import * as admin from "firebase-admin";
 import { NextApiRequest, NextApiResponse } from "next";
+import * as admin from "firebase-admin";
 
 const buffer = Buffer.from(
   process.env.NEXT_PUBLIC_GOOGLE_APPLICATION_CREDENTIALS_BASE64 as string,
@@ -22,25 +22,14 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "POST") {
-    const { opCode, postDocPath, username: likerUsername } = req.body;
-    if (!opCode || !postDocPath || !likerUsername) {
-      res.status(405).json({ error: "Method not allowed" });
-      return;
-    }
+  if (req.method === "DELETE") {
+    const { postDocPath } = req.body;
+
     try {
-      await firestore.doc(postDocPath).update({
-        likeCount: admin.firestore.FieldValue.increment(opCode as number),
-      });
-      await firestore.doc(postDocPath).update({
-        whoLiked:
-          opCode === 1
-            ? admin.firestore.FieldValue.arrayUnion(likerUsername)
-            : admin.firestore.FieldValue.arrayRemove(likerUsername),
-      });
+      await firestore.doc(postDocPath).delete();
       res.status(200).json({});
     } catch (error) {
-      console.error(error);
+      console.error("Error while deleting doc", error);
       res.status(500).json({ firebaseError: error });
     }
   } else {
