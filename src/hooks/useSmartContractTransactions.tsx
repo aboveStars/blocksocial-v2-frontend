@@ -33,7 +33,7 @@ export default function useSmartContractTransactions() {
     senderUsername: string,
     image: string,
     postDocPath: string,
-    creationTime: Timestamp,
+    creationTime: number,
     likeCount: number,
     commentCount: number
   ) => {
@@ -48,7 +48,7 @@ export default function useSmartContractTransactions() {
         {
           display_type: "date",
           trait_type: "Post Creation",
-          value: creationTime.seconds,
+          value: creationTime / 1000,
         },
         {
           display_type: "date",
