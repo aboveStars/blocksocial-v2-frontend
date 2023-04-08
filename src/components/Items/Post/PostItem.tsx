@@ -24,7 +24,7 @@ export default function PostItem({ postItemData }: Props) {
       />
       <PostComments
         commentsInfo={{
-          postCommentsColPath: `${postItemData.postDocPath}/comments`,
+          postDocPath: postItemData.postDocPath,
           postCommentCount: commentCount,
         }}
         openPanelNameSetter={setOpenPanelName}

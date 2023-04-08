@@ -33,7 +33,7 @@ import useSortByUsername from "@/hooks/useSortByUsername";
 type Props = {
   commentsInfo: {
     postCommentCount: number;
-    postCommentsColPath: string;
+    postDocPath: string;
   };
 
   openPanelNameValue: OpenPanelName;
@@ -80,7 +80,7 @@ export default function PostComments({
 
     const postCommentsCollection = collection(
       firestore,
-      commentsInfo.postCommentsColPath
+      `${commentsInfo.postDocPath}/comments`
     );
     const commentDocQuery = query(
       postCommentsCollection,
@@ -93,7 +93,7 @@ export default function PostComments({
 
     postCommentsDocs.forEach((doc) => {
       const commentDataObject: CommentDataWithCommentDocPath = {
-        commentDocPath: `${commentsInfo.postCommentsColPath}/${doc.id}`,
+        commentDocPath: `${commentsInfo.postDocPath}/comments/${doc.id}`,
         commentSenderUsername: doc.data().commentSenderUsername,
         comment: doc.data().comment,
         creationTime: doc.data().creationTime,
@@ -246,14 +246,14 @@ export default function PostComments({
               fontSize="20pt"
               onClick={() => {
                 if (currentComment.length === 0) return;
-                sendComment(commentsInfo.postCommentsColPath, currentComment);
+                sendComment(commentsInfo.postDocPath, currentComment);
                 if (commentInputRef.current) commentInputRef.current.value = "";
                 setCommentsDatasWithCommentDocPath((prev) => [
                   {
                     commentDocPath: "",
                     comment: currentComment,
                     commentSenderUsername: currentUserState.username,
-                    creationTime: new Timestamp(Date.now() / 1000, 0),
+                    creationTime: Date.now(),
                   },
                   ...prev,
                 ]);

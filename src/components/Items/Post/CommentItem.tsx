@@ -130,9 +130,7 @@ export default function CommentItem({
             <Icon as={BsDot} color="white" fontSize="13px" />
             <Text as="i" fontSize="8pt" textColor="gray.300">
               {moment(
-                new Date(
-                  commentDataWithCommentDocId.creationTime.seconds * 1000
-                )
+                new Date(commentDataWithCommentDocId.creationTime)
               ).fromNow(true)}
             </Text>
           </Flex>

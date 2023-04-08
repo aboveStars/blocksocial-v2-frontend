@@ -68,14 +68,14 @@ export type SmallPostItemData = {
 export type CommentData = {
   commentSenderUsername: string;
   comment: string;
-  creationTime: Timestamp;
+  creationTime: number
 };
 
 export type CommentDataWithCommentDocPath = {
   commentDocPath: string;
   commentSenderUsername: string;
   comment: string;
-  creationTime: Timestamp;
+  creationTime: number
 };
 
 export type OpenPanelName = "main" | "comments" | "likes" | "nft";
