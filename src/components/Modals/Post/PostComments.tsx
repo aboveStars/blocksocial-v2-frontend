@@ -162,6 +162,9 @@ export default function PostComments({
                 commentDataWithCommentDocId={cdwcdi}
                 openPanelNameSetter={openPanelNameSetter}
                 commentCountSetter={commentCountSetter}
+                commentsDatasWithCommentDocPathSetter={
+                  setCommentsDatasWithCommentDocPath
+                }
               />
             ))}
           </Stack>
@@ -246,19 +249,27 @@ export default function PostComments({
               fontSize="20pt"
               onClick={() => {
                 if (currentComment.length === 0) return;
+
                 sendComment(commentsInfo.postDocPath, currentComment);
                 if (commentInputRef.current) commentInputRef.current.value = "";
-                setCommentsDatasWithCommentDocPath((prev) => [
-                  {
-                    commentDocPath: "",
-                    comment: currentComment,
-                    commentSenderUsername: currentUserState.username,
-                    creationTime: Date.now(),
-                  },
-                  ...prev,
-                ]);
+                const newCommentData: CommentDataWithCommentDocPath = {
+                  commentDocPath: "",
+                  comment: currentComment,
+                  commentSenderUsername: currentUserState.username,
+                  creationTime: Date.now(),
+                };
+
+                const prevCommentsDatasWithCommentDocPath =
+                  commentsDatasWithCommentDocPath;
+                prevCommentsDatasWithCommentDocPath.unshift(newCommentData);
+
+                setCommentsDatasWithCommentDocPath(
+                  prevCommentsDatasWithCommentDocPath
+                );
 
                 commentCountSetter((prev) => prev + 1);
+
+                setCurrentComment("");
               }}
             />
           </Flex>

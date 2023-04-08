@@ -28,12 +28,17 @@ type Props = {
   commentDataWithCommentDocId: CommentDataWithCommentDocPath;
   openPanelNameSetter: React.Dispatch<SetStateAction<OpenPanelName>>;
   commentCountSetter: React.Dispatch<SetStateAction<number>>;
+
+  commentsDatasWithCommentDocPathSetter: React.Dispatch<
+    SetStateAction<CommentDataWithCommentDocPath[]>
+  >;
 };
 
 export default function CommentItem({
   commentDataWithCommentDocId,
   openPanelNameSetter,
   commentCountSetter,
+  commentsDatasWithCommentDocPathSetter,
 }: Props) {
   const [commentSenderPhoto, setCommentSenderPhoto] = useState("");
   const [gettingCommentSenderPhoto, setGettingCommentSenderPhoto] =
@@ -44,8 +49,6 @@ export default function CommentItem({
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
   const { commentDelete } = useCommentDelete();
-
-  const [isThisCommentDeleted, setIsThisCommentDeleted] = useState(false);
 
   const [
     newCommentDeletionErrorModalOpen,
@@ -72,7 +75,7 @@ export default function CommentItem({
   };
 
   return (
-    <Flex justify="space-between" align="center" hidden={isThisCommentDeleted}>
+    <Flex justify="space-between" align="center">
       <Flex id="comment" height="50px" align="center" gap={2}>
         <Image
           alt=""
@@ -156,7 +159,13 @@ export default function CommentItem({
               setNewCommentDeletionErrorModalOpen(true);
             } else {
               commentDelete(commentDataWithCommentDocId.commentDocPath);
-              setIsThisCommentDeleted(true);
+              commentsDatasWithCommentDocPathSetter((prev) =>
+                prev.filter(
+                  (a) =>
+                    a.commentDocPath !==
+                    commentDataWithCommentDocId.commentDocPath
+                )
+              );
               commentCountSetter((prev) => prev - 1);
             }
           }}
