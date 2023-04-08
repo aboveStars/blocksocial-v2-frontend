@@ -21,7 +21,6 @@ export default function PostCreateButton() {
             cursor="pointer"
             onClick={() => {
               setPostCreateModalState({ isOpen: true });
-              console.log("Post Create Fired");
             }}
           />
         )}

@@ -18,7 +18,7 @@ export type PostItemData = {
 
   nftUrl?: string;
 
-  creationTime: Timestamp;
+  creationTime: number;
   id: string;
 };
 
@@ -29,7 +29,7 @@ export type SmallPostItemData = {
 
   commentCount: number;
 
-  creationTime: Timestamp;
+  creationTime: number;
 };
 
 export type PostMainData = {
@@ -43,7 +43,7 @@ export type PostMainData = {
 
   nftUrl?: string;
 
-  creationTime: Timestamp;
+  creationTime: number;
   id: string;
 };
 

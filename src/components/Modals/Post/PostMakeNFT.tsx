@@ -71,14 +71,6 @@ export default function PostMakeNFT({
     console.log("SendNFTSuccessfull");
   };
 
-  useEffect(() => {
-    console.log(sendNftStatus);
-  }, [sendNftStatus]);
-
-  useEffect(() => {
-    console.log(nftDescription);
-  }, [nftDescription]);
-
   const resetStatesAfterNFTCreation = () => {
     setSendNftStatus("initial");
     setRequestSent(false);
@@ -303,6 +295,7 @@ export default function PostMakeNFT({
                 colorScheme="blue"
                 onClick={() => {
                   resetStatesAfterAbandon();
+                  openPanelNameValueSetter("main");
                 }}
                 isDisabled={!(sendNftStatus === "initial")}
               >

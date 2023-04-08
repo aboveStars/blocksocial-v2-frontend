@@ -44,7 +44,7 @@ export default function Home() {
     const shuffledPostsArray = [...postsDatasArray];
     shuffledPostsArray.sort(() => Math.random() - 0.5);
     shuffledPostsArray.sort(
-      (postA, postB) => postB.creationTime.seconds - postA.creationTime.seconds
+      (postA, postB) => postB.creationTime - postA.creationTime
     );
     return shuffledPostsArray;
   };

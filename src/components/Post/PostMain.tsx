@@ -33,7 +33,7 @@ import { BsDot, BsImage } from "react-icons/bs";
 import { firestore } from "@/firebase/clientApp";
 import useFollow from "@/hooks/useFollow";
 import usePost from "@/hooks/usePost";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, Timestamp } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
 import { CgProfile } from "react-icons/cg";
@@ -148,7 +148,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
         borderRadius="10px 10px 0px 0px"
       >
         <Image
-        alt=""
+          alt=""
           src={postSenderProfilePhotoURL}
           width="50px"
           height="50px"
@@ -184,9 +184,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
             <Icon as={BsDot} color="white" fontSize="13px" />
 
             <Text as="i" fontSize="9pt" textColor="gray.500">
-              {moment(
-                new Date(postMainData.creationTime.seconds * 1000)
-              ).fromNow()}
+              {moment(new Date(postMainData.creationTime)).fromNow()}
             </Text>
           </Flex>
         </Flex>
@@ -276,7 +274,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
 
       {postMainData.image && (
         <Image
-        alt=""
+          alt=""
           src={postMainData.image}
           width="100%"
           fallback={
@@ -389,7 +387,7 @@ export default function PostMain({ postMainData, openPanelNameSetter }: Props) {
             hidden={!!!postMainData.nftUrl}
           >
             <Image
-            alt=""
+              alt=""
               src="https://storage.googleapis.com/opensea-static/Logomark/Logomark-Blue.png"
               width="30px"
               height="30px"
