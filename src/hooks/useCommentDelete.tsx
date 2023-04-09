@@ -1,6 +1,3 @@
-import { firestore } from "@/firebase/clientApp";
-
-import { deleteDoc, doc, increment, updateDoc } from "firebase/firestore";
 import { useState } from "react";
 
 export default function useCommentDelete() {
@@ -12,28 +9,38 @@ export default function useCommentDelete() {
       return;
     }
 
-    // Comment Deletion
-    if (commentDeletionLoading) {
-      console.log("Already deleting...");
-      return;
-    }
     setCommentDeletionLoading(true);
-    console.log("Comment Deletion is started");
 
-    await deleteDoc(doc(firestore, userCommentDocPath));
-
-    console.log("Comment Deletion is succesfull");
-
-    // Update Comment Count
     const fullPath = userCommentDocPath;
     const subStringtoDeleteIndex = fullPath.indexOf("comments");
     const postDocPath = fullPath.substring(0, subStringtoDeleteIndex);
 
-    updateDoc(doc(firestore, postDocPath), {
-      commentCount: increment(-1),
+    console.log("Comment Deletion is started");
+
+    const response = await fetch("/api/postCommentDelete", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        commentDocPath: userCommentDocPath,
+        postDocPath: postDocPath,
+      }),
     });
 
-    setCommentDeletionLoading(false);
+    if (!response.ok) {
+      if (response.status === 500) {
+        const { firebaseError } = await response.json();
+        console.error("Firebase Error while deleting post", firebaseError);
+      } else {
+        const { error } = await response.json();
+        console.error("Non-Firebase Error while deleting post", error);
+      }
+    } else {
+      console.log("Comment Deletion is succesfull");
+
+      setCommentDeletionLoading(false);
+    }
   };
   return {
     commentDelete,

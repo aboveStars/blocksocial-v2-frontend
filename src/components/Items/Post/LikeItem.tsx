@@ -80,6 +80,7 @@ export default function LikeItem({
     <Flex height="60px" align="center" justify="space-between">
       <Flex gap={2}>
         <Image
+          alt=""
           src={likerUserInformation.likerProfilePhoto}
           rounded="full"
           width="50px"

@@ -1,12 +1,6 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
-import { firestore, storage } from "@/firebase/clientApp";
-import { doc, updateDoc } from "firebase/firestore";
-import {
-  deleteObject,
-  getDownloadURL,
-  ref,
-  uploadString,
-} from "firebase/storage";
+import { FirestoreError } from "firebase/firestore";
+import { StorageError } from "firebase/storage";
 import React, { useState } from "react";
 import { useRecoilState } from "recoil";
 
@@ -17,7 +11,8 @@ export default function useProfilePhoto() {
 
   const [profilePhotoUploadLoading, setProfilePhotoUploadLoading] =
     useState(false);
-  const [profilePhotoUploadError, setProfilePhotoUploadError] = useState(false);
+  // Both deleteing and uplaoding
+  const [profilePhotoError, setProfilePhotoError] = useState("");
 
   const [willBeCroppedProfilePhoto, setWillBeCroppedProfilePhoto] =
     useState("");
@@ -28,7 +23,6 @@ export default function useProfilePhoto() {
   const onSelectWillBeCroppedProfilePhoto = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    console.log("OnSelectToBeCropped Triggered!");
     if (!event.target.files) {
       console.log(
         "No Files Provided to onSelectWillBeCropped \n aborting....."
@@ -42,7 +36,6 @@ export default function useProfilePhoto() {
     reader.readAsDataURL(file);
 
     reader.onload = (readerEvent) => {
-      console.log("onLoad fired, now we update state");
       setWillBeCroppedProfilePhoto(readerEvent.target?.result as string);
     };
   };
@@ -51,109 +44,89 @@ export default function useProfilePhoto() {
    * Profile Photo Uploading to Database
    */
   const profilePhotoUpload = async () => {
-    let errorHappened: boolean = false;
-    setProfilePhotoUploadError(false);
+    setProfilePhotoError("");
+    setProfilePhotoUploadLoading(true);
 
-    setProfilePhotoUploadLoading((prev) => true);
+    const response = await fetch("/api/profilePhotoChange", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: currentUserState.username,
+        image: selectedProfilePhoto,
+      }),
+    });
 
-    const username = currentUserState.username;
-    const fileName = Date.now();
-    // client => storage
-    const imageRef = ref(
-      storage,
-      `users/${username}/profilePhotos/${fileName}`
+    if (!response.ok) {
+      // Firebase Errors
+      if (response.status === 500) {
+        const { firebaseError } = await response.json();
+        console.error(
+          "Firebase Error while uploading profile photo: ",
+          firebaseError
+        );
+
+        setProfilePhotoError(
+          (firebaseError as FirestoreError | StorageError).message
+        );
+      } else {
+        const { error } = await response.json();
+        setProfilePhotoError(error as string);
+        console.error(
+          "Not-Firebase Error while uploading profile photo: ",
+          error
+        );
+      }
+
+      setProfilePhotoUploadLoading(false);
+      return;
+    }
+
+    const { username, newProfilePhotoURL } = await response.json();
+
+    console.log(
+      `Uploading profile photo for ${username} and its new pp link: ${newProfilePhotoURL}`
     );
 
-    try {
-      await uploadString(imageRef, selectedProfilePhoto, "data_url");
-    } catch (error) {
-      console.log("Error while uploading pp to storage: ", error);
-      errorHappened = true;
-    }
-
-    if (errorHappened) {
-      setProfilePhotoUploadLoading(false);
-      setProfilePhotoUploadError(true);
-      return;
-    }
-
-    // Check Upload result
-
-    // AFter here, now we adding image soruce to firestore (storage => firestore)
-    let downloadableImageURL: string = "";
-
-    try {
-      downloadableImageURL = await getDownloadURL(imageRef);
-    } catch (error) {
-      console.log("Error while creating 'downloadURL' : ", error);
-      errorHappened = true;
-    }
-
-    if (errorHappened) {
-      console.log(
-        "Due to an error at 'creation of downloadURL' we are taking back all stuff we did"
-      );
-
-      console.log("Deleting image from 'firebase/storage'");
-      await deleteObject(imageRef);
-      console.log("Deletaion successfull");
-
-      setProfilePhotoUploadLoading(false);
-      setProfilePhotoUploadError(true);
-      return;
-    }
-
-    const firestoreDocRef = doc(firestore, `users/${username}`);
-
-    try {
-      await updateDoc(firestoreDocRef, {
-        profilePhoto: downloadableImageURL,
-      });
-    } catch (error) {
-      console.log(
-        "Error while putting downloadable Image URL to Firestore:  ",
-        error
-      );
-      errorHappened = true;
-    }
-
-    if (errorHappened) {
-      console.log(
-        "Due to error at putting URL to firestore, we are taking back all stuff we did"
-      );
-
-      console.log("Deleting image from 'firebase/storage'");
-      await deleteObject(imageRef);
-      console.log("Deletaion successfull");
-
-      setProfilePhotoUploadLoading(false);
-      setProfilePhotoUploadError(true);
-      return;
-    }
-
-    console.log("Profile Photo Uploading Successfull");
-
-    // State Updates
-    // (until refresh, user normally will not be able to see its new image so we change it manually)
     setCurrentUserState((prev) => ({
       ...prev,
-      profilePhoto: downloadableImageURL,
+      profilePhoto: newProfilePhotoURL,
     }));
 
     setProfilePhotoUploadLoading(false);
   };
 
   const profilePhotoDelete = async () => {
+    setProfilePhotoError("");
     setProfilePhotoDeleteLoading(true);
-    const currentUserDocRef = doc(
-      firestore,
-      `users/${currentUserState.username}`
-    );
-    console.log("Profile Photo Deleting");
-    await updateDoc(currentUserDocRef, {
-      profilePhoto: "",
+
+    const response = await fetch("/api/profilePhotoChange", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username: currentUserState.username }),
     });
-    console.log("Profile Photo Deleted");
+
+    if (!response.ok) {
+      if (response.status === 500) {
+        const { firebaseError } = await response.json();
+        console.error((firebaseError as FirestoreError).message);
+        setProfilePhotoError((firebaseError as FirestoreError).message);
+      } else {
+        const { error } = await response.json();
+        console.error("Non-Firebase Error: ", error);
+        setProfilePhotoError(error as string);
+      }
+
+      setProfilePhotoDeleteLoading(false);
+      return;
+    }
+
+    const { username: profilePhotoDeletedUsername } = await response.json();
+    console.log(`Profile photo of ${profilePhotoDeletedUsername} is deleted!`);
+
     // State Updates
     setProfilePhotoDeleteLoading(false);
     setCurrentUserState((prev) => ({
@@ -172,11 +145,11 @@ export default function useProfilePhoto() {
     setSelectedProfilePhoto,
     profilePhotoUpload,
     profilePhotoUploadLoading,
-    profilePhotoUploadError,
     profilePhotoDelete,
     profilePhotoDeleteLoading,
     onSelectWillBeCroppedProfilePhoto,
     willBeCroppedProfilePhoto,
     setWillBeCroppedProfilePhoto,
+    profilePhotoError
   };
 }

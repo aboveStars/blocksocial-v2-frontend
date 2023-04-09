@@ -11,7 +11,7 @@ export default function PostCreateButton() {
   const currentUserState = useRecoilValue(currentUserStateAtom);
   return (
     <>
-      <PostCreateModal />
+     
       <Flex id="button">
         {currentUserState.isThereCurrentUser && (
           <Icon
@@ -21,7 +21,6 @@ export default function PostCreateButton() {
             cursor="pointer"
             onClick={() => {
               setPostCreateModalState({ isOpen: true });
-              console.log("Post Create Fired");
             }}
           />
         )}

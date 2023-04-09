@@ -28,12 +28,17 @@ type Props = {
   commentDataWithCommentDocId: CommentDataWithCommentDocPath;
   openPanelNameSetter: React.Dispatch<SetStateAction<OpenPanelName>>;
   commentCountSetter: React.Dispatch<SetStateAction<number>>;
+
+  commentsDatasWithCommentDocPathSetter: React.Dispatch<
+    SetStateAction<CommentDataWithCommentDocPath[]>
+  >;
 };
 
 export default function CommentItem({
   commentDataWithCommentDocId,
   openPanelNameSetter,
   commentCountSetter,
+  commentsDatasWithCommentDocPathSetter,
 }: Props) {
   const [commentSenderPhoto, setCommentSenderPhoto] = useState("");
   const [gettingCommentSenderPhoto, setGettingCommentSenderPhoto] =
@@ -44,8 +49,6 @@ export default function CommentItem({
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
   const { commentDelete } = useCommentDelete();
-
-  const [isThisCommentDeleted, setIsThisCommentDeleted] = useState(false);
 
   const [
     newCommentDeletionErrorModalOpen,
@@ -72,9 +75,10 @@ export default function CommentItem({
   };
 
   return (
-    <Flex justify="space-between" align="center" hidden={isThisCommentDeleted}>
+    <Flex justify="space-between" align="center">
       <Flex id="comment" height="50px" align="center" gap={2}>
         <Image
+          alt=""
           src={commentSenderPhoto}
           rounded="full"
           width="35px"
@@ -129,9 +133,7 @@ export default function CommentItem({
             <Icon as={BsDot} color="white" fontSize="13px" />
             <Text as="i" fontSize="8pt" textColor="gray.300">
               {moment(
-                new Date(
-                  commentDataWithCommentDocId.creationTime.seconds * 1000
-                )
+                new Date(commentDataWithCommentDocId.creationTime)
               ).fromNow(true)}
             </Text>
           </Flex>
@@ -157,7 +159,13 @@ export default function CommentItem({
               setNewCommentDeletionErrorModalOpen(true);
             } else {
               commentDelete(commentDataWithCommentDocId.commentDocPath);
-              setIsThisCommentDeleted(true);
+              commentsDatasWithCommentDocPathSetter((prev) =>
+                prev.filter(
+                  (a) =>
+                    a.commentDocPath !==
+                    commentDataWithCommentDocId.commentDocPath
+                )
+              );
               commentCountSetter((prev) => prev - 1);
             }
           }}
@@ -175,7 +183,8 @@ export default function CommentItem({
               </AlertDialogHeader>
 
               <AlertDialogBody>
-                You need to open comment dialog again to delete this comment due to technical issues.
+                You need to open comment dialog again to delete this comment due
+                to technical issues.
               </AlertDialogBody>
 
               <AlertDialogFooter>

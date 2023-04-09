@@ -111,6 +111,7 @@ export default function FollowItem({
         }}
       >
         <Image
+        alt=""
           src={followItemState.profilePhoto}
           rounded="full"
           width="50px"

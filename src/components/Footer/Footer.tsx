@@ -27,7 +27,7 @@ export default function Footer() {
         </Text>
       </Flex>
       <Text as="i" textColor="gray.400" fontSize="5pt">
-        Version Alpha 0.5.0
+        Version 0.6.0
       </Text>
     </Flex>
   );

@@ -1,12 +1,4 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
-import { firestore } from "@/firebase/clientApp";
-import {
-  arrayRemove,
-  arrayUnion,
-  doc,
-  increment,
-  updateDoc,
-} from "firebase/firestore";
 import { useRecoilValue } from "recoil";
 
 export default function useFollow() {
@@ -28,34 +20,32 @@ export default function useFollow() {
       return;
     }
 
-    // Update to be followed user
-    console.log("Updating otherman's data");
-    const toBeFollowedDocRef = doc(firestore, `users/${operateToUserName}`);
-    await updateDoc(toBeFollowedDocRef, {
-      followerCount: increment(opCode),
-      followers:
-        opCode == 1
-          ? arrayUnion(currentUserState.username)
-          : arrayRemove(currentUserState.username),
+    const response = await fetch("/api/follow", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        operationFrom: currentUserState.username,
+        operationTo: operateToUserName,
+        opCode: opCode,
+      }),
     });
 
-    // update current user
-
-    console.log("Updating Our Data");
-
-    const currentUserDocRef = doc(
-      firestore,
-      `users/${currentUserState.username}`
-    );
-    await updateDoc(currentUserDocRef, {
-      followingCount: increment(opCode),
-      followings:
-        opCode == 1
-          ? arrayUnion(operateToUserName)
-          : arrayRemove(operateToUserName),
-    });
-
-    console.log("Following Operation Successfull");
+    if (!response.ok) {
+      if (response.status === 500) {
+        const { firebaseError } = await response.json();
+        console.error(
+          "Firebase Error while following operation",
+          firebaseError
+        );
+      } else {
+        const { error } = await response.json();
+        console.error("Firebase Error while following operation", error);
+      }
+    } else {
+      console.log("Following Operation Successfull");
+    }
   };
 
   return { follow };

@@ -30,6 +30,7 @@ export default function SearchItem({
       }}
     >
       <Image
+        alt=""
         src={searchItemData.profilePhoto}
         width="50px"
         height="50px"

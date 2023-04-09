@@ -5,50 +5,90 @@ export type PostCreateForm = {
   image: string;
 };
 
+export type PostServerData = {
+  senderUsername: string;
+
+  description: string;
+  image: string;
+  likeCount: number;
+  whoLiked: string[];
+  commentCount: number;
+
+  nftUrl?: string;
+
+  creationTime: number;
+};
+
 export type PostItemData = {
   senderUsername: string;
 
   description: string;
   image: string;
+
   likeCount: number;
   whoLiked: string[];
-  likeDocPath: string;
-  commentCount: number;
-  commentsCollectionPath: string;
 
-  creationTime: Timestamp;
-  id: string;
+  commentCount: number;
+
+  postDocId: string;
+
+  nftUrl?: string;
+
+  creationTime: number;
 };
 
-export type PostMainData = {
+export type PostFrontData = {
   senderUsername: string;
 
   description: string;
   image: string;
+
   likeCount: number;
   whoLiked: string[];
+
   commentCount: number;
 
-  creationTime: Timestamp;
-  id: string;
+  postDocId: string
+
+  nftUrl?: string;
+
+  creationTime: number;
+};
+
+export type SmallPostItemData = {
+  description: string;
+  image: string;
+  likeCount: number;
+
+  commentCount: number;
+
+  creationTime: number;
 };
 
 export type CommentData = {
   commentSenderUsername: string;
   comment: string;
-  creationTime: Timestamp;
+  creationTime: number
 };
 
 export type CommentDataWithCommentDocPath = {
   commentDocPath: string;
   commentSenderUsername: string;
   comment: string;
-  creationTime: Timestamp;
+  creationTime: number
 };
 
-export type OpenPanelName = "main" | "comments" | "likes";
+export type OpenPanelName = "main" | "comments" | "likes" | "nft";
 
 export type LikeData = {
   likeCount: number;
   likeDocPath: string;
 };
+
+export type SendNftStatus =
+  | "initial"
+  | "uploadingMetadata"
+  | "sendingRequest"
+  | "waitingForConfirmation"
+  | "updatingPost"
+  | "final";

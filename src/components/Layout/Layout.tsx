@@ -1,7 +1,7 @@
-import { Box, Container, Flex } from "@chakra-ui/react";
-import React, { ReactNode } from "react";
+import { Box, Flex } from "@chakra-ui/react";
+import { ReactNode } from "react";
 import Footer from "../Footer/Footer";
-import LeftPanel from "../LeftPanel/LeftPanel";
+import PostCreateModal from "../Modals/Post/PostCreateModal";
 import Navbar from "../Navbar/Navbar";
 import SystemStatus from "../system-status/SystemStatus";
 
@@ -16,6 +16,7 @@ export default function Layout({ children }: Props) {
       <Flex as="main" mt="">
         {children}
       </Flex>
+      <PostCreateModal />
       <Footer />
       <SystemStatus />
     </Box>

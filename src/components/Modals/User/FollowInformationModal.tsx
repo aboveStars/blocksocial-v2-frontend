@@ -1,14 +1,12 @@
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  Stack,
-  Text,
   Flex,
   Icon,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalOverlay,
+  Stack,
+  Text,
 } from "@chakra-ui/react";
 import React, { SetStateAction } from "react";
 import { AiOutlineClose } from "react-icons/ai";

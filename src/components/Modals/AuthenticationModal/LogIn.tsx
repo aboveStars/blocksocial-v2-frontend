@@ -53,7 +53,12 @@ export default function LogIn() {
               }}
               bg="gray.50"
             />
-            <FormLabel textColor="gray.500" fontSize="10pt">
+            <FormLabel
+              bg="rgba(248,250,252,1)"
+              textColor="gray.500"
+              fontSize="10pt"
+              my="2.5"
+            >
               Email
             </FormLabel>
           </FormControl>
@@ -72,7 +77,12 @@ export default function LogIn() {
               }}
               bg="gray.50"
             />
-            <FormLabel textColor="gray.500" fontSize="10pt">
+            <FormLabel
+              bg="rgba(248,250,252,1)"
+              textColor="gray.500"
+              fontSize="10pt"
+              my="2.5"
+            >
               Password
             </FormLabel>
           </FormControl>

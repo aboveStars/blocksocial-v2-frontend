@@ -31,11 +31,10 @@ export const theme = extendTheme({
               left: 0,
               zIndex: 2,
               position: "absolute",
-              backgroundColor: "rgba(248,250,252,1)",
               pointerEvents: "none",
               mx: 3,
               px: 1,
-              my: 3,
+
               transformOrigin: "left top",
             },
           },

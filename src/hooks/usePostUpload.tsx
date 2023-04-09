@@ -1,15 +1,6 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postCreateModalStateAtom } from "@/components/atoms/postCreateModalAtom";
-import { PostCreateForm, PostMainData } from "@/components/types/Post";
-import { firestore, storage } from "@/firebase/clientApp";
-import {
-  collection,
-  doc,
-  serverTimestamp,
-  Timestamp,
-  writeBatch,
-} from "firebase/firestore";
-import { getDownloadURL, ref, uploadString } from "firebase/storage";
+import { PostCreateForm } from "@/components/types/Post";
 import { useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -19,7 +10,9 @@ const usePostCreate = () => {
   const [postUploadLoading, setPostUploadUpdating] = useState(false);
   const setPostCreateModalState = useSetRecoilState(postCreateModalStateAtom);
 
-  const onSelectWillBeCroppedPhoto = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onSelectWillBeCroppedPhoto = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (!event.target.files) {
       console.log("No Files provided to onSelectWillBeCroppedPhoto");
       return;
@@ -45,49 +38,38 @@ const usePostCreate = () => {
       return;
     }
     setPostUploadUpdating(true);
+
     const username = currentUserUsername;
-    const postName = Date.now();
+    const description = postCreateForm.description;
+    const image = postCreateForm.image;
 
-    // Add a new document with a generated id
-    const newPostRef = doc(collection(firestore, `users/${username}/posts`));
+    const response = await fetch("/api/postUpload", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, description, image }),
+    });
 
-    const postData: PostMainData = {
-      senderUsername: currentUserUsername,
-      description: postCreateForm.description,
-      image: "",
-      likeCount: 0,
-      whoLiked: [],
-      commentCount : 0,
-      creationTime: serverTimestamp() as Timestamp,
-      id: postName.toString(), // this is not good
-    };
+    if (!response.ok) {
+      // 500 for firebase errrors
+      if (response.status === 500) {
+        const { firebaseError } = await response.json();
+        console.error("Firebase Error while uploading post", firebaseError);
+      } else {
+        const { error } = await response.json();
+        console.error("Non-Firebase Error: ", error);
+      }
 
-    const batch = writeBatch(firestore);
-    batch.set(newPostRef, postData);
+      setPostUploadUpdating(false);
+    } else {
+      const { username: postCreatedUser } = await response.json();
+      console.log("Post Successfully Created for ", postCreatedUser);
 
-    // upload photo...if there is
-    if (postCreateForm.image) {
-      const postPhotoRef = ref(
-        storage,
-        `users/${username}/postsPhotos/${postName}`
-      );
-      await uploadString(postPhotoRef, postCreateForm.image, "data_url");
-      const photoURL = await getDownloadURL(postPhotoRef);
-
-      // update doc....
-      batch.update(newPostRef, {
-        image: photoURL,
-      });
+      // State Updates
+      setPostCreateModalState({ isOpen: false });
+      setPostUploadUpdating(false);
     }
-
-    // commit changes
-    await batch.commit();
-
-    console.log("Post Successfully Created");
-
-    // State Updates
-    setPostCreateModalState({ isOpen: false });
-    setPostUploadUpdating(false);
   };
 
   return {

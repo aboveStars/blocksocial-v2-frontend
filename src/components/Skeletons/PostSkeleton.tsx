@@ -1,4 +1,5 @@
 import {
+  AspectRatio,
   Flex,
   Icon,
   Skeleton,
@@ -12,13 +13,6 @@ import { BsImage } from "react-icons/bs";
 import { AiOutlineComment, AiOutlineHeart } from "react-icons/ai";
 
 export default function PostSkeleton() {
-  const imageSkeletonRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (imageSkeletonRef.current)
-      imageSkeletonRef.current.style.height = `${imageSkeletonRef.current.clientWidth}px`;
-  }, []);
-
   return (
     <Flex
       id="post-skeleton-main-parent"
@@ -34,10 +28,11 @@ export default function PostSkeleton() {
           <SkeletonText noOfLines={2} />
         </Flex>
       </Flex>
-      <Flex id="image-skeleton" align="center" justify="center">
-        <Skeleton ref={imageSkeletonRef} width="100%" height="500px" />
-        <Icon as={BsImage} position="absolute" fontSize="8xl" color="white" />
-      </Flex>
+
+      <AspectRatio ratio={1} width="100%">
+        <Skeleton />
+      </AspectRatio>
+
       <Flex id="footer-skeleton" direction="column" width="100%">
         <Flex id="description-skeleton" width="100%" mt={2} ml={2}>
           <SkeletonText noOfLines={1} skeletonHeight="3" width="200px" />

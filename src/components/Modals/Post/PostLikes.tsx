@@ -1,3 +1,6 @@
+import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { firestore } from "@/firebase/clientApp";
+import useSortByUsername from "@/hooks/useSortByUsername";
 import {
   Flex,
   Icon,
@@ -7,18 +10,14 @@ import {
   ModalOverlay,
   Spinner,
   Stack,
-  Text,
+  Text
 } from "@chakra-ui/react";
+import { doc, getDoc } from "firebase/firestore";
 import { SetStateAction, useEffect, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
-import { LikeData, OpenPanelName } from "../../types/Post";
-import LikeItem from "../../Items/Post/LikeItem";
-import LikeItemSkeleton from "../../Skeletons/LikeItemSkeleton";
-import useSortByUsername from "@/hooks/useSortByUsername";
-import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { useRecoilValue } from "recoil";
-import { doc, getDoc } from "firebase/firestore";
-import { firestore } from "@/firebase/clientApp";
+import LikeItem from "../../Items/Post/LikeItem";
+import { LikeData, OpenPanelName } from "../../types/Post";
 
 type Props = {
   likeData: LikeData;

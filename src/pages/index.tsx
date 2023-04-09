@@ -44,7 +44,7 @@ export default function Home() {
     const shuffledPostsArray = [...postsDatasArray];
     shuffledPostsArray.sort(() => Math.random() - 0.5);
     shuffledPostsArray.sort(
-      (postA, postB) => postB.creationTime.seconds - postA.creationTime.seconds
+      (postA, postB) => postB.creationTime - postA.creationTime
     );
     return shuffledPostsArray;
   };
@@ -53,6 +53,11 @@ export default function Home() {
     // get current user followings
     const currentUserFollowings: string[] = currentUserState.followings;
     const celebrities = await getCelebrities();
+
+    if (currentUserFollowings.length === 0 && celebrities.length === 0) {
+      console.log("Poor index");
+      return;
+    }
 
     const mainIndexSource = Array.from(
       new Set(currentUserFollowings.concat(celebrities))
@@ -84,17 +89,19 @@ export default function Home() {
       for (const doc of mainIndexSourcePostsDatasSnapshot.docs) {
         const postDataObject: PostItemData = {
           senderUsername: doc.data().senderUsername,
+
           description: doc.data().description,
           image: doc.data().image,
+
           likeCount: doc.data().likeCount,
-          whoLiked : doc.data().whoLiked,
-          likeDocPath: `users/${doc.data().senderUsername}/posts/${doc.id}`,
+          whoLiked: doc.data().whoLiked,
+
+          postDocId: doc.id,
+
           commentCount: doc.data().commentCount,
-          commentsCollectionPath: `users/${doc.data().senderUsername}/posts/${
-            doc.id
-          }/comments`,
+
+          nftUrl: doc.data().nftUrl,
           creationTime: doc.data().creationTime,
-          id: doc.data().id,
         };
         const serializablePostData: PostItemData = JSON.parse(
           safeJsonStringify(postDataObject)

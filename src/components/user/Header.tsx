@@ -20,12 +20,15 @@ import { CgProfile } from "react-icons/cg";
 import useFollow from "@/hooks/useFollow";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
-import { UserInformation } from "../types/User";
+import { defaultCurrentUserState, UserInformation } from "../types/User";
 
-import useAuthOperations from "@/hooks/useSignUpOperations";
-import FollowInformationModal from "../Modals/User/FollowInformationModal";
-import ProfilePhotoUpdateModal from "../Modals/User/ProfilePhotoUpdateModal";
 import useSortByUsername from "@/hooks/useSortByUsername";
+import FollowInformationModal from "../Modals/User/FollowInformationModal";
+import NFTAdministrationPanel from "../Modals/User/NFTAdministrationPanel";
+import ProfilePhotoUpdateModal from "../Modals/User/ProfilePhotoUpdateModal";
+
+import { auth } from "@/firebase/clientApp";
+import { signOut } from "firebase/auth";
 
 type Props = {
   userInformation: UserInformation;
@@ -60,6 +63,7 @@ export default function Header({ userInformation }: Props) {
     onSelectWillBeCroppedProfilePhoto,
     setSelectedProfilePhoto,
     setWillBeCroppedProfilePhoto,
+    profilePhotoError,
   } = useProfilePhoto();
 
   const [poorProfilePhoto, setPoorProfilePhoto] = useState(false);
@@ -80,12 +84,15 @@ export default function Header({ userInformation }: Props) {
   const [profilePhotoUpdateModalOpen, setProiflePhotoUpdateModalOpen] =
     useState(false);
 
-  const { onSignOut, signOutLoading } = useAuthOperations();
-
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { sortFollowersByUsername, sortFollowingsByUsername } =
     useSortByUsername();
+
+  const [nftAdministrationPanelShow, setNftAdministrationPanelShow] =
+    useState(false);
+
+  const [signOutLoading, setSignOutLoading] = useState(false);
 
   /**
    * userData is already being controlled then, comes here
@@ -192,14 +199,28 @@ export default function Header({ userInformation }: Props) {
     }));
   };
 
+  const handleSignOut = async () => {
+    setSignOutLoading(true);
+
+    // Firebase sign-out
+    await signOut(auth);
+
+    // Clear States
+    setCurrentUserState({
+      ...defaultCurrentUserState,
+      loading: false,
+    });
+    setAuthModalState((prev) => ({
+      ...prev,
+      open: true,
+      view: "logIn",
+    }));
+
+    setSignOutLoading(false);
+  };
+
   return (
     <>
-      <FollowInformationModal
-        followInformationModalStateSetter={setFollowingsFollowesrModalState}
-        followInformationModalStateValue={followingsFollowersModalState}
-        ostensibleUserInformation={ostensibleUserInformation}
-      />
-
       <ProfilePhotoUpdateModal
         modifyingSetter={setModifying}
         ostensibleUserInformationValue={ostensibleUserInformation}
@@ -220,6 +241,18 @@ export default function Header({ userInformation }: Props) {
         onChange={onSelectWillBeCroppedProfilePhoto}
       />
 
+      <FollowInformationModal
+        followInformationModalStateSetter={setFollowingsFollowesrModalState}
+        followInformationModalStateValue={followingsFollowersModalState}
+        ostensibleUserInformation={ostensibleUserInformation}
+      />
+
+      {/* <NFTAdministrationPanel
+        nftAdministrationPanelOpenSetter={setNftAdministrationPanelShow}
+        nftAdministrationPanelOpenValue={nftAdministrationPanelShow}
+        currentUserUsername={currentUserState.username}
+      /> */}
+
       <Flex direction="column" justify="center" align="center" mt={3}>
         <Flex
           position="relative"
@@ -228,6 +261,7 @@ export default function Header({ userInformation }: Props) {
           align="center"
         >
           <Image
+            alt=""
             src={
               selectedProfilePhoto
                 ? selectedProfilePhoto
@@ -306,6 +340,9 @@ export default function Header({ userInformation }: Props) {
               Cancel
             </Button>
           </Stack>
+          <Text fontSize="10pt" color="red" hidden={!!!profilePhotoError}>
+            {profilePhotoError}
+          </Text>
         </Flex>
 
         <Flex direction="column" align="center" mt={1}>
@@ -385,12 +422,21 @@ export default function Header({ userInformation }: Props) {
 
         {isCurrentUserPage && (
           <Flex align="center">
-            <Flex mt={3}>
+            <Flex mt={3} direction="column" gap={2}>
+              {/* <Button
+                size="sm"
+                variant="solid"
+                bg="white"
+                textColor="black"
+                onClick={() => setNftAdministrationPanelShow(true)}
+              >
+                NFT Administration
+              </Button> */}
               <Button
                 variant="outline"
                 colorScheme="red"
                 size="sm"
-                onClick={onSignOut}
+                onClick={handleSignOut}
                 isLoading={signOutLoading}
               >
                 Sign Out
