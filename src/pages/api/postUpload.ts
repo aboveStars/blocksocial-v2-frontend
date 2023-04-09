@@ -30,9 +30,16 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     const { description, image: imageDataURL, username } = req.body;
+
     if (description.length === 0 && imageDataURL.length === 0) {
       console.error("Empty Post Creation Attempt, aborting...");
       res.status(400).json({ error: "Empty Post Creation Attempt" });
+      return;
+    }
+
+    if (!username) {
+      res.status(405).json({ error: "Missing Prop" });
+      console.error("Missing Prop");
       return;
     }
 

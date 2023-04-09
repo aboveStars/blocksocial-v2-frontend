@@ -3,5 +3,19 @@ export type NFTMetadata = {
   external_url?: string;
   image?: string;
   name: string;
-  attributes?: {}[];
+  attributes: (
+    | {
+        display_type: "date";
+        trait_type: "Post Creation" | "NFT Creation";
+        value: number;
+      }
+    | {
+        trait_type: "Likes" | "Comments";
+        value: number;
+      }
+    | {
+        trait_type: "SENDER";
+        value: string;
+      }
+  )[];
 };

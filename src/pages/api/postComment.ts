@@ -1,8 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-import * as admin from "firebase-admin";
 import { CommentData } from "@/components/types/Post";
-import { Timestamp } from "firebase/firestore";
+import * as admin from "firebase-admin";
 import safeJsonStringify from "safe-json-stringify";
 
 const buffer = Buffer.from(
@@ -28,10 +27,17 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     const { comment, username: commentSenderUsername, postDocPath } = req.body;
+
+    if (!comment || !commentSenderUsername || !postDocPath) {
+      res.status(405).json({ error: "Missing Prop" });
+      console.error("Missing Prop");
+      return;
+    }
+
     const newCommentData: CommentData = {
       comment: comment,
       commentSenderUsername: commentSenderUsername,
-      creationTime: Date.now()
+      creationTime: Date.now(),
     };
     const serializableNewCommentData = JSON.parse(
       safeJsonStringify(newCommentData)
@@ -44,6 +50,7 @@ export default async function handler(
       await firestore.doc(postDocPath).update({
         commentCount: admin.firestore.FieldValue.increment(1),
       });
+
       res.status(200).json({});
     } catch (error) {
       console.error("Error while sending comment", error);

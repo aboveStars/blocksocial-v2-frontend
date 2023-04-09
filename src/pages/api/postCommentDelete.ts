@@ -1,5 +1,5 @@
-import { NextApiRequest, NextApiResponse } from "next";
 import * as admin from "firebase-admin";
+import { NextApiRequest, NextApiResponse } from "next";
 
 const buffer = Buffer.from(
   process.env.NEXT_PUBLIC_GOOGLE_APPLICATION_CREDENTIALS_BASE64 as string,
@@ -25,11 +25,18 @@ export default async function handler(
   if (req.method === "DELETE") {
     const { commentDocPath, postDocPath } = req.body;
 
+    if (!commentDocPath || !postDocPath) {
+      res.status(405).json({ error: "Missing Prop" });
+      console.error("Missing Prop");
+      return;
+    }
+
     try {
       await firestore.doc(commentDocPath).delete();
       await firestore.doc(postDocPath).update({
         commentCount: admin.firestore.FieldValue.increment(-1),
       });
+
       res.status(200).json({});
     } catch (error) {
       console.error("Error while deleting comment", error);

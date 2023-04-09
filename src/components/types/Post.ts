@@ -30,7 +30,7 @@ export type PostItemData = {
 
   commentCount: number;
 
-  postDocPath: string;
+  postDocId: string;
 
   nftUrl?: string;
 
@@ -48,7 +48,7 @@ export type PostFrontData = {
 
   commentCount: number;
 
-  postDocPath: string;
+  postDocId: string
 
   nftUrl?: string;
 

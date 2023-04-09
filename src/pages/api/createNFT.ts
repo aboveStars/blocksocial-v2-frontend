@@ -22,7 +22,7 @@ if (!admin.apps.length) {
 }
 
 const firestore = admin.firestore();
-const bukcet = admin
+const bucket = admin
   .storage()
   .bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET_ID as string);
 
@@ -36,11 +36,17 @@ export default async function handler(
       description,
       username,
       image: imagePublicURL,
-      postDocPath,
+      postDocId,
       creationTime,
       likeCount,
       commentCount,
     } = req.body;
+
+    if (!name || !username || !postDocId || !creationTime) {
+      res.status(405).json({ error: "Missing Prop" });
+      console.error("Missing Prop");
+      return;
+    }
 
     try {
       const metadata: NFTMetadata = {
@@ -60,11 +66,11 @@ export default async function handler(
             value: Date.now(),
           },
           {
-            trait_type: "LIKES",
+            trait_type: "Likes",
             value: likeCount,
           },
           {
-            trait_type: "COMMENTS",
+            trait_type: "Comments",
             value: commentCount,
           },
           {
@@ -77,9 +83,7 @@ export default async function handler(
       const safeMetadata = safeJsonStringify(metadata);
       const buffer = Buffer.from(safeMetadata);
 
-      const file = bukcet.file(
-        `users/${username}/nftMetadatas/${Date.now().toString()}`
-      );
+      const file = bucket.file(`users/${username}/nftMetadatas/${postDocId}`);
 
       await file.save(buffer, {
         contentType: "application/json",
@@ -96,7 +100,7 @@ export default async function handler(
 
       const openSeaLink = `https://testnets.opensea.io/assets/mumbai/${mumbaiContractAddress}/${tokenId}`;
 
-      await firestore.doc(postDocPath).update({
+      await firestore.doc(`users/${username}/posts/${postDocId}`).update({
         nftUrl: openSeaLink,
       });
       res.status(200).json({ openSeaUrl: openSeaLink });

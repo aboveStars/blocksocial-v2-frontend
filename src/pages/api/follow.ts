@@ -30,6 +30,12 @@ export default async function handler(
       opCode,
     } = req.body;
 
+    if (!operationFromUsername || !operationToUsername) {
+      res.status(405).json({ error: "Missing Prop" });
+      console.error("Missing Prop");
+      return;
+    }
+
     try {
       await firestore.doc(`users/${operationFromUsername}`).update({
         followingCount: admin.firestore.FieldValue.increment(opCode),

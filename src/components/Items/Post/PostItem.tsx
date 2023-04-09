@@ -24,7 +24,7 @@ export default function PostItem({ postItemData }: Props) {
       />
       <PostComments
         commentsInfo={{
-          postDocPath: postItemData.postDocPath,
+          postDocPath: `users/${postItemData.senderUsername}/posts/${postItemData.postDocId}`,
           postCommentCount: commentCount,
         }}
         openPanelNameSetter={setOpenPanelName}
@@ -34,7 +34,7 @@ export default function PostItem({ postItemData }: Props) {
       <PostLikes
         likeData={{
           likeCount: postItemData.likeCount,
-          likeDocPath: postItemData.postDocPath,
+          likeDocPath: `users/${postItemData.senderUsername}/posts/${postItemData.postDocId}`,
         }}
         openPanelNameSetter={setOpenPanelName}
         openPanelNameValue={openPanelName}
@@ -43,7 +43,7 @@ export default function PostItem({ postItemData }: Props) {
         openPanelNameValue={openPanelName}
         openPanelNameValueSetter={setOpenPanelName}
         postInformation={postItemData}
-        postDocPath={postItemData.postDocPath}
+
       />
     </>
   );

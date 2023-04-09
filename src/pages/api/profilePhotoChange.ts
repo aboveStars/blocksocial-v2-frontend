@@ -29,6 +29,12 @@ export default async function handler(
   if (req.method === "DELETE") {
     const { username } = req.body;
 
+    if (!username) {
+      res.status(405).json({ error: "Missing Prop" });
+      console.error("Missing Prop");
+      return;
+    }
+
     try {
       await firestore.doc(`users/${username}`).update({ profilePhoto: "" });
     } catch (error) {

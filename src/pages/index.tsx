@@ -96,7 +96,7 @@ export default function Home() {
           likeCount: doc.data().likeCount,
           whoLiked: doc.data().whoLiked,
 
-          postDocPath : `users/${doc.data().senderUsername}/posts/${doc.id}`,
+          postDocId: doc.id,
 
           commentCount: doc.data().commentCount,
 

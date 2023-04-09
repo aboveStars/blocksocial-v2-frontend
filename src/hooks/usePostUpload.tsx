@@ -1,8 +1,6 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postCreateModalStateAtom } from "@/components/atoms/postCreateModalAtom";
 import { PostCreateForm } from "@/components/types/Post";
-import { FirestoreError } from "firebase/firestore";
-import { StorageError } from "firebase/storage";
 import { useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 

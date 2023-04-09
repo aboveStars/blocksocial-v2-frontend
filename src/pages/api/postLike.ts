@@ -25,7 +25,8 @@ export default async function handler(
   if (req.method === "POST") {
     const { opCode, postDocPath, username: likerUsername } = req.body;
     if (!opCode || !postDocPath || !likerUsername) {
-      res.status(405).json({ error: "Method not allowed" });
+      res.status(405).json({ error: "Missing Prop" });
+      console.error("Missing Prop");
       return;
     }
     try {
@@ -38,6 +39,9 @@ export default async function handler(
             ? admin.firestore.FieldValue.arrayUnion(likerUsername)
             : admin.firestore.FieldValue.arrayRemove(likerUsername),
       });
+
+      
+
       res.status(200).json({});
     } catch (error) {
       console.error(error);

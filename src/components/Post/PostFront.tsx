@@ -6,10 +6,8 @@ import {
   AlertDialogHeader,
   AlertDialogOverlay,
   Button,
-  Container,
   Flex,
   Icon,
-  IconButton,
   Image,
   Menu,
   MenuButton,
@@ -18,6 +16,7 @@ import {
   Skeleton,
   SkeletonCircle,
   SkeletonText,
+  Spinner,
   Text,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
@@ -32,8 +31,10 @@ import { BsDot, BsImage } from "react-icons/bs";
 
 import { firestore } from "@/firebase/clientApp";
 import useFollow from "@/hooks/useFollow";
+import useNFT from "@/hooks/useNFT";
 import usePost from "@/hooks/usePost";
-import { doc, getDoc, Timestamp } from "firebase/firestore";
+import usePostDelete from "@/hooks/usePostDelete";
+import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
 import { CgProfile } from "react-icons/cg";
@@ -41,7 +42,6 @@ import { useRecoilState, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
 import { OpenPanelName, PostFrontData } from "../types/Post";
-import usePostDelete from "@/hooks/usePostDelete";
 
 type Props = {
   postFrontData: PostFrontData;
@@ -84,6 +84,8 @@ export default function PostFront({
 
   const leastDestructiveRef = useRef<HTMLButtonElement>(null);
   const [showDeleteUserDialog, setShowDeleteUserDialog] = useState(false);
+
+  const { refreshNFT, nftRefreshLoading } = useNFT();
 
   /**
    * Simply gets postSender's pp and fullname.
@@ -217,9 +219,29 @@ export default function PostFront({
                 <Icon as={AiOutlineMenu} color="white" />
               </MenuButton>
               <MenuList>
-                <MenuItem onClick={() => openPanelNameSetter("nft")}>
-                  Make NFT
-                </MenuItem>
+                {postFrontData.nftUrl ? (
+                  !nftRefreshLoading ? (
+                    <MenuItem
+                      onClick={() =>
+                        refreshNFT(
+                          postFrontData.senderUsername,
+                          postFrontData.postDocId
+                        )
+                      }
+                    >
+                      Refresh NFT
+                    </MenuItem>
+                  ) : (
+                    <MenuItem isDisabled={true}>
+                      <Spinner />
+                    </MenuItem>
+                  )
+                ) : (
+                  <MenuItem onClick={() => openPanelNameSetter("nft")}>
+                    Make NFT
+                  </MenuItem>
+                )}
+
                 <MenuItem onClick={() => setShowDeleteUserDialog(true)}>
                   Delete
                 </MenuItem>
@@ -258,7 +280,9 @@ export default function PostFront({
                     colorScheme="red"
                     size="md"
                     onClick={async () => {
-                      await postDelete(postFrontData.postDocPath);
+                      await postDelete(
+                        `users/${postFrontData.senderUsername}/posts/${postFrontData.postDocId}`
+                      );
                       setIsThisPostDeleted(true);
                       setShowDeleteUserDialog(false);
                     }}
@@ -319,7 +343,10 @@ export default function PostFront({
                   fontSize="25px"
                   cursor="pointer"
                   onClick={() => {
-                    like(postFrontData.postDocPath, -1);
+                    like(
+                      `users/${postFrontData.senderUsername}/posts/${postFrontData.postDocId}`,
+                      -1
+                    );
                     setOstensiblePostData((prev) => ({
                       ...prev,
                       likeCount: prev.likeCount - 1,
@@ -345,7 +372,10 @@ export default function PostFront({
                       }));
                       return;
                     }
-                    like(postFrontData.postDocPath, 1);
+                    like(
+                      `users/${postFrontData.senderUsername}/posts/${postFrontData.postDocId}`,
+                      1
+                    );
                     setOstensiblePostData((prev) => ({
                       ...prev,
                       likeCount: prev.likeCount + 1,

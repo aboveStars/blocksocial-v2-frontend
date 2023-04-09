@@ -1,5 +1,5 @@
-import { OpenPanelName, PostFrontData } from "@/components/types/Post";
-import useSmartContractTransactions from "@/hooks/useSmartContractTransactions";
+import { OpenPanelName, PostItemData } from "@/components/types/Post";
+import useNFT from "@/hooks/useNFT";
 import {
   Button,
   Flex,
@@ -16,22 +16,20 @@ import {
   Spinner,
   Text,
 } from "@chakra-ui/react";
-import React, { SetStateAction, useEffect, useState } from "react";
+import React, { SetStateAction, useState } from "react";
 import { AiOutlineCheckCircle, AiOutlineClose } from "react-icons/ai";
 import { FiExternalLink } from "react-icons/fi";
 
 type Props = {
   openPanelNameValue: OpenPanelName;
   openPanelNameValueSetter: React.Dispatch<SetStateAction<OpenPanelName>>;
-  postInformation: PostFrontData;
-  postDocPath: string;
+  postInformation: PostItemData;
 };
 
 export default function PostMakeNFT({
   openPanelNameValue,
   openPanelNameValueSetter,
   postInformation,
-  postDocPath,
 }: Props) {
   const {
     mintNft,
@@ -40,16 +38,12 @@ export default function PostMakeNFT({
     setOpenSeaLink,
     nftCreated,
     setNftCreated,
-  } = useSmartContractTransactions();
+  } = useNFT();
 
   const [nftTitle, setNftTitle] = useState("");
   const [nftDescription, setNftDescription] = useState(
     postInformation.description
   );
-
-  useEffect(() => {
-    console.log("NFT Title", nftTitle);
-  }, [nftTitle]);
 
   const handleSendNFT = async () => {
     await mintNft(
@@ -57,7 +51,7 @@ export default function PostMakeNFT({
       postInformation.description,
       postInformation.senderUsername,
       postInformation.image,
-      postDocPath,
+      postInformation.postDocId,
       postInformation.creationTime,
       postInformation.likeCount,
       postInformation.commentCount

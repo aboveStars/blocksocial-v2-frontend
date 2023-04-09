@@ -33,7 +33,6 @@ const usePost = () => {
         const { error } = await response.json();
         console.error("Non-Firebase Error while like", error);
       }
-      throw new Error("Like Operation is failed");
     } else {
       console.log("Like operation successfull");
     }
