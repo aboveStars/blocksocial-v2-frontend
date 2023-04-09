@@ -1,7 +1,7 @@
 # Changelog
 
 ## v0.6.0
-
+- Updated.
 ### Fixed
 
 - Fix placeholders's text align which were not aligned correctly in authentication panels.
