@@ -80,7 +80,7 @@ export default function FollowInformationModal({
         </Flex>
 
         <ModalBody>
-          {/* <Stack gap={2}>
+          <Stack gap={2}>
             {ostensibleUserInformation[
               followInformationModalStateValue.modal
             ].map((f) => (
@@ -91,11 +91,6 @@ export default function FollowInformationModal({
                   followInformationModalStateSetter
                 }
               />
-            ))}
-          </Stack> */}
-            <Stack gap={2}>
-            {Array.from({ length: 100 }, (_, i) => (
-              <Text color="white">Hello</Text>
             ))}
           </Stack>
         </ModalBody>
