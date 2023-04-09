@@ -11,7 +11,7 @@ export default function PostCreateButton() {
   const currentUserState = useRecoilValue(currentUserStateAtom);
   return (
     <>
-      <PostCreateModal />
+     
       <Flex id="button">
         {currentUserState.isThereCurrentUser && (
           <Icon

@@ -1,7 +1,12 @@
 import {
   Flex,
-  Icon, Modal, ModalBody, ModalContent, ModalOverlay, Stack,
-  Text
+  Icon,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalOverlay,
+  Stack,
+  Text,
 } from "@chakra-ui/react";
 import React, { SetStateAction } from "react";
 import { AiOutlineClose } from "react-icons/ai";
@@ -75,7 +80,7 @@ export default function FollowInformationModal({
         </Flex>
 
         <ModalBody>
-          <Stack gap={2}>
+          {/* <Stack gap={2}>
             {ostensibleUserInformation[
               followInformationModalStateValue.modal
             ].map((f) => (
@@ -86,6 +91,11 @@ export default function FollowInformationModal({
                   followInformationModalStateSetter
                 }
               />
+            ))}
+          </Stack> */}
+            <Stack gap={2}>
+            {Array.from({ length: 100 }, (_, i) => (
+              <Text color="white">Hello</Text>
             ))}
           </Stack>
         </ModalBody>

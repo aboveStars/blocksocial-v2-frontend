@@ -5,6 +5,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogOverlay,
+  AspectRatio,
   Button,
   Flex,
   Icon,
@@ -301,22 +302,9 @@ export default function PostFront({
       </Flex>
 
       {postFrontData.image && (
-        <Image
-          alt=""
-          src={postFrontData.image}
-          width="100%"
-          fallback={
-            <Flex align="center" justify="center">
-              <Skeleton ref={imageSkeletonRef} height="500px" width="100%" />
-              <Icon
-                as={BsImage}
-                position="absolute"
-                fontSize="8xl"
-                color="white"
-              />
-            </Flex>
-          }
-        />
+        <AspectRatio ratio={1} width="100%">
+          <Image alt="" src={postFrontData.image} fallback={<Skeleton />} />
+        </AspectRatio>
       )}
 
       <Flex
@@ -333,7 +321,7 @@ export default function PostFront({
         </Flex>
         <Flex>
           <Flex gap={3} p={2}>
-            <Flex gap="1">
+            <Flex gap="1" >
               {ostensiblePostData.whoLiked.includes(
                 currentUserState.username
               ) ? (
@@ -392,7 +380,7 @@ export default function PostFront({
                   openPanelNameSetter("likes");
                 }}
               >
-                {ostensiblePostData.likeCount}
+                {`${ostensiblePostData.likeCount}`} 
               </Text>
             </Flex>
 

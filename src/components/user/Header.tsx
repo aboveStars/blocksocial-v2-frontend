@@ -247,11 +247,11 @@ export default function Header({ userInformation }: Props) {
         ostensibleUserInformation={ostensibleUserInformation}
       />
 
-      <NFTAdministrationPanel
+      {/* <NFTAdministrationPanel
         nftAdministrationPanelOpenSetter={setNftAdministrationPanelShow}
         nftAdministrationPanelOpenValue={nftAdministrationPanelShow}
         currentUserUsername={currentUserState.username}
-      />
+      /> */}
 
       <Flex direction="column" justify="center" align="center" mt={3}>
         <Flex
@@ -423,7 +423,7 @@ export default function Header({ userInformation }: Props) {
         {isCurrentUserPage && (
           <Flex align="center">
             <Flex mt={3} direction="column" gap={2}>
-              <Button
+              {/* <Button
                 size="sm"
                 variant="solid"
                 bg="white"
@@ -431,7 +431,7 @@ export default function Header({ userInformation }: Props) {
                 onClick={() => setNftAdministrationPanelShow(true)}
               >
                 NFT Administration
-              </Button>
+              </Button> */}
               <Button
                 variant="outline"
                 colorScheme="red"

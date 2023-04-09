@@ -48,6 +48,8 @@ export default async function handler(
       return;
     }
 
+    console.log(`Like Count: ${likeCount}, comment count: ${commentCount}`);
+
     try {
       const metadata: NFTMetadata = {
         name: name,

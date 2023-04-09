@@ -2,8 +2,10 @@ import getCroppedImg from "@/components/utils/GetCroppedImage";
 import usePostUpload from "@/hooks/usePostUpload";
 
 import {
+  AspectRatio,
   Button,
   Flex,
+  Icon,
   Image,
   Input,
   Modal,
@@ -13,12 +15,16 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Stack,
   Text,
   Textarea,
 } from "@chakra-ui/react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Cropper from "react-easy-crop";
+import { AiOutlineClose } from "react-icons/ai";
+import { BiImageAdd } from "react-icons/bi";
 import { useRecoilState } from "recoil";
+import { setTextRange } from "typescript";
 import { postCreateModalStateAtom } from "../../atoms/postCreateModalAtom";
 
 export default function PostCreateModal() {
@@ -52,7 +58,7 @@ export default function PostCreateModal() {
     image: "",
   });
 
-  const onTextsChanged = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const onTextsChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPostCreateForm((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
@@ -86,6 +92,13 @@ export default function PostCreateModal() {
 
   return (
     <Modal
+      id="post-create-modal"
+      size={{
+        base: "full",
+        sm: "full",
+        md: "md",
+        lg: "md",
+      }}
       isOpen={postCreateModalState.isOpen}
       onClose={() => {
         // State Resets
@@ -93,164 +106,200 @@ export default function PostCreateModal() {
           ...prev,
           isOpen: false,
         }));
-
-        setPostCreateForm({ description: "", image: "" });
-
-        setCrop({ x: 0, y: 0 });
-        setZoom(1);
-        setCroppedAreaPixels(null);
-
-        if (imageInputRef.current) imageInputRef.current.value = "";
-      }}
-      size={{
-        base: "full",
-        sm: "full",
-        md: "md",
-        lg: "md",
       }}
       autoFocus={false}
     >
       <ModalOverlay backdropFilter="auto" backdropBlur="8px" />
-      <ModalContent bg="gray.900">
-        <ModalHeader>
-          <Text textColor="white">Create Post</Text>
-        </ModalHeader>
-        <ModalCloseButton color="white" />
-
-        <ModalBody>
-          <Text textColor="white" mb={1}>
-            Photo
-          </Text>
-
-          <Flex
-            id="post-image-crop-area"
-            direction="column"
-            hidden={!!!willBeCroppedPostPhoto}
-          >
-            <Flex justify="flex-end" gap={2} mb="2">
-              <Button
-                size="sm"
-                variant="solid"
-                colorScheme="blue"
-                onClick={async () => {
-                  // Get cropped image
-                  const croppedImage = await getCroppedImg(
-                    willBeCroppedPostPhoto,
-                    croppedAreaPixels
-                  );
-                  // Update State
-                  setPostCreateForm((prev) => ({
-                    ...prev,
-                    image: croppedImage as string,
-                  }));
-                  // Reset States
-                  setWillBeCroppedPostPhoto("");
-                  setCrop({ x: 0, y: 0 });
-                  setZoom(1);
-                  setCroppedAreaPixels(null);
-
-                  if (imageInputRef.current) imageInputRef.current.value = "";
-                }}
-              >
-                Try
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                colorScheme="blue"
-                onClick={() => {
-                  // Reset States
-                  setWillBeCroppedPostPhoto("");
-
-                  setWillBeCroppedPostPhoto("");
-                  setCrop({ x: 0, y: 0 });
-                  setZoom(1);
-                  setCroppedAreaPixels(null);
-
-                  if (imageInputRef.current) imageInputRef.current.value = "";
-                }}
-              >
-                Cancel
-              </Button>
-            </Flex>
-            <Flex position="relative" width="100%" height="400px">
-              <Cropper
-                image={willBeCroppedPostPhoto}
-                crop={crop}
-                zoom={zoom}
-                aspect={1}
-                onCropChange={setCrop}
-                onCropComplete={onCropComplete}
-                onZoomChange={setZoom}
-              />
-            </Flex>
+      <ModalContent bg="black">
+        <Flex
+          position="sticky"
+          top="0"
+          px={6}
+          align="center"
+          justify="space-between"
+          height="50px"
+          bg="black"
+        >
+          <Flex textColor="white" fontSize="17pt" fontWeight="700" gap={2}>
+            <Text>Create Post</Text>
           </Flex>
 
-          <Image alt="" src={postCreateForm.image} hidden={!!!postCreateForm.image} />
-          <Button
-            variant="outline"
+          <Icon
+            as={AiOutlineClose}
+            color="white"
+            fontSize="15pt"
+            cursor="pointer"
             onClick={() => {
-              setPostCreateForm((prev) => ({
+              // State Resets
+              setPostCreatModaleState((prev) => ({
                 ...prev,
-                image: "",
+                isOpen: false,
               }));
 
-              // Reset States
-              setWillBeCroppedPostPhoto("");
+              setPostCreateForm({ description: "", image: "" });
 
-              setWillBeCroppedPostPhoto("");
               setCrop({ x: 0, y: 0 });
               setZoom(1);
               setCroppedAreaPixels(null);
 
               if (imageInputRef.current) imageInputRef.current.value = "";
             }}
-            mt={2}
-            colorScheme="red"
-            hidden={!!!postCreateForm.image}
-          >
-            Delete Photo
-          </Button>
+          />
+        </Flex>
 
-          <Flex
-            justify="center"
-            align="center"
-            p={20}
-            border="1px dashed"
-            width="100%"
-            borderRadius="4"
-            borderColor="gray.200"
-            bgColor="gray.700"
-            hidden={!!willBeCroppedPostPhoto || !!postCreateForm.image}
-          >
-            <>
-              <Button
-                variant="solid"
-                colorScheme="blue"
-                height="28px"
-                onClick={() => imageInputRef.current?.click()}
-              >
-                Upload
-              </Button>
-              <Input
-                ref={imageInputRef}
-                type="file"
-                hidden
-                onChange={onSelectWillBeCroppedPhoto}
+        <ModalBody>
+          <Stack gap={1}>
+            <Text as="b" fontSize="14pt" textColor="white">
+              Photo
+            </Text>
+
+            <Flex
+              id="post-image-crop-area"
+              direction="column"
+              hidden={!!!willBeCroppedPostPhoto}
+            >
+              <Flex id="try-cancel-buttons" justify="flex-end" gap={2} mb="2">
+                <Button
+                  size="sm"
+                  variant="solid"
+                  colorScheme="blue"
+                  onClick={async () => {
+                    // Get cropped image
+                    const croppedImage = await getCroppedImg(
+                      willBeCroppedPostPhoto,
+                      croppedAreaPixels
+                    );
+                    // Update State
+                    setPostCreateForm((prev) => ({
+                      ...prev,
+                      image: croppedImage as string,
+                    }));
+                    // Reset States
+                    setWillBeCroppedPostPhoto("");
+                    setCrop({ x: 0, y: 0 });
+                    setZoom(1);
+                    setCroppedAreaPixels(null);
+
+                    if (imageInputRef.current) imageInputRef.current.value = "";
+                  }}
+                >
+                  Try
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  colorScheme="blue"
+                  onClick={() => {
+                    // Reset States
+                    setWillBeCroppedPostPhoto("");
+
+                    setWillBeCroppedPostPhoto("");
+                    setCrop({ x: 0, y: 0 });
+                    setZoom(1);
+                    setCroppedAreaPixels(null);
+
+                    if (imageInputRef.current) imageInputRef.current.value = "";
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Flex>
+              <AspectRatio position="relative" width="100%" ratio={1}>
+                <Cropper
+                  image={willBeCroppedPostPhoto}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  onCropChange={setCrop}
+                  onCropComplete={onCropComplete}
+                  onZoomChange={setZoom}
+                />
+              </AspectRatio>
+            </Flex>
+
+            <AspectRatio hidden={!!!postCreateForm.image} ratio={1}>
+              <Image
+                borderRadius="5px"
+                alt=""
+                src={postCreateForm.image}
+                hidden={!!!postCreateForm.image}
               />
-            </>
-          </Flex>
+            </AspectRatio>
 
-          <Flex direction="column" mt={1} gap="1">
-            <Text color="white">Description</Text>
-            <Textarea
-              resize="vertical"
-              name="description"
-              onChange={onTextsChanged}
-              textColor="white"
-              size="sm"
-            />
-          </Flex>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setPostCreateForm((prev) => ({
+                  ...prev,
+                  image: "",
+                }));
+
+                // Reset States
+                setWillBeCroppedPostPhoto("");
+
+                setWillBeCroppedPostPhoto("");
+                setCrop({ x: 0, y: 0 });
+                setZoom(1);
+                setCroppedAreaPixels(null);
+
+                if (imageInputRef.current) imageInputRef.current.value = "";
+              }}
+              mt={2}
+              colorScheme="red"
+              hidden={!!!postCreateForm.image}
+            >
+              Delete Photo
+            </Button>
+
+            <AspectRatio
+              id="image-upload-placeholder"
+              width="100%"
+              borderRadius="4"
+              bg="black"
+              hidden={!!willBeCroppedPostPhoto || !!postCreateForm.image}
+              ratio={4 / 3}
+            >
+              <>
+                <Button
+                  width="100%"
+                  height="100%"
+                  onClick={() => imageInputRef.current?.click()}
+                  bg="black"
+                  borderWidth={3}
+                  borderColor="white"
+                  textColor="white"
+                  fontSize="50pt"
+                  fontWeight={700}
+                  _hover={{
+                    textColor: "black",
+                    bg: "white",
+                  }}
+                >
+                  <Icon as={BiImageAdd} />
+                </Button>
+                <Input
+                  ref={imageInputRef}
+                  type="file"
+                  hidden
+                  onChange={onSelectWillBeCroppedPhoto}
+                />
+              </>
+            </AspectRatio>
+
+            <Flex direction="column" mt={1} gap="1">
+              <Text as="b" fontSize="14pt" textColor="white">
+                Description
+              </Text>
+
+              <Input
+                name="description"
+                textColor="white"
+                fontWeight="600"
+                value={postCreateForm.description}
+                onChange={onTextsChanged}
+              />
+            </Flex>
+          </Stack>
         </ModalBody>
 
         <ModalFooter>
