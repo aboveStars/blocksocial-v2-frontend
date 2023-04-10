@@ -2,7 +2,14 @@ import { Flex, Text } from "@chakra-ui/react";
 
 export default function Footer() {
   return (
-    <Flex justify="center" align="center" direction="column" width="100%">
+    <Flex
+      justify="center"
+      align="center"
+      direction="column"
+      width="100%"
+      mb={3}
+      mt={3}
+    >
       <Text as="b" textColor="gray.300" fontSize="15pt">
         BlockSocial
       </Text>
@@ -27,7 +34,7 @@ export default function Footer() {
         </Text>
       </Flex>
       <Text as="i" textColor="gray.400" fontSize="5pt">
-        Version 0.6.0
+        Version 0.6.1
       </Text>
     </Flex>
   );

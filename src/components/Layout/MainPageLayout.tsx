@@ -1,4 +1,5 @@
 import { Flex } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
 import Posts from "../Post/Posts";
 import { PostItemData } from "../types/Post";
 
@@ -7,6 +8,11 @@ type Props = {
 };
 
 export default function MainPageLayout({ postItemsDatas }: Props) {
+  const [innerHeight, setInnerHeight] = useState("");
+
+  useEffect(() => {
+    setInnerHeight(`${window.innerHeight}px`);
+  }, []);
   return (
     <>
       <Flex width="100%">
@@ -27,6 +33,7 @@ export default function MainPageLayout({ postItemsDatas }: Props) {
             md: "550px",
             lg: "550px",
           }}
+          minHeight={innerHeight}
         >
           <Posts postsItemDatas={postItemsDatas} />
         </Flex>

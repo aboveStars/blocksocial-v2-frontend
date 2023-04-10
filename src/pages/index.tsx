@@ -1,6 +1,6 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import MainPageLayout from "@/components/Layout/MainPageLayout";
-import { PostItemData } from "@/components/types/Post";
+import { PostItemData, PostServerData } from "@/components/types/Post";
 import { firestore } from "@/firebase/clientApp";
 import {
   collection,
@@ -32,6 +32,7 @@ export default function Home() {
   };
 
   useEffect(() => {
+    if (currentUserState.loading) return;
     handleMainPage();
   }, [currentUserState.username]);
 
@@ -68,7 +69,6 @@ export default function Home() {
       (u) => u !== currentUserState.username
     );
 
-    // get followings's posts
     let postsDatas: PostItemData[] = [];
 
     for (const username of mainIndexSourceFiltered) {

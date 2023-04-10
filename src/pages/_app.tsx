@@ -15,7 +15,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <ChakraProvider theme={theme}>
           <Head>
             <title>BlockSocial</title>
-            <link rel="icon" href="/favicon.ico" />
+            <link rel="icon" href="/bsicon.ico" />
           </Head>
           <Layout>
             <NextNProgress color="#1479EA" height={4} />

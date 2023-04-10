@@ -1,4 +1,5 @@
-import { Flex } from "@chakra-ui/react";
+import { Flex, Text } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
 
 import Posts from "../Post/Posts";
 import { PostItemData } from "../types/Post";
@@ -14,6 +15,11 @@ export default function UserPageLayout({
   userInformation,
   postItemsDatas,
 }: Props) {
+  const [innerHeight, setInnerHeight] = useState("");
+
+  useEffect(() => {
+    setInnerHeight(`${window.innerHeight}px`);
+  }, []);
   return (
     <>
       <Flex width="100%">
@@ -25,7 +31,7 @@ export default function UserPageLayout({
             md: "flex",
             lg: "flex",
           }}
-        ></Flex>
+        />
 
         <Flex
           direction="column"
@@ -35,11 +41,12 @@ export default function UserPageLayout({
             md: "550px",
             lg: "550px",
           }}
+          minHeight={innerHeight}
         >
           <Flex justify="center" align="center" width="100%">
             <Header userInformation={userInformation} />
           </Flex>
-          <Flex justify="center" align="center" width="100%">
+          <Flex justify="center" width="100%">
             <Posts postsItemDatas={postItemsDatas} />
           </Flex>
         </Flex>
@@ -51,7 +58,7 @@ export default function UserPageLayout({
             md: "flex",
             lg: "flex",
           }}
-        ></Flex>
+        />
       </Flex>
     </>
   );

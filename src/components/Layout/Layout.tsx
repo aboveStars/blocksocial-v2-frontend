@@ -13,9 +13,7 @@ export default function Layout({ children }: Props) {
   return (
     <Box>
       <Navbar />
-      <Flex as="main" mt="">
-        {children}
-      </Flex>
+      <Flex justifyContent="center">{children}</Flex>
       <PostCreateModal />
       <Footer />
       <SystemStatus />

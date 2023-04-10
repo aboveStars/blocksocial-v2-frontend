@@ -13,6 +13,7 @@ import {
   query,
 } from "firebase/firestore";
 import { GetServerSidePropsContext } from "next";
+import { useEffect, useState } from "react";
 
 import safeJsonStringify from "safe-json-stringify";
 
@@ -22,10 +23,23 @@ type Props = {
 };
 
 export default function index({ userInformation, postItemsDatas }: Props) {
+  const [innerHeight, setInnerHeight] = useState("");
+
+  useEffect(() => {
+    setInnerHeight(`${window.innerHeight}px`);
+  }, []);
+
   if (!userInformation) {
     return (
-      <Flex justify="center" align="center" width="100%">
-        <Text color="red">User Not Found</Text>
+      <Flex
+        justify="center"
+        align="center"
+        width="100%"
+        minHeight={innerHeight}
+      >
+        <Text as="b" textColor="white" fontSize="20pt">
+          User couldn&apos;t be found.
+        </Text>
       </Flex>
     );
   }
@@ -41,64 +55,65 @@ export default function index({ userInformation, postItemsDatas }: Props) {
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  // getting page name [username] => yunus20korkmaz03
   const username = context.query.username;
   let userInformation: UserInformation | undefined = undefined;
+  const postItemDatas: PostItemData[] = [];
   try {
     const userInformationDocRef = doc(firestore, `users/${username as string}`);
     const userDoc = await getDoc(userInformationDocRef);
-    if (!userDoc.exists()) {
-      return;
+
+    if (userDoc.exists()) {
+      const tempUserInformation: UserInformation = {
+        username: userDoc.data().username,
+        fullname: userDoc.data().fullname,
+        profilePhoto: userDoc.data().profilePhoto,
+        followingCount: userDoc.data().followingCount,
+        followings: userDoc.data().followings,
+        followerCount: userDoc.data().followerCount,
+        followers: userDoc.data().followers,
+        email: userDoc.data().email,
+        uid: userDoc.data().uid,
+      };
+      userInformation = tempUserInformation;
     }
-    const tempUserInformation: UserInformation = {
-      username: userDoc.data().username,
-      fullname: userDoc.data().fullname,
-      profilePhoto: userDoc.data().profilePhoto,
-      followingCount: userDoc.data().followingCount,
-      followings: userDoc.data().followings,
-      followerCount: userDoc.data().followerCount,
-      followers: userDoc.data().followers,
-      email: userDoc.data().email,
-      uid: userDoc.data().uid,
-    };
-    userInformation = tempUserInformation;
-  } catch (error) {}
 
-  const userPostsDatasCollection = collection(
-    firestore,
-    `users/${username}/posts`
-  );
-  const userPostDatasQuery = query(
-    userPostsDatasCollection,
-    orderBy("creationTime", "desc")
-  );
-
-  const userPostDatasSnapshot = await getDocs(userPostDatasQuery);
-
-  const postItemDatas: PostItemData[] = [];
-
-  userPostDatasSnapshot.forEach((doc) => {
-    const postObject: PostItemData = {
-      senderUsername: doc.data().senderUsername,
-
-      description: doc.data().description,
-      image: doc.data().image,
-
-      likeCount: doc.data().likeCount,
-      whoLiked: doc.data().whoLiked,
-
-      postDocId: doc.id,
-
-      commentCount: doc.data().commentCount,
-
-      nftUrl: doc.data().nftUrl,
-      creationTime: doc.data().creationTime,
-    };
-    const serializablePostObject: PostItemData = JSON.parse(
-      safeJsonStringify(postObject)
+    const userPostsDatasCollection = collection(
+      firestore,
+      `users/${username}/posts`
     );
-    postItemDatas.push(serializablePostObject);
-  });
+    const userPostDatasQuery = query(
+      userPostsDatasCollection,
+      orderBy("creationTime", "desc")
+    );
+
+    const userPostDatasSnapshot = await getDocs(userPostDatasQuery);
+
+    userPostDatasSnapshot.forEach((doc) => {
+      const postObject: PostItemData = {
+        senderUsername: doc.data().senderUsername,
+
+        description: doc.data().description,
+        image: doc.data().image,
+
+        likeCount: doc.data().likeCount,
+        whoLiked: doc.data().whoLiked,
+
+        postDocId: doc.id,
+
+        commentCount: doc.data().commentCount,
+
+        nftUrl: doc.data().nftUrl,
+        creationTime: doc.data().creationTime,
+      };
+      const serializablePostObject: PostItemData = JSON.parse(
+        safeJsonStringify(postObject)
+      );
+      postItemDatas.push(serializablePostObject);
+    });
+  } catch (error) {
+    // I don't know where this log go
+    console.error("Error while creating user page", error);
+  }
 
   return {
     props: {
