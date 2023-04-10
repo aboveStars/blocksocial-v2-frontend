@@ -22,7 +22,7 @@ type Props = {
   postItemsDatas: PostItemData[];
 };
 
-export default function index({ userInformation, postItemsDatas }: Props) {
+export default function UserPage({ userInformation, postItemsDatas }: Props) {
   const [innerHeight, setInnerHeight] = useState("");
 
   useEffect(() => {
