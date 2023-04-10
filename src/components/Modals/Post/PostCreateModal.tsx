@@ -9,22 +9,16 @@ import {
   Image,
   Input,
   Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
+  ModalBody, ModalContent,
+  ModalFooter, ModalOverlay,
   Stack,
-  Text,
-  Textarea,
+  Text
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Cropper from "react-easy-crop";
 import { AiOutlineClose } from "react-icons/ai";
 import { BiImageAdd } from "react-icons/bi";
 import { useRecoilState } from "recoil";
-import { setTextRange } from "typescript";
 import { postCreateModalStateAtom } from "../../atoms/postCreateModalAtom";
 
 export default function PostCreateModal() {
