@@ -45,13 +45,43 @@ export default function Home() {
    * @param postsDatasArray
    * @returns shuffled posts
    */
+  const organizePosts = (postsDatasArray: PostItemData[]) => {
+    const initialPostsDatasArray = [...postsDatasArray];
+
+    // shuffle with Fisher-Yates method
+    const shuffledPostsDatasArray = shufflePosts(initialPostsDatasArray);
+
+    // creation time sorting, but just for same sender.
+    shuffledPostsDatasArray.sort((postA, postB) => {
+      if (postA.senderUsername === postB.senderUsername) {
+        if (postA.creationTime - postB.creationTime < 0) {
+          return 1;
+        } else if (postA.creationTime - postB.creationTime > 0) {
+          return -1;
+        } else {
+          return 0;
+        }
+      } else {
+        return 0;
+      }
+    });
+    return shuffledPostsDatasArray;
+  };
+
   const shufflePosts = (postsDatasArray: PostItemData[]) => {
-    const shuffledPostsArray = [...postsDatasArray];
-    shuffledPostsArray.sort(() => Math.random() - 0.5);
-    shuffledPostsArray.sort(
-      (postA, postB) => postB.creationTime - postA.creationTime
-    );
-    return shuffledPostsArray;
+    let currentIndex = postsDatasArray.length,
+      randomIndex;
+
+    while (currentIndex !== 0) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+      [postsDatasArray[currentIndex], postsDatasArray[randomIndex]] = [
+        postsDatasArray[randomIndex],
+        postsDatasArray[currentIndex],
+      ];
+    }
+
+    return postsDatasArray;
   };
 
   const handleMainPage = async () => {
@@ -116,7 +146,7 @@ export default function Home() {
     }
 
     // shuffle posts
-    const finalPostDatas = shufflePosts(postsDatas);
+    const finalPostDatas = organizePosts(postsDatas);
 
     // Update state varible
     setPostDatasInServer(finalPostDatas);
