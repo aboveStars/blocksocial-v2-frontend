@@ -34,7 +34,11 @@ export default function Home() {
   useEffect(() => {
     if (currentUserState.loading) return;
     handleMainPage();
-  }, [currentUserState.username]);
+  }, [
+    currentUserState.username,
+    currentUserState.loading,
+    currentUserState.isThereCurrentUser,
+  ]);
 
   /**
    * Shuffles posts.
