@@ -1,3 +1,4 @@
+import PostItem from "@/components/Items/Post/PostItem";
 import UserPageLayout from "@/components/Layout/UserPageLayout";
 import { PostItemData } from "@/components/types/Post";
 import { UserInformation } from "@/components/types/User";
@@ -18,68 +19,29 @@ import { useEffect, useState } from "react";
 import safeJsonStringify from "safe-json-stringify";
 
 type Props = {
-  userInformation: UserInformation;
-  postItemsDatas: PostItemData[];
+  userInformation: UserInformation | undefined;
 };
 
-export default function UserPage({ userInformation, postItemsDatas }: Props) {
+export default function UserPage({ userInformation }: Props) {
   const [innerHeight, setInnerHeight] = useState("");
+
+  const [postItemDatas, setPostItemDatas] = useState<PostItemData[]>([]);
 
   useEffect(() => {
     setInnerHeight(`${window.innerHeight}px`);
   }, []);
 
-  if (!userInformation) {
-    return (
-      <Flex
-        justify="center"
-        align="center"
-        width="100%"
-        minHeight={innerHeight}
-      >
-        <Text as="b" textColor="white" fontSize="20pt">
-          User couldn&apos;t be found.
-        </Text>
-      </Flex>
-    );
-  }
-
-  return (
-    <>
-      <UserPageLayout
-        userInformation={userInformation}
-        postItemsDatas={postItemsDatas}
-      />
-    </>
-  );
-}
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const username = context.query.username;
-  let userInformation: UserInformation | undefined = undefined;
-  const postItemDatas: PostItemData[] = [];
-  try {
-    const userInformationDocRef = doc(firestore, `users/${username as string}`);
-    const userDoc = await getDoc(userInformationDocRef);
-
-    if (userDoc.exists()) {
-      const tempUserInformation: UserInformation = {
-        username: userDoc.data().username,
-        fullname: userDoc.data().fullname,
-        profilePhoto: userDoc.data().profilePhoto,
-        followingCount: userDoc.data().followingCount,
-        followings: userDoc.data().followings,
-        followerCount: userDoc.data().followerCount,
-        followers: userDoc.data().followers,
-        email: userDoc.data().email,
-        uid: userDoc.data().uid,
-      };
-      userInformation = tempUserInformation;
+  useEffect(() => {
+    if (!userInformation) {
+      return;
     }
+    handleUserPosts();
+  }, [userInformation]);
 
+  const handleUserPosts = async () => {
     const userPostsDatasCollection = collection(
       firestore,
-      `users/${username}/posts`
+      `users/${userInformation?.username}/posts`
     );
     const userPostDatasQuery = query(
       userPostsDatasCollection,
@@ -87,6 +49,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     );
 
     const userPostDatasSnapshot = await getDocs(userPostDatasQuery);
+
+    const tempPostDatas: PostItemData[] = [];
 
     userPostDatasSnapshot.forEach((doc) => {
       const postObject: PostItemData = {
@@ -108,8 +72,61 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       const serializablePostObject: PostItemData = JSON.parse(
         safeJsonStringify(postObject)
       );
-      postItemDatas.push(serializablePostObject);
+      tempPostDatas.push(serializablePostObject);
     });
+
+    setPostItemDatas(tempPostDatas);
+  };
+
+  if (!userInformation) {
+    return (
+      <Flex
+        justify="center"
+        align="center"
+        width="100%"
+        minHeight={innerHeight}
+      >
+        <Text as="b" textColor="white" fontSize="20pt">
+          User couldn&apos;t be found.
+        </Text>
+      </Flex>
+    );
+  }
+
+  return (
+    <>
+      <UserPageLayout
+        userInformation={userInformation}
+        postItemsDatas={postItemDatas}
+      />
+    </>
+  );
+}
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const username = context.query.username;
+  let userInformation: UserInformation | null = null;
+  const postItemDatas: PostItemData[] = [];
+  try {
+    const userInformationDocRef = doc(firestore, `users/${username as string}`);
+    const userDoc = await getDoc(userInformationDocRef);
+
+    if (!userDoc.exists()) {
+      throw new Error("There is no user with URL.");
+    }
+
+    const tempUserInformation: UserInformation = {
+      username: userDoc.data().username,
+      fullname: userDoc.data().fullname,
+      profilePhoto: userDoc.data().profilePhoto,
+      followingCount: userDoc.data().followingCount,
+      followings: userDoc.data().followings,
+      followerCount: userDoc.data().followerCount,
+      followers: userDoc.data().followers,
+      email: userDoc.data().email,
+      uid: userDoc.data().uid,
+    };
+    userInformation = tempUserInformation;
   } catch (error) {
     // I don't know where this log go
     console.error("Error while creating user page", error);
@@ -117,7 +134,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      userInformation: userInformation ?? null,
+      userInformation: userInformation,
       postItemsDatas: postItemDatas,
     },
   };

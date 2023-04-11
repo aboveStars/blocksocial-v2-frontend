@@ -237,6 +237,7 @@ export default function Header({ userInformation }: Props) {
         id="profile-photo-input"
         ref={inputRef}
         type="file"
+        accept="image/*"
         hidden
         onChange={onSelectWillBeCroppedProfilePhoto}
       />

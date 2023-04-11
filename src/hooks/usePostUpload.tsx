@@ -20,6 +20,11 @@ const usePostCreate = () => {
 
     const file = event.target.files[0];
 
+    if (!file.type.startsWith("image/")) {
+      console.log("Only Images");
+      return;
+    }
+
     const reader = new FileReader();
     reader.readAsDataURL(file);
 

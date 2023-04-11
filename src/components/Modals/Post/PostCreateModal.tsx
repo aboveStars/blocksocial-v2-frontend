@@ -9,10 +9,12 @@ import {
   Image,
   Input,
   Modal,
-  ModalBody, ModalContent,
-  ModalFooter, ModalOverlay,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalOverlay,
   Stack,
-  Text
+  Text,
 } from "@chakra-ui/react";
 import { useCallback, useRef, useState } from "react";
 import Cropper from "react-easy-crop";
@@ -274,6 +276,7 @@ export default function PostCreateModal() {
                 <Input
                   ref={imageInputRef}
                   type="file"
+                  accept="image/*"
                   hidden
                   onChange={onSelectWillBeCroppedPhoto}
                 />
