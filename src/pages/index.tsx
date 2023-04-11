@@ -1,4 +1,5 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
 import MainPageLayout from "@/components/Layout/MainPageLayout";
 import { PostItemData, PostServerData } from "@/components/types/Post";
 import { firestore } from "@/firebase/clientApp";
@@ -11,7 +12,7 @@ import {
   query,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import safeJsonStringify from "safe-json-stringify";
 
 export default function Home() {
@@ -19,6 +20,8 @@ export default function Home() {
   const [postsDatasInServer, setPostDatasInServer] = useState<PostItemData[]>(
     []
   );
+
+  const setPostStatus = useSetRecoilState(postsStatusAtom);
 
   /**
    * To make people index colorful, getting famous usernames from database
@@ -67,11 +70,13 @@ export default function Home() {
     // shuffle with Fisher-Yates method
     const shuffledPostsDatasArray = shufflePosts(initialPostsDatasArray);
 
-    
     return shuffledPostsDatasArray;
   };
 
   const handleMainPage = async () => {
+    setPostStatus({
+      loading: true,
+    });
     // get current user followings
     const currentUserFollowings: string[] = currentUserState.followings;
     const celebrities = await getCelebrities();
@@ -137,6 +142,10 @@ export default function Home() {
 
     // Update state varible
     setPostDatasInServer(finalPostDatas);
+
+    setPostStatus({
+      loading: false,
+    });
   };
 
   return (

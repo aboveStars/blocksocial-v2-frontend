@@ -48,7 +48,7 @@ export type PostFrontData = {
 
   commentCount: number;
 
-  postDocId: string
+  postDocId: string;
 
   nftUrl?: string;
 
@@ -68,14 +68,14 @@ export type SmallPostItemData = {
 export type CommentData = {
   commentSenderUsername: string;
   comment: string;
-  creationTime: number
+  creationTime: number;
 };
 
 export type CommentDataWithCommentDocPath = {
   commentDocPath: string;
   commentSenderUsername: string;
   comment: string;
-  creationTime: number
+  creationTime: number;
 };
 
 export type OpenPanelName = "main" | "comments" | "likes" | "nft";
@@ -92,3 +92,7 @@ export type SendNftStatus =
   | "waitingForConfirmation"
   | "updatingPost"
   | "final";
+
+export type PostStatus = {
+  loading: boolean;
+};

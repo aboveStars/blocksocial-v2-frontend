@@ -9,11 +9,13 @@ import Header from "../user/Header";
 type Props = {
   userInformation: UserInformation;
   postItemsDatas: PostItemData[];
+
 };
 
 export default function UserPageLayout({
   userInformation,
   postItemsDatas,
+  
 }: Props) {
   const [innerHeight, setInnerHeight] = useState("");
 

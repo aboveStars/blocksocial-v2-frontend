@@ -1,4 +1,4 @@
-import PostItem from "@/components/Items/Post/PostItem";
+import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
 import UserPageLayout from "@/components/Layout/UserPageLayout";
 import { PostItemData } from "@/components/types/Post";
 import { UserInformation } from "@/components/types/User";
@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 import { GetServerSidePropsContext } from "next";
 import { useEffect, useState } from "react";
+import { useSetRecoilState } from "recoil";
 
 import safeJsonStringify from "safe-json-stringify";
 
@@ -26,6 +27,8 @@ export default function UserPage({ userInformation }: Props) {
   const [innerHeight, setInnerHeight] = useState("");
 
   const [postItemDatas, setPostItemDatas] = useState<PostItemData[]>([]);
+
+  const setPostStatus = useSetRecoilState(postsStatusAtom);
 
   useEffect(() => {
     setInnerHeight(`${window.innerHeight}px`);
@@ -39,6 +42,9 @@ export default function UserPage({ userInformation }: Props) {
   }, [userInformation]);
 
   const handleUserPosts = async () => {
+    setPostStatus({
+      loading: true,
+    });
     const userPostsDatasCollection = collection(
       firestore,
       `users/${userInformation?.username}/posts`
@@ -76,6 +82,9 @@ export default function UserPage({ userInformation }: Props) {
     });
 
     setPostItemDatas(tempPostDatas);
+    setPostStatus({
+      loading: false,
+    });
   };
 
   if (!userInformation) {
@@ -94,12 +103,10 @@ export default function UserPage({ userInformation }: Props) {
   }
 
   return (
-    <>
-      <UserPageLayout
-        userInformation={userInformation}
-        postItemsDatas={postItemDatas}
-      />
-    </>
+    <UserPageLayout
+      userInformation={userInformation}
+      postItemsDatas={postItemDatas}
+    />
   );
 }
 
