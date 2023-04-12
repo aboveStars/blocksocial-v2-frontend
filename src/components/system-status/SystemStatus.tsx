@@ -1,12 +1,5 @@
 import React from "react";
 
 export default function SystemStatus() {
-  return (
-    <div>
-      <script
-        async
-        src="https://blocksocial.statuspage.io/embed/script.js"
-      ></script>
-    </div>
-  );
+  return <script async src={process.env.NEXT_PUBLIC_STATUS_PAGE_CODE} />;
 }

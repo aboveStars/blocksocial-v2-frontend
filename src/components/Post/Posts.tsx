@@ -1,4 +1,5 @@
 import { Stack } from "@chakra-ui/react";
+import { useEffect } from "react";
 import { useRecoilValue } from "recoil";
 import { postsStatusAtom } from "../atoms/postsStatusAtom";
 import PostItem from "../Items/Post/PostItem";
@@ -12,6 +13,11 @@ type Props = {
 
 export default function Posts({ postsItemDatas }: Props) {
   const postsLoading = useRecoilValue(postsStatusAtom).loading;
+
+  useEffect(() => {
+    console.log(postsLoading);
+  }, [postsLoading]);
+
   return (
     <>
       <Stack gap={3} mt={2} width="100%">
