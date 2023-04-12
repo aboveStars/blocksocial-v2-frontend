@@ -1,6 +1,5 @@
 import { auth } from "@/firebase/clientApp";
 import { useState } from "react";
-import { MdTry } from "react-icons/md";
 import safeJsonStringify from "safe-json-stringify";
 
 export default function useCommentDelete() {

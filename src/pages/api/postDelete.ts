@@ -21,25 +21,61 @@ const bucket = admin
   .storage()
   .bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET_ID as string);
 
+const auth = admin.auth();
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "DELETE") {
-    const { postDocPath } = req.body;
+  const { authorization } = req.headers;
 
-    if (!postDocPath) {
-      res.status(405).json({ error: "Missing Prop" });
-      console.error("Missing Prop");
-      return;
+  if (!authorization || !authorization.startsWith("Bearer ")) {
+    console.error("Non-User Request");
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const idToken = authorization.split("Bearer ")[1];
+    const decodedToken = await auth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+    const displayName = (await auth.getUser(uid)).displayName;
+
+    let deleteRequestSender: string = "";
+
+    if (!displayName) {
+      // old user means, user who signed-up before update.
+
+      console.log("Updating user");
+
+      const oldUserUsername = (
+        await firestore.collection("users").where("uid", "==", uid).get()
+      ).docs[0].id;
+
+      await auth.updateUser(uid, {
+        displayName: oldUserUsername,
+      });
+
+      deleteRequestSender = oldUserUsername;
+    } else {
+      console.log("User already updated");
+      deleteRequestSender = displayName;
     }
 
-    try {
-      await firestore.doc(postDocPath).delete();
+    if (req.method === "DELETE") {
+      const { postDocPath } = req.body;
 
-      // Delete NFT Metadata if this post has. THIS PROCESS SHOULD BE AUTOMATED
+      if (!postDocPath) {
+        res.status(405).json({ error: "Missing Prop" });
+        console.error("Missing Prop");
+        return;
+      }
+
       const ps = await firestore.doc(postDocPath).get();
       const data = ps.data();
+
+      if (data && data.senderUsername !== deleteRequestSender) {
+        throw new Error("Only owner can delete its post");
+      }
 
       if (data && data.nftUrl) {
         const metadataPath = `users/${postDocPath.split("/")[1]}/nftMetadatas/${
@@ -50,12 +86,14 @@ export default async function handler(
         await oldNftMetadataFile.delete();
       }
 
+      await firestore.doc(postDocPath).delete();
+
       res.status(200).json({});
-    } catch (error) {
-      console.error("Error while deleting doc", error);
-      res.status(500).json({ firebaseError: error });
+    } else {
+      res.status(405).json({ error: "Method not allowed" });
     }
-  } else {
-    res.status(405).json({ error: "Method not allowed" });
+  } catch (error) {
+    console.error("Error while deleting post", error);
+    res.status(401).json({ error: error });
   }
 }

@@ -30,37 +30,37 @@ export default async function handler(
     return res.status(401).json({ error: "Unauthorized" });
   }
   try {
+    const idToken = authorization.split("Bearer ")[1];
+    const decodedToken = await auth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+    const displayName = (await auth.getUser(uid)).displayName;
+
+    let deleteRequestSender: string = "";
+
+    if (!displayName) {
+      // old user means, user who signed-up before update.
+
+      console.log("Updating user");
+
+      const oldUserUsername = (
+        await firestore.collection("users").where("uid", "==", uid).get()
+      ).docs[0].id;
+
+      await auth.updateUser(uid, {
+        displayName: oldUserUsername,
+      });
+
+      deleteRequestSender = oldUserUsername;
+    } else {
+      console.log("User already updated");
+      deleteRequestSender = displayName;
+    }
+
     if (req.method === "DELETE") {
       const { commentDocPath, postDocPath } = req.body;
 
       if (!commentDocPath || !postDocPath) {
         throw new Error("Missing Prop");
-      }
-
-      const idToken = authorization.split("Bearer ")[1];
-      const decodedToken = await auth.verifyIdToken(idToken);
-      const uid = decodedToken.uid;
-      const displayName = (await auth.getUser(uid)).displayName;
-
-      let deleteRequestSender: string = "";
-
-      if (!displayName) {
-        // old user means, user who signed-up before update.
-
-        console.log("Updating user");
-
-        const oldUserUsername = (
-          await firestore.collection("users").where("uid", "==", uid).get()
-        ).docs[0].id;
-
-        await auth.updateUser(uid, {
-          displayName: oldUserUsername,
-        });
-
-        deleteRequestSender = oldUserUsername;
-      } else {
-        console.log("User already updated");
-        deleteRequestSender = displayName;
       }
 
       const ss = await firestore.doc(commentDocPath).get();

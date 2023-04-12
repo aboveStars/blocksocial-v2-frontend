@@ -1,4 +1,5 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { auth } from "@/firebase/clientApp";
 import { useRecoilValue } from "recoil";
 
 const usePost = () => {
@@ -12,29 +13,35 @@ const usePost = () => {
   const like = async (postDocPath: string, opCode: number) => {
     console.log("Like Operation Started");
 
-    const response = await fetch("/api/postLike", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        opCode: opCode,
-        postDocPath: postDocPath,
-        username: currentUserUsername,
-      }),
-    });
+    const idToken = await auth.currentUser?.getIdToken();
 
-    if (!response.ok) {
-      console.log("Like operation failed");
-      if (response.status === 500) {
-        const { firebaseError } = await response.json();
-        console.error("Firebase Error while like", firebaseError);
-      } else {
+    if (!idToken) {
+      throw new Error("Id Token couldn't be get");
+    }
+
+    try {
+      const response = await fetch("/api/postLike", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          opCode: opCode,
+          postDocPath: postDocPath,
+          username: currentUserUsername,
+        }),
+      });
+
+      if (!response.ok) {
+        console.log("Like operation failed");
         const { error } = await response.json();
-        console.error("Non-Firebase Error while like", error);
+        throw new Error(error);
+      } else {
+        console.log("Like operation successfull");
       }
-    } else {
-      console.log("Like operation successfull");
+    } catch (error) {
+      console.error("Error while like operation", error);
     }
   };
   return {

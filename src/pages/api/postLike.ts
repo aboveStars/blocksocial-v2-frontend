@@ -17,19 +17,52 @@ if (!admin.apps.length) {
 }
 
 const firestore = admin.firestore();
+const auth = admin.auth();
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "POST") {
-    const { opCode, postDocPath, username: likerUsername } = req.body;
-    if (!opCode || !postDocPath || !likerUsername) {
-      res.status(405).json({ error: "Missing Prop" });
-      console.error("Missing Prop");
-      return;
+  const { authorization } = req.headers;
+
+  if (!authorization || !authorization.startsWith("Bearer ")) {
+    console.error("Non-User Request");
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const idToken = authorization.split("Bearer ")[1];
+    const decodedToken = await auth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+    const displayName = (await auth.getUser(uid)).displayName;
+
+    let likerUsername: string = "";
+
+    if (!displayName) {
+      // old user means, user who signed-up before update.
+
+      console.log("Updating user");
+
+      const oldUserUsername = (
+        await firestore.collection("users").where("uid", "==", uid).get()
+      ).docs[0].id;
+
+      await auth.updateUser(uid, {
+        displayName: oldUserUsername,
+      });
+
+      likerUsername = oldUserUsername;
+    } else {
+      console.log("User already updated");
+      likerUsername = displayName;
     }
-    try {
+
+    if (req.method === "POST") {
+      const { opCode, postDocPath } = req.body;
+      if (!opCode || !postDocPath || !likerUsername) {
+        throw new Error("Missing Prop");
+      }
+
       await firestore.doc(postDocPath).update({
         likeCount: admin.firestore.FieldValue.increment(opCode as number),
       });
@@ -40,14 +73,12 @@ export default async function handler(
             : admin.firestore.FieldValue.arrayRemove(likerUsername),
       });
 
-      
-
       res.status(200).json({});
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ firebaseError: error });
+    } else {
+      res.status(405).json({ error: "Method not allowed" });
     }
-  } else {
-    res.status(405).json({ error: "Method not allowed" });
+  } catch (error) {
+    console.error("Error while like operation", error);
+    res.status(401).json({ error: error });
   }
 }
