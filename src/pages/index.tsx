@@ -79,6 +79,8 @@ export default function Home() {
     });
 
     // get current user followings
+
+    // this is empty array by default, so no need to check isThereCurrentUser
     const currentUserFollowings: string[] = currentUserState.followings;
     const celebrities = await getCelebrities();
 
@@ -92,14 +94,17 @@ export default function Home() {
     );
 
     // Filter to celebrities don't see themselves
-
-    const mainIndexSourceAddedCurrentUser = mainIndexSource.concat(
-      currentUserState.username
-    );
+    let finalIndexSource = mainIndexSource;
+    if (currentUserState.isThereCurrentUser) {
+      const mainIndexSourceAddedCurrentUser = mainIndexSource.concat(
+        currentUserState.username
+      );
+      finalIndexSource = mainIndexSourceAddedCurrentUser;
+    }
 
     let postsDatas: PostItemData[] = [];
 
-    for (const username of mainIndexSourceAddedCurrentUser) {
+    for (const username of finalIndexSource) {
       const mainIndexSourcePostDatasCollection = collection(
         firestore,
         `users/${username}/posts`
