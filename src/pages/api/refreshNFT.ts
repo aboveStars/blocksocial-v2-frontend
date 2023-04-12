@@ -24,21 +24,49 @@ const bucket = admin
   .storage()
   .bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET_ID as string);
 
+const auth = admin.auth();
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "POST") {
-    const { username, postDocId } = req.body;
+  const { authorization } = req.headers;
+  if (!authorization || !authorization.startsWith("Bearer ")) {
+    console.error("Non-User Request");
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
-    if (!username || !postDocId) {
-      res.status(405).json({ error: "Missing Prop" });
-      console.error("Missing Prop");
-      return;
+  try {
+    const idToken = authorization.split("Bearer ")[1];
+    const decodedToken = await auth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+    const displayName = (await auth.getUser(uid)).displayName;
+
+    let operationFromUsername: string = "";
+
+    if (!displayName) {
+      const oldUserUsername = (
+        await firestore.collection("users").where("uid", "==", uid).get()
+      ).docs[0].id;
+
+      await auth.updateUser(uid, {
+        displayName: oldUserUsername,
+      });
+
+      operationFromUsername = oldUserUsername;
+    } else {
+      operationFromUsername = displayName;
     }
-    try {
+
+    if (req.method === "POST") {
+      const { postDocId } = req.body;
+
+      if (!operationFromUsername || !postDocId) {
+        throw new Error("Missing Prop");
+      }
+
       const oldMetadataFile = bucket.file(
-        `users/${username}/nftMetadatas/${postDocId}`
+        `users/${operationFromUsername}/nftMetadatas/${postDocId}`
       );
 
       const oldMetadata: NFTMetadata = JSON.parse(
@@ -46,7 +74,9 @@ export default async function handler(
       );
 
       const pd = (
-        await firestore.doc(`users/${username}/posts/${postDocId}`).get()
+        await firestore
+          .doc(`users/${operationFromUsername}/posts/${postDocId}`)
+          .get()
       ).data();
 
       if (!pd) {
@@ -77,7 +107,7 @@ export default async function handler(
       const buffer = Buffer.from(safeJsonStringify(refreshedMetadata));
 
       const refreshedMetadataFile = bucket.file(
-        `users/${username}/nftMetadatas/${postDocId}`
+        `users/${operationFromUsername}/nftMetadatas/${postDocId}`
       );
 
       await refreshedMetadataFile.save(buffer, {
@@ -87,12 +117,12 @@ export default async function handler(
       await refreshedMetadataFile.makePublic();
 
       res.status(200).json({});
-    } catch (error) {
-      console.error("Error while refreshing nft", error);
-      res.status(500).json({ firebaseError: error });
+    } else {
+      console.error("Method Not Allowed");
+      res.status(405).json({ error: "Method not allowed" });
     }
-  } else {
-    console.error("Method Not Allowed");
-    res.status(405).json({ error: "Method not allowed" });
+  } catch (error) {
+    console.error("Error at refresh NFT operation:", error);
+    return res.status(401).json({ error: error });
   }
 }

@@ -223,12 +223,7 @@ export default function PostFront({
                 {postFrontData.nftUrl ? (
                   !nftRefreshLoading ? (
                     <MenuItem
-                      onClick={() =>
-                        refreshNFT(
-                          postFrontData.senderUsername,
-                          postFrontData.postDocId
-                        )
-                      }
+                      onClick={() => refreshNFT(postFrontData.postDocId)}
                     >
                       Refresh NFT
                     </MenuItem>
@@ -321,7 +316,7 @@ export default function PostFront({
         </Flex>
         <Flex>
           <Flex gap={3} p={2}>
-            <Flex gap="1" >
+            <Flex gap="1">
               {ostensiblePostData.whoLiked.includes(
                 currentUserState.username
               ) ? (
@@ -380,7 +375,7 @@ export default function PostFront({
                   openPanelNameSetter("likes");
                 }}
               >
-                {`${ostensiblePostData.likeCount}`} 
+                {`${ostensiblePostData.likeCount}`}
               </Text>
             </Flex>
 

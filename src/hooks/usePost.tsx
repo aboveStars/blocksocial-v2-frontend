@@ -1,10 +1,6 @@
-import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { auth } from "@/firebase/clientApp";
-import { useRecoilValue } from "recoil";
 
 const usePost = () => {
-  const currentUserUsername = useRecoilValue(currentUserStateAtom).username;
-
   /**
    * Both for "like" and "deLike(removeLike)"
    * @param postId postId of post
@@ -29,7 +25,6 @@ const usePost = () => {
         body: JSON.stringify({
           opCode: opCode,
           postDocPath: postDocPath,
-          username: currentUserUsername,
         }),
       });
 

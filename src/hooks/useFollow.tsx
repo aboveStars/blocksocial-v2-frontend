@@ -29,7 +29,7 @@ export default function useFollow() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
+          authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify({
           operationTo: operateToUserName,

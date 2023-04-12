@@ -1,7 +1,7 @@
 import { NFTMetadata } from "@/components/types/NFT";
 import { blockSocialSmartContract } from "@/ethers/clientApp";
 import { mumbaiContractAddress } from "@/ethers/ContractAddresses";
-import { firestore, storage } from "@/firebase/clientApp";
+import { auth, firestore, storage } from "@/firebase/clientApp";
 import { TransactionReceipt } from "ethers";
 import { doc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -124,31 +124,36 @@ export default function useNFT() {
   };
 
   /**
-   *
-   * @param senderUsername
    * @param postDocId
    */
-  const refreshNFT = async (senderUsername: string, postDocId: string) => {
+  const refreshNFT = async (postDocId: string) => {
     setNftRefreshLoading(true);
-    const response = await fetch("/api/refreshNFT", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: senderUsername,
-        postDocId: postDocId,
-      }),
-    });
-    if (!response.ok) {
-      if (response.status === 500) {
-        const { firebaseError } = await response.json();
-        console.log("Firebase Error", firebaseError);
-      } else {
-        const { error } = await response.json();
-        console.log("Non-Firebase Error", error);
+
+    try {
+      const idToken = await auth.currentUser?.getIdToken();
+
+      if (!idToken) {
+        throw new Error("Id Token couldn't be get");
       }
-    } else {
+
+      const response = await fetch("/api/refreshNFT", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          postDocId: postDocId,
+        }),
+      });
+      if (!response.ok) {
+        const { error } = await response.json();
+        throw new Error(error);
+      }
+
+      setNftRefreshLoading(true);
+    } catch (error) {
+      console.error("Error while refreshingNFT", error);
       setNftRefreshLoading(false);
     }
   };

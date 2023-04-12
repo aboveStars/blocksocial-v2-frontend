@@ -92,13 +92,14 @@ export default function Home() {
     );
 
     // Filter to celebrities don't see themselves
-    const mainIndexSourceFiltered = mainIndexSource.filter(
-      (u) => u !== currentUserState.username
+
+    const mainIndexSourceAddedCurrentUser = mainIndexSource.concat(
+      currentUserState.username
     );
 
     let postsDatas: PostItemData[] = [];
 
-    for (const username of mainIndexSourceFiltered) {
+    for (const username of mainIndexSourceAddedCurrentUser) {
       const mainIndexSourcePostDatasCollection = collection(
         firestore,
         `users/${username}/posts`
@@ -146,7 +147,6 @@ export default function Home() {
 
     setPostStatus({
       loading: false,
-
     });
   };
 

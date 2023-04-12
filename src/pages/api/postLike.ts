@@ -41,8 +41,6 @@ export default async function handler(
     if (!displayName) {
       // old user means, user who signed-up before update.
 
-      console.log("Updating user");
-
       const oldUserUsername = (
         await firestore.collection("users").where("uid", "==", uid).get()
       ).docs[0].id;
@@ -53,7 +51,6 @@ export default async function handler(
 
       likerUsername = oldUserUsername;
     } else {
-      console.log("User already updated");
       likerUsername = displayName;
     }
 

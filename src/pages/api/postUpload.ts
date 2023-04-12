@@ -24,31 +24,59 @@ const bukcet = admin
   .storage()
   .bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET_ID as string);
 
+const auth = admin.auth();
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === "POST") {
-    const { description, image: imageDataURL, username } = req.body;
+  const { authorization } = req.headers;
 
-    if (description.length === 0 && imageDataURL.length === 0) {
-      console.error("Empty Post Creation Attempt, aborting...");
-      res.status(400).json({ error: "Empty Post Creation Attempt" });
-      return;
+  if (!authorization || !authorization.startsWith("Bearer ")) {
+    console.error("Non-User Request");
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const idToken = authorization.split("Bearer ")[1];
+    const decodedToken = await auth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+    const displayName = (await auth.getUser(uid)).displayName;
+
+    let operationFromUsername: string = "";
+
+    if (!displayName) {
+      // old user means, user who signed-up before update.
+
+      const oldUserUsername = (
+        await firestore.collection("users").where("uid", "==", uid).get()
+      ).docs[0].id;
+
+      await auth.updateUser(uid, {
+        displayName: oldUserUsername,
+      });
+
+      operationFromUsername = oldUserUsername;
+    } else {
+      operationFromUsername = displayName;
     }
 
-    if (!username) {
-      res.status(405).json({ error: "Missing Prop" });
-      console.error("Missing Prop");
-      return;
-    }
+    if (req.method === "POST") {
+      const { description, image: imageDataURL } = req.body;
 
-    try {
+      if (description.length === 0 && imageDataURL.length === 0) {
+        throw new Error("Empty Post Creation Attempt");
+      }
+
+      if (!operationFromUsername) {
+        throw new Error("Missing Prop");
+      }
+
       let postImagePublicURL = "";
       if (imageDataURL.length !== 0) {
         const postImageId = Date.now().toString();
         const file = bukcet.file(
-          `users/${username}/postsPhotos/${postImageId}`
+          `users/${operationFromUsername}/postsPhotos/${postImageId}`
         );
         const buffer = Buffer.from(imageDataURL.split(",")[1], "base64");
         await file.save(buffer, {
@@ -61,7 +89,7 @@ export default async function handler(
       }
 
       const newPostData: PostServerData = {
-        senderUsername: username,
+        senderUsername: operationFromUsername,
         description: description,
         image: postImagePublicURL,
         likeCount: 0,
@@ -76,15 +104,15 @@ export default async function handler(
       );
 
       await firestore
-        .collection(`users/${username}/posts`)
+        .collection(`users/${operationFromUsername}/posts`)
         .add(serializeableNewPostData);
 
-      res.status(200).json({ username: username });
-    } catch (error) {
-      console.error("Firebase Error while uploading new post", error);
-      res.status(500).json({ firebaseError: error });
+      res.status(200).json({ username: operationFromUsername });
+    } else {
+      res.status(405).json({ error: "Method not allowed" });
     }
-  } else {
-    res.status(405).json({ error: "Method not allowed" });
+  } catch (error) {
+    console.error("Error while post upload operation:", error);
+    return res.status(401).json({ error: error });
   }
 }
