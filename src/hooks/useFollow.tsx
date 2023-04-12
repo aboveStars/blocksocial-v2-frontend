@@ -10,45 +10,46 @@ export default function useFollow() {
    * @param opCode  1 for follow, -1 for unFollow
    */
   const follow = async (operateToUserName: string, opCode: number) => {
-    // Check if there is a current user
-    if (!currentUserState.isThereCurrentUser) {
-      console.log("Login First");
-      return;
-    }
-    // Check if we follow ourselves (normally user doesn't see button to follow himself but for any bug it is more safer)
-    if (operateToUserName == currentUserState.username) {
-      console.log("You can not follow or unfollow yourself ");
-      return;
-    }
-
-    const idToken = await auth.currentUser?.getIdToken();
-
-    const response = await fetch("/api/follow", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${idToken}`,
-      },
-      body: JSON.stringify({
-        operationFrom: currentUserState.username,
-        operationTo: operateToUserName,
-        opCode: opCode,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 500) {
-        const { firebaseError } = await response.json();
-        console.error(
-          "Firebase Error while following operation",
-          firebaseError
-        );
-      } else {
-        const { error } = await response.json();
-        console.error("Firebase Error while following operation", error);
+    try {
+      if (!currentUserState.isThereCurrentUser) {
+        throw new Error("There is no current user");
       }
-    } else {
-      console.log("Following Operation Successfull");
+
+      if (operateToUserName == currentUserState.username) {
+        throw new Error("Self Follow Detected");
+      }
+
+      const idToken = await auth.currentUser?.getIdToken();
+
+      if (!idToken) {
+        throw new Error("Id Token couldn't be get");
+      }
+
+      const response = await fetch("/api/follow", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          operationTo: operateToUserName,
+          opCode: opCode,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 500) {
+          const { firebaseError } = await response.json();
+          throw new Error(firebaseError);
+        } else {
+          const { error } = await response.json();
+          throw new Error(error);
+        }
+      } else {
+        console.log("Following Operation Successfull");
+      }
+    } catch (error) {
+      console.error("Error at follow operation:", error);
     }
   };
 

@@ -1,11 +1,13 @@
+import { auth } from "@/firebase/clientApp";
 import { useState } from "react";
+import { MdTry } from "react-icons/md";
+import safeJsonStringify from "safe-json-stringify";
 
 export default function useCommentDelete() {
   const [commentDeletionLoading, setCommentDeletionLoading] = useState(false);
 
   const commentDelete = async (userCommentDocPath: string) => {
     if (!!!userCommentDocPath) {
-      console.log("Not ");
       return;
     }
 
@@ -17,29 +19,30 @@ export default function useCommentDelete() {
 
     console.log("Comment Deletion is started");
 
-    const response = await fetch("/api/postCommentDelete", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        commentDocPath: userCommentDocPath,
-        postDocPath: postDocPath,
-      }),
-    });
+    const idToken = await auth.currentUser?.getIdToken();
 
-    if (!response.ok) {
-      if (response.status === 500) {
-        const { firebaseError } = await response.json();
-        console.error("Firebase Error while deleting post", firebaseError);
-      } else {
+    try {
+      const response = await fetch("/api/postCommentDelete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          commentDocPath: userCommentDocPath,
+          postDocPath: postDocPath,
+        }),
+      });
+
+      if (!response.ok) {
         const { error } = await response.json();
-        console.error("Non-Firebase Error while deleting post", error);
+        throw new Error(safeJsonStringify(error));
+      } else {
+        console.log("Comment Deletion is succesfull");
+        setCommentDeletionLoading(false);
       }
-    } else {
-      console.log("Comment Deletion is succesfull");
-
-      setCommentDeletionLoading(false);
+    } catch (error) {
+      console.error("Error while deleting comment", error);
     }
   };
   return {
