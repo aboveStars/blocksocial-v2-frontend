@@ -22,7 +22,9 @@ export default function Posts({ postsItemDatas }: Props) {
           <>
             {postsItemDatas.map((postItemData) => (
               <PostItem
-                key={postItemData.postDocId}
+                key={`${postItemData.senderUsername}/${
+                  postItemData.postDocId
+                }/${Date.now()}`}
                 postItemData={postItemData}
               />
             ))}
