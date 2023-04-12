@@ -1,4 +1,5 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { auth } from "@/firebase/clientApp";
 import { useRecoilValue } from "recoil";
 
 export default function useFollow() {
@@ -20,10 +21,13 @@ export default function useFollow() {
       return;
     }
 
+    const idToken = await auth.currentUser?.getIdToken();
+
     const response = await fetch("/api/follow", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`,
       },
       body: JSON.stringify({
         operationFrom: currentUserState.username,
