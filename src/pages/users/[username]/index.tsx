@@ -42,6 +42,10 @@ export default function UserPage({ userInformation }: Props) {
   }, [userInformation]);
 
   const handleUserPosts = async () => {
+    setPostStatus({
+      loading: true,
+    });
+
     const userPostsDatasCollection = collection(
       firestore,
       `users/${userInformation?.username}/posts`

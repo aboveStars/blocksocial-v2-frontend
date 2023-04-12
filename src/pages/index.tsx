@@ -74,6 +74,10 @@ export default function Home() {
   };
 
   const handleMainPage = async () => {
+    setPostStatus({
+      loading: true,
+    });
+
     // get current user followings
     const currentUserFollowings: string[] = currentUserState.followings;
     const celebrities = await getCelebrities();
@@ -142,6 +146,7 @@ export default function Home() {
 
     setPostStatus({
       loading: false,
+
     });
   };
 
