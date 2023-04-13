@@ -12,7 +12,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 import { useSetRecoilState } from "recoil";
 
@@ -23,6 +23,8 @@ import { doc, FirestoreError, getDoc } from "firebase/firestore";
 import { AiOutlineCheckCircle } from "react-icons/ai";
 import { BiError } from "react-icons/bi";
 import { firestore } from "@/firebase/clientApp";
+
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function SignUp() {
   const [signUpForm, setSignUpForm] = useState({
@@ -50,6 +52,8 @@ export default function SignUp() {
   const [signUpLoading, setSignUpLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const captchaRef = useRef<ReCAPTCHA>(null);
+
   const isUserNameTaken = async (susUsername: string) => {
     if (!susUsername) return false;
 
@@ -61,10 +65,25 @@ export default function SignUp() {
     return existingStatus;
   };
 
+  const getCaptchaToken = () => {
+    const token = captchaRef.current?.getValue();
+    captchaRef.current?.reset();
+
+    return token;
+  };
+
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSignUpLoading(true);
     setError("");
+
+    const captchaToken = getCaptchaToken();
+
+    if (!captchaToken) {
+      setSignUpLoading(false);
+      setError("Complete Captcha Please");
+      return;
+    }
 
     const emailRegex =
       /^[A-Za-z0-9._%+-]+@(gmail|yahoo|outlook|aol|icloud|protonmail|yandex|mail|zoho)\.(com|net|org)$/i;
@@ -109,7 +128,10 @@ export default function SignUp() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(signUpForm),
+      body: JSON.stringify({
+        ...signUpForm,
+        captchaToken: captchaToken,
+      }),
     });
 
     if (!response.ok) {
@@ -140,6 +162,10 @@ export default function SignUp() {
         if (error === "BadFullname") {
           console.error(error);
           setError("Invalid Fullname");
+        }
+        if (error === "No-Real-User") {
+          console.error(error);
+          setError("Invalid Captcha");
         }
       } else if (response.status === 500) {
         const { firebaseError } = await response.json();
@@ -438,6 +464,13 @@ export default function SignUp() {
         >
           Sign Up
         </Button>
+
+        <Flex justify="center">
+          <ReCAPTCHA
+            ref={captchaRef}
+            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string}
+          />
+        </Flex>
 
         <Text color="red" textAlign="center" fontSize="10pt">
           {error}
