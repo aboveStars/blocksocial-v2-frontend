@@ -99,7 +99,7 @@ export default function Home() {
       const mainIndexSourceAddedCurrentUser = mainIndexSource.concat(
         currentUserState.username
       );
-      finalIndexSource = mainIndexSourceAddedCurrentUser;
+      finalIndexSource = Array.from(new Set(mainIndexSourceAddedCurrentUser));
     }
 
     let postsDatas: PostItemData[] = [];

@@ -15,7 +15,7 @@ import { useSetRecoilState } from "recoil";
 export default function LogIn() {
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
   const [loginForm, setLoginForm] = useState({
-    email: "",
+    emailOrUsername: "",
     password: "",
   });
 
@@ -32,7 +32,7 @@ export default function LogIn() {
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    directLogin(loginForm.email, loginForm.password);
+    directLogin(loginForm.emailOrUsername, loginForm.password);
   };
 
   return (
@@ -42,9 +42,9 @@ export default function LogIn() {
           <FormControl variant="floating">
             <Input
               required
-              name="email"
+              name="emailOrUsername"
               placeholder=" "
-              type="email"
+              type="text"
               mb={2}
               onChange={onChange}
               _hover={{
@@ -59,7 +59,7 @@ export default function LogIn() {
               fontSize="10pt"
               my="2.5"
             >
-              Email
+              Email or Username
             </FormLabel>
           </FormControl>
 

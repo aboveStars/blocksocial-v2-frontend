@@ -36,33 +36,14 @@ export default async function handler(
   try {
     const idToken = authorization.split("Bearer ")[1];
     const decodedToken = await auth.verifyIdToken(idToken);
+
     const uid = decodedToken.uid;
     const displayName = (await auth.getUser(uid)).displayName;
 
-    let commentSenderUsername: string = "";
-
-    if (!displayName) {
-      // old user means, user who signed-up before update.
-
-      const oldUserUsername = (
-        await firestore.collection("users").where("uid", "==", uid).get()
-      ).docs[0].id;
-
-      await auth.updateUser(uid, {
-        displayName: oldUserUsername,
-      });
-
-      commentSenderUsername = oldUserUsername;
-    } else {
-      commentSenderUsername = displayName;
-    }
+    let commentSenderUsername = displayName;
 
     if (req.method === "POST") {
-      const {
-        comment,
-
-        postDocPath,
-      } = req.body;
+      const { comment, postDocPath } = req.body;
 
       if (!comment || !commentSenderUsername || !postDocPath) {
         throw new Error("Missing Prop");

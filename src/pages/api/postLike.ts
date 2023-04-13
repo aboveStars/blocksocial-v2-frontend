@@ -36,23 +36,7 @@ export default async function handler(
     const uid = decodedToken.uid;
     const displayName = (await auth.getUser(uid)).displayName;
 
-    let likerUsername: string = "";
-
-    if (!displayName) {
-      // old user means, user who signed-up before update.
-
-      const oldUserUsername = (
-        await firestore.collection("users").where("uid", "==", uid).get()
-      ).docs[0].id;
-
-      await auth.updateUser(uid, {
-        displayName: oldUserUsername,
-      });
-
-      likerUsername = oldUserUsername;
-    } else {
-      likerUsername = displayName;
-    }
+    let likerUsername = displayName;
 
     if (req.method === "POST") {
       const { opCode, postDocPath } = req.body;

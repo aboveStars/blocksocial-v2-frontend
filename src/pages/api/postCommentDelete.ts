@@ -35,23 +35,7 @@ export default async function handler(
     const uid = decodedToken.uid;
     const displayName = (await auth.getUser(uid)).displayName;
 
-    let deleteRequestSender: string = "";
-
-    if (!displayName) {
-      // old user means, user who signed-up before update.
-
-      const oldUserUsername = (
-        await firestore.collection("users").where("uid", "==", uid).get()
-      ).docs[0].id;
-
-      await auth.updateUser(uid, {
-        displayName: oldUserUsername,
-      });
-
-      deleteRequestSender = oldUserUsername;
-    } else {
-      deleteRequestSender = displayName;
-    }
+    let deleteRequestSender = displayName;
 
     if (req.method === "DELETE") {
       const { commentDocPath, postDocPath } = req.body;

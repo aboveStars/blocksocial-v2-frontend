@@ -1,13 +1,21 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import {
-  CurrentUser, defaultUserInformation,
-  UserInformation
+  CurrentUser,
+  defaultUserInformation,
+  UserInformation,
 } from "@/components/types/User";
 
 import { auth, firestore } from "@/firebase/clientApp";
-import { User } from "firebase/auth";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { updateCurrentUser, User } from "firebase/auth";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { useSetRecoilState } from "recoil";
@@ -27,11 +35,36 @@ const useLoginOperations = () => {
 
   /**
    * Starting point of login
-   * @param email
+   * @param emailOrUsername
    * @param password
    */
-  const directLogin = async (email: string, password: string) => {
+  const directLogin = async (emailOrUsername: string, password: string) => {
     setLoginLoading((prev) => true);
+
+    let email: string = "";
+
+    const emailRegex = /\S+@\S+\.\S+/;
+    const isEmail = emailRegex.test(emailOrUsername);
+
+    if (isEmail) {
+      email = emailOrUsername;
+    } else {
+      const username = emailOrUsername;
+      const userDocSnapshot = await getDoc(doc(firestore, `users/${username}`));
+
+      if (!userDocSnapshot.exists()) {
+        email = "";
+      } else {
+        email = userDocSnapshot.data().email;
+      }
+    }
+
+    if (!email) {
+      setLoginLoading(false);
+      setLoginError("Invalid username or email");
+      return;
+    }
+
     const userCred = await signInWithEmailAndPassword(email, password);
     if (!userCred) {
       console.log("Error while login");
@@ -45,30 +78,33 @@ const useLoginOperations = () => {
    * @returns
    */
   const onLogin = async (user: User) => {
-    // getting user data from database
-    const uid = user.uid;
+    // check if user has display name if not, update auth object
 
-    const userQuery = query(
-      collection(firestore, "users"),
-      where("uid", "==", uid)
-    );
-    const userQuerySnapshot = await getDocs(userQuery);
+    const displayName = user.displayName;
+    let username: string = "";
+    if (!displayName) {
+      username = await handleDisplayNameUpdate();
+    } else {
+      console.log("We don't need to update yeyyyyy");
+      username = displayName;
+    }
+
+    const userDoc = await getDoc(doc(firestore, `users/${username}`));
 
     let currentUserDataOnServer: UserInformation = defaultUserInformation;
 
-    userQuerySnapshot.forEach((doc) => {
+    if (userDoc.exists())
       currentUserDataOnServer = {
-        username: doc.data().username,
-        fullname: doc.data().fullname,
-        profilePhoto : doc.data().profilePhoto,
-        followingCount: doc.data().followingCount,
-        followings: doc.data().followings,
-        followerCount: doc.data().followerCount,
-        followers: doc.data().followers,
-        email: doc.data().email,
-        uid: doc.data().uid,
+        username: userDoc.data().username,
+        fullname: userDoc.data().fullname,
+        profilePhoto: userDoc.data().profilePhoto,
+        followingCount: userDoc.data().followingCount,
+        followings: userDoc.data().followings,
+        followerCount: userDoc.data().followerCount,
+        followers: userDoc.data().followers,
+        email: userDoc.data().email,
+        uid: userDoc.data().uid,
       };
-    });
 
     if (!currentUserDataOnServer!) {
       console.log(
@@ -81,10 +117,10 @@ const useLoginOperations = () => {
 
     const currentUserDataTemp: CurrentUser = {
       isThereCurrentUser: true,
-      loading : false,
+      loading: false,
       username: currentUserDataOnServer.username,
       fullname: currentUserDataOnServer.fullname,
-      profilePhoto :currentUserDataOnServer.profilePhoto,
+      profilePhoto: currentUserDataOnServer.profilePhoto,
       followingCount: currentUserDataOnServer.followingCount,
       followings: currentUserDataOnServer.followings,
       followerCount: currentUserDataOnServer.followerCount,
@@ -102,6 +138,29 @@ const useLoginOperations = () => {
     }));
 
     setLoginLoading((prev) => false);
+  };
+
+  const handleDisplayNameUpdate = async () => {
+    console.log("We are updating user");
+
+    const idToken = await auth.currentUser?.getIdToken();
+
+    const response = await fetch("/api/update", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({
+        idToken: idToken,
+      }),
+    });
+
+    const { createdDisplayName } = await response.json();
+
+    console.log("User updated:", createdDisplayName);
+
+    return createdDisplayName;
   };
 
   useEffect(() => {

@@ -42,21 +42,7 @@ export default async function handler(
     const uid = decodedToken.uid;
     const displayName = (await auth.getUser(uid)).displayName;
 
-    let operationFromUsername: string = "";
-
-    if (!displayName) {
-      const oldUserUsername = (
-        await firestore.collection("users").where("uid", "==", uid).get()
-      ).docs[0].id;
-
-      await auth.updateUser(uid, {
-        displayName: oldUserUsername,
-      });
-
-      operationFromUsername = oldUserUsername;
-    } else {
-      operationFromUsername = displayName;
-    }
+    let operationFromUsername = displayName;
 
     if (req.method === "POST") {
       const { postDocId } = req.body;
