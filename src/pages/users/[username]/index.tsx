@@ -114,7 +114,7 @@ export default function UserPage({ userInformation }: Props) {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const username = context.query.username;
   let userInformation: UserInformation | null = null;
-  const postItemDatas: PostItemData[] = [];
+
   try {
     const userInformationDocRef = doc(firestore, `users/${username as string}`);
     const userDoc = await getDoc(userInformationDocRef);
@@ -143,7 +143,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       userInformation: userInformation,
-      postItemsDatas: postItemDatas,
     },
   };
 }
