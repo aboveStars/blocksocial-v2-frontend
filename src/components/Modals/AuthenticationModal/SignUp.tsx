@@ -300,6 +300,7 @@ export default function SignUp() {
                 required
                 name="email"
                 type="email"
+                autoComplete="new-password"
                 mb={2}
                 onChange={onChange}
                 _hover={{
@@ -339,6 +340,7 @@ export default function SignUp() {
                 required
                 name="fullname"
                 type="text"
+                autoComplete="new-password"
                 mb={2}
                 onChange={onChange}
                 _hover={{
@@ -389,6 +391,7 @@ export default function SignUp() {
                 required
                 name="username"
                 type="text"
+                autoComplete="new-password"
                 mb={2}
                 value={userNameLowerCaseValue}
                 onChange={onChange}
@@ -424,6 +427,7 @@ export default function SignUp() {
                 required
                 name="password"
                 type="password"
+                autoComplete="new-password"
                 mb={1}
                 onChange={onChange}
                 borderColor={!passwordStrong ? "red" : "gray.200"}
