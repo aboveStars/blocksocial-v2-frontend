@@ -70,16 +70,10 @@ export default function SignUp() {
       return;
     }
 
-    if (process.env.NEXT_PUBLIC_DEVELOPMENT === "true") {
-      const token = captchaRef.current.getValue();
-      captchaRef.current.reset();
+    const token = captchaRef.current.getValue();
+    captchaRef.current.reset();
 
-      return token;
-    } else {
-      const token = await captchaRef.current.executeAsync();
-      captchaRef.current.reset();
-      return token;
-    }
+    return token;
   };
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -477,11 +471,7 @@ export default function SignUp() {
 
         <Flex justify="center">
           <ReCAPTCHA
-            size={
-              process.env.NEXT_PUBLIC_DEVELOPMENT === "true"
-                ? "normal"
-                : "invisible"
-            }
+            size="normal"
             ref={captchaRef}
             sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string}
           />
