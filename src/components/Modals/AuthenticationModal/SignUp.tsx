@@ -65,11 +65,21 @@ export default function SignUp() {
     return existingStatus;
   };
 
-  const getCaptchaToken = () => {
-    const token = captchaRef.current?.getValue();
-    captchaRef.current?.reset();
+  const handleCaptcha = async () => {
+    if (!captchaRef.current) {
+      return;
+    }
 
-    return token;
+    if (process.env.NEXT_PUBLIC_DEVELOPMENT === "true") {
+      const token = captchaRef.current.getValue();
+      captchaRef.current.reset();
+
+      return token;
+    } else {
+      const token = await captchaRef.current.executeAsync();
+      captchaRef.current.reset();
+      return token;
+    }
   };
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -77,7 +87,7 @@ export default function SignUp() {
     setSignUpLoading(true);
     setError("");
 
-    const captchaToken = getCaptchaToken();
+    const captchaToken = await handleCaptcha();
 
     if (!captchaToken) {
       setSignUpLoading(false);
@@ -467,6 +477,11 @@ export default function SignUp() {
 
         <Flex justify="center">
           <ReCAPTCHA
+            size={
+              process.env.NEXT_PUBLIC_DEVELOPMENT === "true"
+                ? "normal"
+                : "invisible"
+            }
             ref={captchaRef}
             sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string}
           />
