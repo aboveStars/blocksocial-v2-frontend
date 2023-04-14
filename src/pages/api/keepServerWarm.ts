@@ -1,6 +1,9 @@
-import { NextApiResponse } from "next";
+import { NextApiRequest, NextApiResponse } from "next";
 
-export default async function handler(res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const warmUps = [
     fetch("https:/blocksocial.vercel.app/api/follow"),
     fetch("https:/blocksocial.vercel.app/api/postComments"),
@@ -19,8 +22,5 @@ export default async function handler(res: NextApiResponse) {
   } catch (error) {
     console.error("Warm-Up is done. We got error as normal.");
   }
-
-  return res.status(200).json({
-    status: "Server Warmed",
-  });
+  return res.status(200).json({ message: "Warmed-Up" });
 }
