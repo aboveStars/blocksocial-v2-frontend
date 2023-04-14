@@ -1,5 +1,5 @@
-import { Flex, Text } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
+import { Flex } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 
 import Posts from "../Post/Posts";
 import { PostItemData } from "../types/Post";
@@ -9,14 +9,9 @@ import Header from "../user/Header";
 type Props = {
   userInformation: UserInformation;
   postItemsDatas: PostItemData[];
-
 };
 
-export default function UserPageLayout({
-  userInformation,
-  postItemsDatas,
-  
-}: Props) {
+const UserPageLayout =  ({ userInformation, postItemsDatas }: Props) =>  {
   const [innerHeight, setInnerHeight] = useState("");
 
   useEffect(() => {
@@ -65,3 +60,5 @@ export default function UserPageLayout({
     </>
   );
 }
+
+export { UserPageLayout };

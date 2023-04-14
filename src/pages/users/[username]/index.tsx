@@ -2,6 +2,7 @@ import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
 
 import { PostItemData } from "@/components/types/Post";
 import { UserInformation } from "@/components/types/User";
+import { UserPageLayout } from "../../../components/Layout/UserPageLayout";
 
 import { firestore } from "@/firebase/clientApp";
 import { Flex, Text } from "@chakra-ui/react";
@@ -14,11 +15,9 @@ import {
   query,
 } from "firebase/firestore";
 import { GetServerSidePropsContext } from "next";
-import dynamic from "next/dynamic";
+
 import { useEffect, useState } from "react";
 import { useSetRecoilState } from "recoil";
-
-import safeJsonStringify from "safe-json-stringify";
 
 type Props = {
   userInformation: UserInformation | undefined;
@@ -26,9 +25,6 @@ type Props = {
 };
 
 export default function UserPage({ userInformation, postItemDatas }: Props) {
-  const UserPageLayout = dynamic(
-    () => import("../../../components/Layout/UserPageLayout")
-  );
   const [innerHeight, setInnerHeight] = useState("");
 
   const setPostStatus = useSetRecoilState(postsStatusAtom);
@@ -119,9 +115,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         nftUrl: doc.data().nftUrl,
         creationTime: doc.data().creationTime,
       };
-      const serializablePostObject: PostItemData = JSON.parse(
-        safeJsonStringify(postObject)
-      );
+      const serializablePostObject: PostItemData = postObject;
+
       tempPostDatas.push(serializablePostObject);
     });
     postItemDatas = tempPostDatas;
