@@ -4,8 +4,23 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const { cron } = req.headers;
+  if (
+    !cron ||
+    typeof cron === "object" ||
+    cron !== process.env.NEXT_PUBLIC_CRON_HEADER_KEY
+  ) {
+    console.error("Warm-Up requested by unknown source");
+    return res.status(400).json({
+      status: "Warm-Up requested by unknown source",
+    });
+  }
   const warmUps = [
-    fetch("https:/blocksocial.vercel.app/api/follow"),
+    fetch("https:/blocksocial.vercel.app/api/follow", {
+      headers: {
+        cron: cron,
+      },
+    }),
     fetch("https:/blocksocial.vercel.app/api/postComments"),
     fetch("https:/blocksocial.vercel.app/api/postCommentsDelete"),
     fetch("https:/blocksocial.vercel.app/api/postDelete"),
