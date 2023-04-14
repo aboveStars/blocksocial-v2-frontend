@@ -1,5 +1,5 @@
 import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
-import UserPageLayout from "@/components/Layout/UserPageLayout";
+
 import { PostItemData } from "@/components/types/Post";
 import { UserInformation } from "@/components/types/User";
 
@@ -14,6 +14,7 @@ import {
   query,
 } from "firebase/firestore";
 import { GetServerSidePropsContext } from "next";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { useSetRecoilState } from "recoil";
 
@@ -21,72 +22,23 @@ import safeJsonStringify from "safe-json-stringify";
 
 type Props = {
   userInformation: UserInformation | undefined;
+  postItemDatas: PostItemData[];
 };
 
-export default function UserPage({ userInformation }: Props) {
+export default function UserPage({ userInformation, postItemDatas }: Props) {
+  const UserPageLayout = dynamic(
+    () => import("../../../components/Layout/UserPageLayout")
+  );
   const [innerHeight, setInnerHeight] = useState("");
-
-  const [postItemDatas, setPostItemDatas] = useState<PostItemData[]>([]);
 
   const setPostStatus = useSetRecoilState(postsStatusAtom);
 
   useEffect(() => {
     setInnerHeight(`${window.innerHeight}px`);
-  }, []);
-
-  useEffect(() => {
-    if (!userInformation) {
-      return;
-    }
-    handleUserPosts();
-  }, [userInformation]);
-
-  const handleUserPosts = async () => {
-    setPostStatus({
-      loading: true,
-    });
-
-    const userPostsDatasCollection = collection(
-      firestore,
-      `users/${userInformation?.username}/posts`
-    );
-    const userPostDatasQuery = query(
-      userPostsDatasCollection,
-      orderBy("creationTime", "desc")
-    );
-
-    const userPostDatasSnapshot = await getDocs(userPostDatasQuery);
-
-    const tempPostDatas: PostItemData[] = [];
-
-    userPostDatasSnapshot.forEach((doc) => {
-      const postObject: PostItemData = {
-        senderUsername: doc.data().senderUsername,
-
-        description: doc.data().description,
-        image: doc.data().image,
-
-        likeCount: doc.data().likeCount,
-        whoLiked: doc.data().whoLiked,
-
-        postDocId: doc.id,
-
-        commentCount: doc.data().commentCount,
-
-        nftUrl: doc.data().nftUrl,
-        creationTime: doc.data().creationTime,
-      };
-      const serializablePostObject: PostItemData = JSON.parse(
-        safeJsonStringify(postObject)
-      );
-      tempPostDatas.push(serializablePostObject);
-    });
-
-    setPostItemDatas(tempPostDatas);
     setPostStatus({
       loading: false,
     });
-  };
+  }, []);
 
   if (!userInformation) {
     return (
@@ -114,6 +66,7 @@ export default function UserPage({ userInformation }: Props) {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const username = context.query.username;
   let userInformation: UserInformation | null = null;
+  let postItemDatas: PostItemData[] = [];
 
   try {
     const userInformationDocRef = doc(firestore, `users/${username as string}`);
@@ -134,7 +87,44 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       email: userDoc.data().email,
       uid: userDoc.data().uid,
     };
+
     userInformation = tempUserInformation;
+
+    const userPostsDatasCollection = collection(
+      firestore,
+      `users/${username}/posts`
+    );
+    const userPostDatasQuery = query(
+      userPostsDatasCollection,
+      orderBy("creationTime", "desc")
+    );
+
+    const userPostDatasSnapshot = await getDocs(userPostDatasQuery);
+
+    const tempPostDatas: PostItemData[] = [];
+    userPostDatasSnapshot.forEach((doc) => {
+      const postObject: PostItemData = {
+        senderUsername: doc.data().senderUsername,
+
+        description: doc.data().description,
+        image: doc.data().image,
+
+        likeCount: doc.data().likeCount,
+        whoLiked: doc.data().whoLiked,
+
+        postDocId: doc.id,
+
+        commentCount: doc.data().commentCount,
+
+        nftUrl: doc.data().nftUrl,
+        creationTime: doc.data().creationTime,
+      };
+      const serializablePostObject: PostItemData = JSON.parse(
+        safeJsonStringify(postObject)
+      );
+      tempPostDatas.push(serializablePostObject);
+    });
+    postItemDatas = tempPostDatas;
   } catch (error) {
     // I don't know where this log go
     console.error("Error while creating user page", error);
@@ -143,6 +133,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       userInformation: userInformation,
+      postItemDatas: postItemDatas,
     },
   };
 }
