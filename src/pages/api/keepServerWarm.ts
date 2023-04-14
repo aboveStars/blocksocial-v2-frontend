@@ -15,5 +15,5 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   fetch("/api/signup");
   fetch("api/update");
 
-  res.status(200).send("Succesfully Warmed");
+  return res.status(200).send("Succesfully Warmed");
 }
