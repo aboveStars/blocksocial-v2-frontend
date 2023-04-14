@@ -14,4 +14,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   fetch("/api/refreshNFT");
   fetch("/api/signup");
   fetch("api/update");
+
+  res.status(200).send("Succesfully Warmed");
 }
