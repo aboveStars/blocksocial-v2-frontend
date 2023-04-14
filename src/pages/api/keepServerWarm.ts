@@ -15,6 +15,7 @@ export default async function handler(
     fetch("https:/blocksocial.vercel.app/api/refreshNFT"),
     fetch("https:/blocksocial.vercel.app/api/signup"),
     fetch("https:/blocksocial.vercel.app/api/update"),
+    fetch("https:/blocksocial.vercel.app/users/***TO-WARM-UP-USER***"),
   ];
 
   try {
