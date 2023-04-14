@@ -11,7 +11,10 @@ type Props = {
   postItemsDatas: PostItemData[];
 };
 
-const UserPageLayout =  ({ userInformation, postItemsDatas }: Props) =>  {
+export default function UserPageLayout({
+  userInformation,
+  postItemsDatas,
+}: Props) {
   const [innerHeight, setInnerHeight] = useState("");
 
   useEffect(() => {
@@ -61,4 +64,4 @@ const UserPageLayout =  ({ userInformation, postItemsDatas }: Props) =>  {
   );
 }
 
-export { UserPageLayout };
+

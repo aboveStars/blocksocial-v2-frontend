@@ -1,8 +1,8 @@
 import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
+import UserPageLayout from "@/components/Layout/UserPageLayout";
 
 import { PostItemData } from "@/components/types/Post";
 import { UserInformation } from "@/components/types/User";
-import { UserPageLayout } from "../../../components/Layout/UserPageLayout";
 
 import { firestore } from "@/firebase/clientApp";
 import { Flex, Text } from "@chakra-ui/react";
@@ -61,6 +61,7 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const username = context.query.username;
+
   let userInformation: UserInformation | null = null;
   let postItemDatas: PostItemData[] = [];
 
@@ -121,7 +122,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     });
     postItemDatas = tempPostDatas;
   } catch (error) {
-    // I don't know where this log go
     console.error("Error while creating user page", error);
   }
 
