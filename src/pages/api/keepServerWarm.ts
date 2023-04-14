@@ -1,19 +1,16 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextApiResponse } from "next";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log("Keep Warm Fired!");
-
-  console.log(req);
-  fetch("https:/blocksocial.vercel.app/api/follow");
-  fetch("https:/blocksocial.vercel.app/api/postComments");
-  fetch("https:/blocksocial.vercel.app/api/postCommentsDelete");
-  fetch("https:/blocksocial.vercel.app/api/postDelete");
-  fetch("https:/blocksocial.vercel.app/api/postLike");
-  fetch("https:/blocksocial.vercel.app/api/postUplaod");
-  fetch("https:/blocksocial.vercel.app/api/profilePhotoChange");
-  fetch("https:/blocksocial.vercel.app/api/refreshNFT");
-  fetch("https:/blocksocial.vercel.app/api/signup");
-  fetch("https:/blocksocial.vercel.app/api/update");
+export default async function handler(res: NextApiResponse) {
+  await fetch("https:/blocksocial.vercel.app/api/follow");
+  await fetch("https:/blocksocial.vercel.app/api/postComments");
+  await fetch("https:/blocksocial.vercel.app/api/postCommentsDelete");
+  await fetch("https:/blocksocial.vercel.app/api/postDelete");
+  await fetch("https:/blocksocial.vercel.app/api/postLike");
+  await fetch("https:/blocksocial.vercel.app/api/postUplaod");
+  await fetch("https:/blocksocial.vercel.app/api/profilePhotoChange");
+  await fetch("https:/blocksocial.vercel.app/api/refreshNFT");
+  await fetch("https:/blocksocial.vercel.app/api/signup");
+  await fetch("https:/blocksocial.vercel.app/api/update");
 
   return res.status(200).json({
     status: "Server Warmed",
