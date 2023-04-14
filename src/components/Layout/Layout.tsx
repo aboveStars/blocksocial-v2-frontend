@@ -1,6 +1,7 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { ReactNode } from "react";
 import Footer from "../Footer/Footer";
+import AuthenticationModal from "../Modals/AuthenticationModal/AuthenticationModal";
 import PostCreateModal from "../Modals/Post/PostCreateModal";
 import Navbar from "../Navbar/Navbar";
 import SystemStatus from "../system-status/SystemStatus";
@@ -15,6 +16,7 @@ export default function Layout({ children }: Props) {
       <Navbar />
       <Flex justifyContent="center">{children}</Flex>
       <PostCreateModal />
+      <AuthenticationModal />
       <Footer />
       <SystemStatus />
     </Box>

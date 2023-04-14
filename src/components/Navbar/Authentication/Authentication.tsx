@@ -1,6 +1,5 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
-import AuthenticationModal from "@/components/Modals/AuthenticationModal/AuthenticationModal";
 import { auth } from "@/firebase/clientApp";
 import useLoginOperations from "@/hooks/useLoginOperations";
 
@@ -10,8 +9,7 @@ import {
   Icon,
   Image,
   SkeletonCircle,
-  Spinner,
-  Stack,
+  Spinner
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 
@@ -152,7 +150,7 @@ export default function Authentication() {
           </>
         )}
       </Flex>
-      <AuthenticationModal />
+    
     </>
   );
 }
