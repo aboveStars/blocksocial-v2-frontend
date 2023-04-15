@@ -1,31 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-
 import { UserInformation } from "@/components/types/User";
-import * as admin from "firebase-admin";
-
-const buffer = Buffer.from(
-  process.env.NEXT_PUBLIC_GOOGLE_APPLICATION_CREDENTIALS_BASE64 as string,
-  "base64"
-);
-
-const decryptedService = buffer.toString("utf-8");
-const decryptedServiceJson = JSON.parse(decryptedService);
-
-const serviceAccount = decryptedServiceJson;
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
-
-const firestore = admin.firestore();
-const authentication = admin.auth();
+import { auth, firestore } from "../../firebase/adminApp";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   const { cron } = req.headers;
+  const { email, fullname, username, password, captchaToken } = req.body;
+
   if (cron === process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
     console.warn("Warm-Up Request");
     return res.status(200).json({ status: "Follow fired by Cron" });
@@ -33,8 +16,6 @@ export default async function handler(
 
   try {
     if (req.method === "POST") {
-      const { email, fullname, username, password, captchaToken } = req.body;
-
       // verify if user real
 
       const response = await fetch(
@@ -88,7 +69,7 @@ export default async function handler(
 
       try {
         // Create User
-        const { uid } = await authentication.createUser({
+        const { uid } = await auth.createUser({
           email: email,
           password: password,
           displayName: username,

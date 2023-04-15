@@ -85,7 +85,6 @@ const useLoginOperations = () => {
     if (!displayName) {
       username = await handleDisplayNameUpdate();
     } else {
-      console.log("We don't need to update yeyyyyy");
       username = displayName;
     }
 

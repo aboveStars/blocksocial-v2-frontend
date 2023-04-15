@@ -1,35 +1,18 @@
-import * as admin from "firebase-admin";
 import { NextApiRequest, NextApiResponse } from "next";
 
-const buffer = Buffer.from(
-  process.env.NEXT_PUBLIC_GOOGLE_APPLICATION_CREDENTIALS_BASE64 as string,
-  "base64"
-);
-
-const decryptedService = buffer.toString("utf-8");
-const decryptedServiceJson = JSON.parse(decryptedService);
-
-const serviceAccount = decryptedServiceJson;
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
-
-const firestore = admin.firestore();
-const auth = admin.auth();
+import { auth, firestore, fieldValue } from "../../firebase/adminApp";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { cron } = req.headers;
+  const { cron, authorization } = req.headers;
+  const { opCode, postDocPath } = req.body;
+
   if (cron === process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
     console.warn("Warm-Up Request");
     return res.status(200).json({ status: "Follow fired by Cron" });
   }
-
-  const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
     console.error("Non-User Request");
@@ -45,19 +28,18 @@ export default async function handler(
     let likerUsername = displayName;
 
     if (req.method === "POST") {
-      const { opCode, postDocPath } = req.body;
       if (!opCode || !postDocPath || !likerUsername) {
         throw new Error("Missing Prop");
       }
 
       await firestore.doc(postDocPath).update({
-        likeCount: admin.firestore.FieldValue.increment(opCode as number),
+        likeCount: fieldValue.increment(opCode as number),
       });
       await firestore.doc(postDocPath).update({
         whoLiked:
           opCode === 1
-            ? admin.firestore.FieldValue.arrayUnion(likerUsername)
-            : admin.firestore.FieldValue.arrayRemove(likerUsername),
+            ? fieldValue.arrayUnion(likerUsername)
+            : fieldValue.arrayRemove(likerUsername),
       });
 
       res.status(200).json({});

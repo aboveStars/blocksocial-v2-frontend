@@ -1,39 +1,22 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { CommentData } from "@/components/types/Post";
-import * as admin from "firebase-admin";
+
 import safeJsonStringify from "safe-json-stringify";
 
-const buffer = Buffer.from(
-  process.env.NEXT_PUBLIC_GOOGLE_APPLICATION_CREDENTIALS_BASE64 as string,
-  "base64"
-);
-
-const decryptedService = buffer.toString("utf-8");
-const decryptedServiceJson = JSON.parse(decryptedService);
-
-const serviceAccount = decryptedServiceJson;
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
-
-const firestore = admin.firestore();
-const auth = admin.auth();
+import { firestore, auth, fieldValue } from "../../firebase/adminApp";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const { cron, authorization } = req.headers;
+  const { comment, postDocPath } = req.body;
 
-  const { cron } = req.headers;
   if (cron === process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
     console.warn("Warm-Up Request");
     return res.status(200).json({ status: "Follow fired by Cron" });
   }
-
-  const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
     console.error("Non-User Request");
@@ -50,8 +33,6 @@ export default async function handler(
     let commentSenderUsername = displayName;
 
     if (req.method === "POST") {
-      const { comment, postDocPath } = req.body;
-
       if (!comment || !commentSenderUsername || !postDocPath) {
         throw new Error("Missing Prop");
       }
@@ -69,7 +50,7 @@ export default async function handler(
         .collection(`${postDocPath}/comments`)
         .add(serializableNewCommentData);
       await firestore.doc(postDocPath).update({
-        commentCount: admin.firestore.FieldValue.increment(1),
+        commentCount: fieldValue.increment(1),
       });
 
       res.status(200).json({});

@@ -1,42 +1,20 @@
 import { NFTMetadata } from "@/components/types/NFT";
-import * as admin from "firebase-admin";
+import { auth, bucket, firestore } from "../../firebase/adminApp";
 import { NextApiRequest, NextApiResponse } from "next";
 import safeJsonStringify from "safe-json-stringify";
-
-const buffer = Buffer.from(
-  process.env.NEXT_PUBLIC_GOOGLE_APPLICATION_CREDENTIALS_BASE64 as string,
-  "base64"
-);
-
-const decryptedService = buffer.toString("utf-8");
-const decryptedServiceJson = JSON.parse(decryptedService);
-
-const serviceAccount = decryptedServiceJson;
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
-
-const firestore = admin.firestore();
-
-const bucket = admin
-  .storage()
-  .bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET_ID as string);
-
-const auth = admin.auth();
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { cron } = req.headers;
+  const { cron, authorization } = req.headers;
+  const { postDocId } = req.body;
+
   if (cron === process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
     console.warn("Warm-Up Request");
     return res.status(200).json({ status: "Follow fired by Cron" });
   }
 
-  const { authorization } = req.headers;
   if (!authorization || !authorization.startsWith("Bearer ")) {
     console.error("Non-User Request");
     return res.status(401).json({ error: "Unauthorized" });
@@ -51,8 +29,6 @@ export default async function handler(
     let operationFromUsername = displayName;
 
     if (req.method === "POST") {
-      const { postDocId } = req.body;
-
       if (!operationFromUsername || !postDocId) {
         throw new Error("Missing Prop");
       }

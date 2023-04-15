@@ -10,46 +10,37 @@ export default function useFollow() {
    * @param opCode  1 for follow, -1 for unFollow
    */
   const follow = async (operateToUserName: string, opCode: number) => {
+    if (!currentUserState.isThereCurrentUser) {
+      return;
+    }
+
+    if (operateToUserName == currentUserState.username) {
+      return;
+    }
+
+    let idToken = "";
     try {
-      if (!currentUserState.isThereCurrentUser) {
-        throw new Error("There is no current user");
-      }
-
-      if (operateToUserName == currentUserState.username) {
-        throw new Error("Self Follow Detected");
-      }
-
-      const idToken = await auth.currentUser?.getIdToken();
-
-      if (!idToken) {
-        throw new Error("Id Token couldn't be get");
-      }
-
-      const response = await fetch("/api/follow", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-          operationTo: operateToUserName,
-          opCode: opCode,
-        }),
-      });
-
-      if (!response.ok) {
-        if (response.status === 500) {
-          const { firebaseError } = await response.json();
-          throw new Error(firebaseError);
-        } else {
-          const { error } = await response.json();
-          throw new Error(error);
-        }
-      } else {
-        console.log("Following Operation Successfull");
-      }
+      idToken = (await auth.currentUser?.getIdToken()) as string;
     } catch (error) {
-      console.error("Error at follow operation:", error);
+      console.error("Error while getting 'idToken'", error);
+      return;
+    }
+
+    const response = await fetch("/api/follow", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({
+        operationTo: operateToUserName,
+        opCode: opCode,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Error from 'follow' API:", await response.json());
+      return;
     }
   };
 

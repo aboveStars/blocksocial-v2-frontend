@@ -1,40 +1,17 @@
 import { NextApiRequest, NextApiResponse } from "next";
-
-import * as admin from "firebase-admin";
-
-const buffer = Buffer.from(
-  process.env.NEXT_PUBLIC_GOOGLE_APPLICATION_CREDENTIALS_BASE64 as string,
-  "base64"
-);
-
-const decryptedService = buffer.toString("utf-8");
-const decryptedServiceJson = JSON.parse(decryptedService);
-
-const serviceAccount = decryptedServiceJson;
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
-
-const firestore = admin.firestore();
-const bucket = admin
-  .storage()
-  .bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET_ID as string);
-
-const auth = admin.auth();
+import { auth, firestore, bucket } from "../../firebase/adminApp";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { cron } = req.headers;
+  const { cron, authorization } = req.headers;
+  const { image: imageDataURL } = req.body;
+
   if (cron === process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
     console.warn("Warm-Up Request");
     return res.status(200).json({ status: "Follow fired by Cron" });
   }
-
-  const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
     console.error("Non-User Request");
@@ -62,10 +39,6 @@ export default async function handler(
 
       res.status(200).json({});
     } else if (req.method === "POST") {
-      const { image: imageDataURL } = req.body;
-
-      // Upload file to storage
-
       const photoId = Date.now().toString();
       const file = bucket.file(
         `users/${operationFromUsername}/profilePhotos/${photoId}`
