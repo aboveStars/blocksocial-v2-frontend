@@ -1,13 +1,11 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { auth } from "@/firebase/clientApp";
-import { FirestoreError } from "firebase/firestore";
 import React, { useState } from "react";
 import { useRecoilState } from "recoil";
 
 export default function useProfilePhoto() {
   const [selectedProfilePhoto, setSelectedProfilePhoto] = useState("");
-  const [currentUserState, setCurrentUserState] =
-    useRecoilState(currentUserStateAtom);
+  const [, setCurrentUserState] = useRecoilState(currentUserStateAtom);
 
   const [profilePhotoUploadLoading, setProfilePhotoUploadLoading] =
     useState(false);
@@ -47,14 +45,20 @@ export default function useProfilePhoto() {
     setProfilePhotoError("");
     setProfilePhotoUploadLoading(true);
 
-    const idToken = await auth.currentUser?.getIdToken();
-
-    if (!idToken) {
-      throw new Error("Id Token couldn't be get");
+    let idToken = "";
+    try {
+      idToken = (await auth.currentUser?.getIdToken()) as string;
+    } catch (error) {
+      return console.error(
+        "Error while profilePhotoUploading. Couln't be got idToken",
+        error
+      );
     }
 
+    let response: Response;
+
     try {
-      const response = await fetch("/api/profilePhotoChange", {
+      response = await fetch("/api/profilePhotoChange", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -64,62 +68,73 @@ export default function useProfilePhoto() {
           image: selectedProfilePhoto,
         }),
       });
-
-      if (!response.ok) {
-        const { error } = await response.json();
-        setProfilePhotoError(error as string);
-        throw new Error(error);
-      }
-
-      const { newProfilePhotoURL } = await response.json();
-
-      setCurrentUserState((prev) => ({
-        ...prev,
-        profilePhoto: newProfilePhotoURL,
-      }));
-
-      setProfilePhotoUploadLoading(false);
     } catch (error) {
-      console.error("Error while uplaoding profile photo", error);
-      setProfilePhotoUploadLoading(false);
+      return console.error(
+        "Error while fetching 'profilePhotoChange' API",
+        error
+      );
     }
+
+    if (!response.ok) {
+      return console.error(
+        "Error while profilePhotoUpload from 'profilePhotoChange' API",
+        await response.json()
+      );
+    }
+
+    const { newProfilePhotoURL } = await response.json();
+
+    setCurrentUserState((prev) => ({
+      ...prev,
+      profilePhoto: newProfilePhotoURL,
+    }));
+
+    setProfilePhotoUploadLoading(false);
   };
 
   const profilePhotoDelete = async () => {
     setProfilePhotoError("");
     setProfilePhotoDeleteLoading(true);
 
+    let idToken = "";
     try {
-      const idToken = await auth.currentUser?.getIdToken();
+      idToken = (await auth.currentUser?.getIdToken()) as string;
+    } catch (error) {
+      return console.error(
+        "Error while profilePhotoUploading. Couln't be got idToken",
+        error
+      );
+    }
 
-      if (!idToken) {
-        throw new Error("Id Token couldn't be get");
-      }
-
-      const response = await fetch("/api/profilePhotoChange", {
+    let response: Response;
+    try {
+      response = await fetch("/api/profilePhotoChange", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           authorization: `Bearer ${idToken}`,
         },
       });
-
-      if (!response.ok) {
-        const { error } = await response.json();
-        throw new Error(error);
-      }
-
-      // State Updates
-      setProfilePhotoDeleteLoading(false);
-      setCurrentUserState((prev) => ({
-        ...prev,
-        profilePhoto: "",
-      }));
     } catch (error) {
-      console.error("Error while deleting profile photo delete", error);
-      setProfilePhotoError(error as string);
-      setProfilePhotoDeleteLoading(false);
+      return console.error(
+        "Error while fecthing to 'profilePhotoChange' API",
+        error
+      );
     }
+
+    if (!response.ok) {
+      return console.error(
+        "Error while deleting post from 'profilePhotoChange' API",
+        await response.json()
+      );
+    }
+
+    // State Updates
+    setProfilePhotoDeleteLoading(false);
+    setCurrentUserState((prev) => ({
+      ...prev,
+      profilePhoto: "",
+    }));
   };
 
   /**
