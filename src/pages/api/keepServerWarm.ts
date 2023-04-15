@@ -21,16 +21,56 @@ export default async function handler(
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/postComments"),
-    fetch("https:/blocksocial.vercel.app/api/postCommentsDelete"),
-    fetch("https:/blocksocial.vercel.app/api/postDelete"),
-    fetch("https:/blocksocial.vercel.app/api/postLike"),
-    fetch("https:/blocksocial.vercel.app/api/postUplaod"),
-    fetch("https:/blocksocial.vercel.app/api/profilePhotoChange"),
-    fetch("https:/blocksocial.vercel.app/api/refreshNFT"),
-    fetch("https:/blocksocial.vercel.app/api/signup"),
-    fetch("https:/blocksocial.vercel.app/api/update"),
-    fetch("https:/blocksocial.vercel.app/users/***TO-WARM-UP-USER***"),
+    fetch("https:/blocksocial.vercel.app/api/postComments", {
+      headers: {
+        cron: cron,
+      },
+    }),
+    fetch("https:/blocksocial.vercel.app/api/postCommentsDelete", {
+      headers: {
+        cron: cron,
+      },
+    }),
+    fetch("https:/blocksocial.vercel.app/api/postDelete", {
+      headers: {
+        cron: cron,
+      },
+    }),
+    fetch("https:/blocksocial.vercel.app/api/postLike", {
+      headers: {
+        cron: cron,
+      },
+    }),
+    fetch("https:/blocksocial.vercel.app/api/postUplaod", {
+      headers: {
+        cron: cron,
+      },
+    }),
+    fetch("https:/blocksocial.vercel.app/api/profilePhotoChange", {
+      headers: {
+        cron: cron,
+      },
+    }),
+    fetch("https:/blocksocial.vercel.app/api/refreshNFT", {
+      headers: {
+        cron: cron,
+      },
+    }),
+    fetch("https:/blocksocial.vercel.app/api/signup", {
+      headers: {
+        cron: cron,
+      },
+    }),
+    fetch("https:/blocksocial.vercel.app/api/update", {
+      headers: {
+        cron: cron,
+      },
+    }),
+    fetch("https:/blocksocial.vercel.app/users/***TO-WARM-UP-USER***", {
+      headers: {
+        cron: cron,
+      },
+    }),
   ];
 
   try {
