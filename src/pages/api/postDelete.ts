@@ -1,3 +1,4 @@
+import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { auth, firestore, bucket } from "../../firebase/adminApp";
@@ -6,60 +7,101 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { cron, authorization} = req.headers;
+  const { cron, authorization } = req.headers;
   const { postDocPath } = req.body;
 
   if (cron === process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
-    console.warn("Warm-Up Request");
+    console.log("Warm-Up Request");
     return res.status(200).json({ status: "Follow fired by Cron" });
   }
 
-  
-
-  if (!authorization || !authorization.startsWith("Bearer ")) {
-    console.error("Non-User Request");
+  let decodedToken: DecodedIdToken;
+  try {
+    decodedToken = await verifyToken(authorization as string);
+  } catch (error) {
+    console.error("Error while verifying token", error);
     return res.status(401).json({ error: "Unauthorized" });
   }
 
+  let operationFromUsername = "";
   try {
-    const idToken = authorization.split("Bearer ")[1];
-    const decodedToken = await auth.verifyIdToken(idToken);
-    const uid = decodedToken.uid;
-    const displayName = (await auth.getUser(uid)).displayName;
+    operationFromUsername = await getDisplayName(decodedToken);
+  } catch (error) {
+    console.error("Error while getting display name", error);
+    return res.status(401).json({ error: "Unautorized" });
+  }
 
-    let deleteRequestSender = displayName;
+  if (req.method !== "DELETE")
+    return res.status(405).json("Method not allowed");
 
-    if (req.method === "DELETE") {
-      if (!postDocPath) {
-        res.status(405).json({ error: "Missing Prop" });
-        console.error("Missing Prop");
-        return;
-      }
+  if (!postDocPath) {
+    return res.status(422).json({ error: "Invalid prop or props" });
+  }
 
-      const ps = await firestore.doc(postDocPath).get();
-      const data = ps.data();
+  let isOwner = false;
+  try {
+    isOwner = await isOwnerOfPost(postDocPath, operationFromUsername);
+  } catch (error) {
+    console.error("Error while deleting post from 'isOwner' function", error);
+    return res.status(503).json({ error: "Firebase error" });
+  }
 
-      if (data && data.senderUsername !== deleteRequestSender) {
-        throw new Error("Only owner can delete its post");
-      }
+  if (!isOwner) {
+    console.error("Not owner of the comment");
+    return res.status(522).json({ error: "Not-Owner" });
+  }
 
-      if (data && data.nftUrl) {
-        const metadataPath = `users/${postDocPath.split("/")[1]}/nftMetadatas/${
-          postDocPath.split("/")[3]
-        }`;
+  try {
+    const postDocData = (await firestore.doc(postDocPath).get()).data();
+    if (postDocData?.nftUrl) {
+      const metadataPath = `users/${postDocPath.split("/")[1]}/nftMetadatas/${
+        postDocPath.split("/")[3]
+      }`;
 
-        const oldNftMetadataFile = bucket.file(metadataPath);
-        await oldNftMetadataFile.delete();
-      }
-
-      await firestore.doc(postDocPath).delete();
-
-      res.status(200).json({});
-    } else {
-      res.status(405).json({ error: "Method not allowed" });
+      const oldNftMetadataFile = bucket.file(metadataPath);
+      await oldNftMetadataFile.delete();
     }
   } catch (error) {
-    console.error("Error while deleting post", error);
-    res.status(401).json({ error: error });
+    console.error(
+      "Errow while deleting post (we were deleting NFT Metadata)",
+      error
+    );
+    return res.status(503).json({ error: "Firebase error" });
   }
+
+  try {
+    await firestore.doc(postDocPath).delete();
+  } catch (error) {
+    console.error("Error while deleting post.(We were deleting post):", error);
+    return res.status(503).json({ error: "Firebase error" });
+  }
+
+  res.status(200).json({});
+}
+
+/**
+ * @param authorization
+ * @returns
+ */
+async function verifyToken(authorization: string) {
+  const idToken = authorization.split("Bearer ")[1];
+  const decodedToken = await auth.verifyIdToken(idToken);
+  return decodedToken;
+}
+
+/**
+ * @param decodedToken
+ */
+async function getDisplayName(decodedToken: DecodedIdToken) {
+  const uid = decodedToken.uid;
+  const displayName = (await auth.getUser(uid)).displayName;
+  return displayName as string;
+}
+
+async function isOwnerOfPost(
+  postDocPath: string,
+  operationFromUsername: string
+) {
+  const ss = await firestore.doc(postDocPath).get();
+  return ss.data()?.senderUsername === operationFromUsername;
 }

@@ -8,14 +8,19 @@ export default function usePostDelete() {
     setPostDeletionLoading(true);
     console.log("Post Deletion is started");
 
+    let idToken = "";
     try {
-      const idToken = await auth.currentUser?.getIdToken();
+      idToken = (await auth.currentUser?.getIdToken()) as string;
+    } catch (error) {
+      return console.error(
+        "Error while post deleting. Couln't be got idToken",
+        error
+      );
+    }
 
-      if (!idToken) {
-        throw new Error("Id Token couldn't be get");
-      }
-
-      const response = await fetch("/api/postDelete", {
+    let response: Response;
+    try {
+      response = await fetch("/api/postDelete", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -23,17 +28,22 @@ export default function usePostDelete() {
         },
         body: JSON.stringify({ postDocPath: postDocPath }),
       });
-
-      if (!response.ok) {
-        const { error } = await response.json();
-        throw new Error(error);
-      } else {
-        console.log("Post successfully finished");
-        setPostDeletionLoading(false);
-      }
     } catch (error) {
-      console.error("Error while deleting post", error);
+      return console.error(
+        "Error while post deleting. Couln't be got idToken",
+        error
+      );
     }
+
+    if (!response.ok) {
+      return console.error(
+        "Error while deleting post from 'postDelete' API",
+        await response.json()
+      );
+    }
+
+    console.log("Post successfully finished");
+    setPostDeletionLoading(false);
   };
   return {
     postDelete,
