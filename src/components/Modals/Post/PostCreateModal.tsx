@@ -63,9 +63,8 @@ export default function PostCreateModal() {
 
   const handleSendPost = async () => {
     // Already button is disabled when empty, but for prevent from any
-    if (!!!postCreateForm.description && !!!postCreateForm.image) {
-      console.log("You Can not create empty post, aborting");
-      return;
+    if (!postCreateForm.description && !postCreateForm.image) {
+      return console.log("You Can not create empty post, aborting");
     }
     await sendPost(postCreateForm);
 

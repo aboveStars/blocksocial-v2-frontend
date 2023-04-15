@@ -1,7 +1,7 @@
-import { NextApiRequest, NextApiResponse } from "next";
 import { PostServerData } from "@/components/types/Post";
+import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
+import { NextApiRequest, NextApiResponse } from "next";
 import { auth, bucket, firestore } from "../../firebase/adminApp";
-import safeJsonStringify from "safe-json-stringify";
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,69 +15,93 @@ export default async function handler(
     return res.status(200).json({ status: "Follow fired by Cron" });
   }
 
-  if (!authorization || !authorization.startsWith("Bearer ")) {
-    console.error("Non-User Request");
+  let decodedToken: DecodedIdToken;
+  try {
+    decodedToken = await verifyToken(authorization as string);
+  } catch (error) {
+    console.error("Error while verifying token", error);
     return res.status(401).json({ error: "Unauthorized" });
   }
 
+  let operationFromUsername = "";
   try {
-    const idToken = authorization.split("Bearer ")[1];
-    const decodedToken = await auth.verifyIdToken(idToken);
-    const uid = decodedToken.uid;
-    const displayName = (await auth.getUser(uid)).displayName;
-
-    let operationFromUsername = displayName;
-
-    if (req.method === "POST") {
-      if (description.length === 0 && imageDataURL.length === 0) {
-        throw new Error("Empty Post Creation Attempt");
-      }
-
-      if (!operationFromUsername) {
-        throw new Error("Missing Prop");
-      }
-
-      let postImagePublicURL = "";
-      if (imageDataURL.length !== 0) {
-        const postImageId = Date.now().toString();
-        const file = bucket.file(
-          `users/${operationFromUsername}/postsPhotos/${postImageId}`
-        );
-        const buffer = Buffer.from(imageDataURL.split(",")[1], "base64");
-        await file.save(buffer, {
-          metadata: {
-            contentType: "image/jpeg",
-          },
-        });
-        await file.makePublic();
-        postImagePublicURL = file.publicUrl();
-      }
-
-      const newPostData: PostServerData = {
-        senderUsername: operationFromUsername,
-        description: description,
-        image: postImagePublicURL,
-        likeCount: 0,
-        whoLiked: [],
-        commentCount: 0,
-        nftUrl: "",
-        creationTime: Date.now(),
-      };
-
-      const serializeableNewPostData = JSON.parse(
-        safeJsonStringify(newPostData)
-      );
-
-      await firestore
-        .collection(`users/${operationFromUsername}/posts`)
-        .add(serializeableNewPostData);
-
-      res.status(200).json({ username: operationFromUsername });
-    } else {
-      res.status(405).json({ error: "Method not allowed" });
-    }
+    operationFromUsername = await getDisplayName(decodedToken);
   } catch (error) {
-    console.error("Error while post upload operation:", error);
-    return res.status(401).json({ error: error });
+    console.error("Error while getting display name", error);
+    return res.status(401).json({ error: "Unautorized" });
   }
+
+  if (req.method !== "POST") return res.status(405).json("Method not allowed");
+
+  if (!description && !imageDataURL) {
+    return res.status(422).json({ error: "Invalid prop or props" });
+  }
+
+  let postImagePublicURL = "";
+  if (imageDataURL) {
+    try {
+      const postImageId = Date.now().toString();
+      const file = bucket.file(
+        `users/${operationFromUsername}/postsPhotos/${postImageId}`
+      );
+      const buffer = Buffer.from(imageDataURL.split(",")[1], "base64");
+      await file.save(buffer, {
+        metadata: {
+          contentType: "image/jpeg",
+        },
+      });
+      await file.makePublic();
+      postImagePublicURL = file.publicUrl();
+    } catch (error) {
+      console.error(
+        "Error while uploading post. We were on uploading image",
+        error
+      );
+      return res.status(503).json({ error: "Firebase error" });
+    }
+  }
+
+  const newPostData: PostServerData = {
+    senderUsername: operationFromUsername,
+    description: description,
+    image: postImagePublicURL,
+    likeCount: 0,
+    whoLiked: [],
+    commentCount: 0,
+    nftUrl: "",
+    creationTime: Date.now(),
+  };
+
+  try {
+    await firestore
+      .collection(`users/${operationFromUsername}/posts`)
+      .add(newPostData);
+  } catch (error) {
+    console.error(
+      "Error while uploadingPost. (We were on creating doc for new post)",
+      error
+    );
+    return res.status(503).json({ error: "Firebase error" });
+  }
+
+  return res.status(200).json({ username: operationFromUsername });
+}
+
+/**
+ * @param authorization
+ * @returns
+ */
+async function verifyToken(authorization: string) {
+  const idToken = authorization.split("Bearer ")[1];
+  const decodedToken = await auth.verifyIdToken(idToken);
+  return decodedToken;
+}
+
+/**
+ * @param decodedToken
+ */
+async function getDisplayName(decodedToken: DecodedIdToken) {
+  const uid = decodedToken.uid;
+  const displayName = (await auth.getUser(uid)).displayName;
+  return displayName as string;
 }

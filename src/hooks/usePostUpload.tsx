@@ -13,8 +13,7 @@ const usePostCreate = () => {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (!event.target.files) {
-      console.log("No Files provided to onSelectWillBeCroppedPhoto");
-      return;
+      return console.error("No Files provided to onSelectWillBeCroppedPhoto");
     }
 
     const file = event.target.files[0];
@@ -33,27 +32,33 @@ const usePostCreate = () => {
   };
 
   /**
-   * Sends Post to Database
+   *
+   * @param postCreateForm
+   * @returns
    */
   const sendPost = async (postCreateForm: PostCreateForm) => {
     // This is my third control but, I don't trust states really :/
-    if (!!!postCreateForm.description && !!!postCreateForm.image) {
-      console.log("You Can not create empty post, aborting");
-      return;
+    if (!postCreateForm.description && !postCreateForm.image) {
+      return console.log("You Can not create empty post, aborting");
     }
     setPostUploadUpdating(true);
 
+    let idToken = "";
     try {
-      const description = postCreateForm.description;
-      const image = postCreateForm.image;
+      idToken = (await auth.currentUser?.getIdToken()) as string;
+    } catch (error) {
+      return console.error(
+        "Error while post deleting. Couln't be got idToken",
+        error
+      );
+    }
 
-      const idToken = await auth.currentUser?.getIdToken();
+    const description = postCreateForm.description;
+    const image = postCreateForm.image;
 
-      if (!idToken) {
-        throw new Error("Id Token couldn't be get");
-      }
-
-      const response = await fetch("/api/postUpload", {
+    let response: Response;
+    try {
+      response = await fetch("/api/postUpload", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -61,17 +66,18 @@ const usePostCreate = () => {
         },
         body: JSON.stringify({ description, image }),
       });
-
-      if (!response.ok) {
-        const { error } = await response.json();
-        throw new Error(error);
-      }
-      setPostCreateModalState({ isOpen: false });
-      setPostUploadUpdating(false);
     } catch (error) {
-      setPostUploadUpdating(false);
-      console.error("Error while uploading post", error);
+      return console.error("Error while fetching to 'postUpload' API", error);
     }
+
+    if (!response.ok) {
+      return console.error(
+        "Error while postUpload from 'postUpload' API",
+        await response.json()
+      );
+    }
+
+    setPostUploadUpdating(false);
   };
 
   return {
