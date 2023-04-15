@@ -21,12 +21,12 @@ export default async function handler(
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/postComments", {
+    fetch("https:/blocksocial.vercel.app/api/postComment", {
       headers: {
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/postCommentsDelete", {
+    fetch("https:/blocksocial.vercel.app/api/postCommentDelete", {
       headers: {
         cron: cron,
       },
