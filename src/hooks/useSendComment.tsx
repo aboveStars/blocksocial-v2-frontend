@@ -7,16 +7,17 @@ export default function useSendComment() {
    * @param comment
    */
   const sendComment = async (postDocPath: string, comment: string) => {
-    console.log("Comment Sending Started");
-
+    let idToken = "";
     try {
-      const idToken = await auth.currentUser?.getIdToken();
+      idToken = (await auth.currentUser?.getIdToken()) as string;
+    } catch (error) {
+      console.error("Error while getting 'idToken'", error);
+      return;
+    }
 
-      if (!idToken) {
-        throw new Error("Id Token couldn't be get");
-      }
-
-      const response = await fetch("/api/postComment", {
+    let response: Response;
+    try {
+      response = await fetch("/api/postComment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -27,20 +28,14 @@ export default function useSendComment() {
           postDocPath: postDocPath,
         }),
       });
-
-      if (!response.ok) {
-        if (response.status === 500) {
-          const { firebaseError } = await response.json();
-          console.error("Firebase Error while sending comment", firebaseError);
-        } else {
-          const { error } = await response.json();
-          console.error("Non-Firebase error while sending comment", error);
-        }
-      } else {
-        console.log("Comment Sent");
-      }
     } catch (error) {
-      console.error("Error while sending comment", error);
+      console.error("Error while 'fetching' to 'postComment' API", error);
+      return;
+    }
+
+    if (!response.ok) {
+      console.error("Error from 'postComments' API:", await response.json());
+      return;
     }
   };
   return {

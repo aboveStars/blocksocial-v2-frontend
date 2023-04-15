@@ -26,17 +26,23 @@ export default function useFollow() {
       return;
     }
 
-    const response = await fetch("/api/follow", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        authorization: `Bearer ${idToken}`,
-      },
-      body: JSON.stringify({
-        operationTo: operateToUserName,
-        opCode: opCode,
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetch("/api/follow", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          operationTo: operateToUserName,
+          opCode: opCode,
+        }),
+      });
+    } catch (error) {
+      console.error("Error while 'fetching' to 'follow' API");
+      return;
+    }
 
     if (!response.ok) {
       console.error("Error from 'follow' API:", await response.json());
