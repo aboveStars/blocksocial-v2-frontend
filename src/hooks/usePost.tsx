@@ -9,14 +9,16 @@ const usePost = () => {
   const like = async (postDocPath: string, opCode: number) => {
     console.log("Like Operation Started");
 
-    const idToken = await auth.currentUser?.getIdToken();
-
-    if (!idToken) {
-      throw new Error("Id Token couldn't be get");
+    let idToken = "";
+    try {
+      idToken = (await auth.currentUser?.getIdToken()) as string;
+    } catch (error) {
+      return console.error("Error while liking. Couln't be got idToken", error);
     }
 
+    let response;
     try {
-      const response = await fetch("/api/postLike", {
+      response = await fetch("/api/postLike", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -27,17 +29,17 @@ const usePost = () => {
           postDocPath: postDocPath,
         }),
       });
-
-      if (!response.ok) {
-        console.log("Like operation failed");
-        const { error } = await response.json();
-        throw new Error(error);
-      } else {
-        console.log("Like operation successfull");
-      }
     } catch (error) {
-      console.error("Error while like operation", error);
+      return console.error("Error while fetching to 'postLike' API", error);
     }
+
+    if (!response.ok) {
+      return console.error(
+        "Error while liking from 'likePost' API",
+        await response.json()
+      );
+    }
+    console.log("Like operation successfull");
   };
   return {
     like,

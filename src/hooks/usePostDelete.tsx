@@ -29,10 +29,7 @@ export default function usePostDelete() {
         body: JSON.stringify({ postDocPath: postDocPath }),
       });
     } catch (error) {
-      return console.error(
-        "Error while post deleting. Couln't be got idToken",
-        error
-      );
+      return console.error("Error while fecthing to 'postDelete API'", error);
     }
 
     if (!response.ok) {
