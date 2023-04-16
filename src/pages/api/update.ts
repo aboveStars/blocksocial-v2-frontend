@@ -10,8 +10,8 @@ export default async function handler(
   const { cron, authorization } = req.headers;
 
   if (cron === process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
-    console.warn("Warm-Up Request");
-    return res.status(200).json({ status: "Follow fired by Cron" });
+    console.log("Warm-Up Request");
+    return res.status(200).json({ status: "Request by Server-Warmer" });
   }
 
   if (!authorization || !authorization.startsWith("Bearer ")) {

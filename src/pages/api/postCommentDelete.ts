@@ -12,7 +12,7 @@ export default async function handler(
 
   if (cron === process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
     console.warn("Warm-Up Request");
-    return res.status(200).json({ status: "Follow fired by Cron" });
+    return res.status(200).json({ status: "Request by Server-Warmer" });
   }
 
   let decodedToken: DecodedIdToken;

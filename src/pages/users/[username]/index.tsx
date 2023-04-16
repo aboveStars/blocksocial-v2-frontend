@@ -60,70 +60,87 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const cron = context.req.headers.cron as string;
+  if (cron === process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
+    console.log("Warm-Up Request");
+    return;
+  }
+
   const username = context.query.username;
 
   let userInformation: UserInformation | null = null;
   let postItemDatas: PostItemData[] = [];
 
+  let userDoc;
   try {
     const userInformationDocRef = doc(firestore, `users/${username as string}`);
-    const userDoc = await getDoc(userInformationDocRef);
-
-    if (!userDoc.exists()) {
-      throw new Error("There is no user with URL.");
-    }
-
-    const tempUserInformation: UserInformation = {
-      username: userDoc.data().username,
-      fullname: userDoc.data().fullname,
-      profilePhoto: userDoc.data().profilePhoto,
-      followingCount: userDoc.data().followingCount,
-      followings: userDoc.data().followings,
-      followerCount: userDoc.data().followerCount,
-      followers: userDoc.data().followers,
-      email: userDoc.data().email,
-      uid: userDoc.data().uid,
-    };
-
-    userInformation = tempUserInformation;
-
-    const userPostsDatasCollection = collection(
-      firestore,
-      `users/${username}/posts`
-    );
-    const userPostDatasQuery = query(
-      userPostsDatasCollection,
-      orderBy("creationTime", "desc")
-    );
-
-    const userPostDatasSnapshot = await getDocs(userPostDatasQuery);
-
-    const tempPostDatas: PostItemData[] = [];
-    userPostDatasSnapshot.forEach((doc) => {
-      const postObject: PostItemData = {
-        senderUsername: doc.data().senderUsername,
-
-        description: doc.data().description,
-        image: doc.data().image,
-
-        likeCount: doc.data().likeCount,
-        whoLiked: doc.data().whoLiked,
-
-        postDocId: doc.id,
-
-        commentCount: doc.data().commentCount,
-
-        nftUrl: doc.data().nftUrl,
-        creationTime: doc.data().creationTime,
-      };
-      const serializablePostObject: PostItemData = postObject;
-
-      tempPostDatas.push(serializablePostObject);
-    });
-    postItemDatas = tempPostDatas;
+    userDoc = await getDoc(userInformationDocRef);
   } catch (error) {
-    console.error("Error while creating user page", error);
+    return console.error(
+      "Error while creating userpage. (We were on getting userdoc",
+      error
+    );
   }
+
+  if (!userDoc.exists()) {
+    return console.error("User doesn't exist");
+  }
+
+  const tempUserInformation: UserInformation = {
+    username: userDoc.data().username,
+    fullname: userDoc.data().fullname,
+    profilePhoto: userDoc.data().profilePhoto,
+    followingCount: userDoc.data().followingCount,
+    followings: userDoc.data().followings,
+    followerCount: userDoc.data().followerCount,
+    followers: userDoc.data().followers,
+    email: userDoc.data().email,
+    uid: userDoc.data().uid,
+  };
+
+  userInformation = tempUserInformation;
+
+  const userPostsDatasCollection = collection(
+    firestore,
+    `users/${username}/posts`
+  );
+  const userPostDatasQuery = query(
+    userPostsDatasCollection,
+    orderBy("creationTime", "desc")
+  );
+
+  let userPostDatasSnapshot;
+  try {
+    userPostDatasSnapshot = await getDocs(userPostDatasQuery);
+  } catch (error) {
+    return console.error(
+      "Error while creating userpage. (We were getting user's posts)"
+    );
+  }
+
+  const tempPostDatas: PostItemData[] = [];
+  userPostDatasSnapshot.forEach((doc) => {
+    const postObject: PostItemData = {
+      senderUsername: doc.data().senderUsername,
+
+      description: doc.data().description,
+      image: doc.data().image,
+
+      likeCount: doc.data().likeCount,
+      whoLiked: doc.data().whoLiked,
+
+      postDocId: doc.id,
+
+      commentCount: doc.data().commentCount,
+
+      nftUrl: doc.data().nftUrl,
+      creationTime: doc.data().creationTime,
+    };
+    const serializablePostObject: PostItemData = postObject;
+
+    tempPostDatas.push(serializablePostObject);
+  });
+  postItemDatas = tempPostDatas;
 
   return {
     props: {

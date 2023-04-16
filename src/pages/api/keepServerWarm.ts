@@ -4,17 +4,14 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { cron } = req.headers;
-  if (
-    !cron ||
-    typeof cron === "object" ||
-    cron !== process.env.NEXT_PUBLIC_CRON_HEADER_KEY
-  ) {
-    console.error("Warm-Up requested by unknown source");
-    return res.status(400).json({
-      status: "Warm-Up requested by unknown source",
-    });
+  const cron = req.headers.cron as string;
+  if (cron !== process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
+    console.error("Warm-Up Request from unknown source.");
+    return res
+      .status(401)
+      .json({ error: "Warm-Up requested by unknown source" });
   }
+
   const warmUps = [
     fetch("https:/blocksocial.vercel.app/api/follow", {
       headers: {
@@ -76,7 +73,8 @@ export default async function handler(
   try {
     await Promise.all(warmUps);
   } catch (error) {
-    console.error("Warm-Up is done. We got error as normal.");
+    console.error("Error while warming-up", error);
+    return res.status(503).json({ error: "Warm-Up errored." });
   }
   return res.status(200).json({ message: "Warmed-Up" });
 }
