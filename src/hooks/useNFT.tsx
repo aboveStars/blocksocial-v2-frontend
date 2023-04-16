@@ -129,14 +129,20 @@ export default function useNFT() {
   const refreshNFT = async (postDocId: string) => {
     setNftRefreshLoading(true);
 
+    let idToken = "";
     try {
-      const idToken = await auth.currentUser?.getIdToken();
+      idToken = (await auth.currentUser?.getIdToken()) as string;
+    } catch (error) {
+      setNftRefreshLoading(false);
+      return console.error(
+        "Error while post deleting. Couln't be got idToken",
+        error
+      );
+    }
 
-      if (!idToken) {
-        throw new Error("Id Token couldn't be get");
-      }
-
-      const response = await fetch("/api/refreshNFT", {
+    let response: Response;
+    try {
+      response = await fetch("/api/refreshNFT", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -146,16 +152,20 @@ export default function useNFT() {
           postDocId: postDocId,
         }),
       });
-      if (!response.ok) {
-        const { error } = await response.json();
-        throw new Error(error);
-      }
-
-      setNftRefreshLoading(true);
     } catch (error) {
-      console.error("Error while refreshingNFT", error);
       setNftRefreshLoading(false);
+      return console.error("Error while fetching 'refreshNFT' API", error);
     }
+
+    if (!response.ok) {
+      setNftRefreshLoading(false);
+      return console.error(
+        "Error while refreshingNFT from 'resfreshNFT' API",
+        await response.json()
+      );
+    }
+
+    setNftRefreshLoading(false);
   };
 
   return {
