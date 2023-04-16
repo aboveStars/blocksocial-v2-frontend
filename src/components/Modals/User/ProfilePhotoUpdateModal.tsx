@@ -1,5 +1,4 @@
 import {
-  AspectRatio,
   Button,
   Flex,
   Modal,
@@ -10,7 +9,13 @@ import {
   ModalOverlay,
   Text,
 } from "@chakra-ui/react";
-import React, { SetStateAction, useCallback, useEffect, useState } from "react";
+import React, {
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import Cropper from "react-easy-crop";
 import { UserInformation } from "../../types/User";
 import getCroppedImg from "../../utils/GetCroppedImage";
@@ -42,6 +47,7 @@ export default function ProfilePhotoUpdateModal({
 }: Props) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
+  const [minZoom, setMinZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   const onCropComplete = useCallback(
@@ -51,6 +57,9 @@ export default function ProfilePhotoUpdateModal({
     []
   );
 
+  const cropAreaRef = useRef<HTMLDivElement>(null);
+  const [cropAreaHeight, setCropAreaHeight] = useState(400);
+
   const handleResetStates = () => {
     profilePhotoUpdateModalOpenSetter(false);
     setCrop({ x: 0, y: 0 });
@@ -59,6 +68,28 @@ export default function ProfilePhotoUpdateModal({
     willBeCroppedProfilePhotoSetter("");
     if (inputRef.current) inputRef.current.value = "";
   };
+
+  useEffect(() => {
+    if (cropAreaRef.current)
+      setCropAreaHeight(cropAreaRef.current.clientWidth as number);
+  }, [cropAreaRef.current?.clientWidth]);
+
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      const width = img.width;
+      const height = img.height;
+      const ratio = width / height;
+
+      const abs = Math.abs(ratio - 1);
+
+      const finalZoomValue = abs * 2 + 1 + 0.1;
+
+      setZoom(finalZoomValue);
+      setMinZoom(finalZoomValue);
+    };
+    img.src = willBeCroppedProfilePhoto;
+  }, [willBeCroppedProfilePhoto]);
 
   return (
     <Modal
@@ -119,7 +150,13 @@ export default function ProfilePhotoUpdateModal({
                 </Button>
               </Flex>
 
-              <Flex position="relative" height="450px" width="100%" mt={4}>
+              <Flex
+                position="relative"
+                height={cropAreaHeight}
+                width="100%"
+                mt={4}
+                ref={cropAreaRef}
+              >
                 <Cropper
                   image={willBeCroppedProfilePhoto}
                   crop={crop}
@@ -129,6 +166,8 @@ export default function ProfilePhotoUpdateModal({
                   onCropComplete={onCropComplete}
                   onZoomChange={setZoom}
                   cropShape="round"
+                  cropSize={{ height: cropAreaHeight, width: cropAreaHeight }}
+                  minZoom={minZoom}
                 />
               </Flex>
             </Flex>
