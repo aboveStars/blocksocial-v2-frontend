@@ -168,7 +168,16 @@ export default function PostFront({
                 endColor="gray.800"
               />
             ) : (
-              <Icon as={CgProfile} color="white" height="50px" width="50px" />
+              <Icon
+                as={CgProfile}
+                color="white"
+                height="50px"
+                width="50px"
+                cursor="pointer"
+                onClick={() =>
+                  router.push(`/users/${postFrontData.senderUsername}`)
+                }
+              />
             )
           }
           cursor="pointer"
@@ -176,13 +185,29 @@ export default function PostFront({
         />
         <Flex direction="column">
           <Flex align="center">
-            <Text textColor="white" as="b" fontSize="12pt">
+            <Text
+              textColor="white"
+              as="b"
+              fontSize="12pt"
+              cursor="pointer"
+              onClick={() =>
+                router.push(`/users/${postFrontData.senderUsername}`)
+              }
+            >
               {postFrontData.senderUsername}
             </Text>
           </Flex>
 
           <Flex align="center" gap={1}>
-            <Text textColor="gray.100" as="i" fontSize="10pt">
+            <Text
+              textColor="gray.100"
+              as="i"
+              fontSize="10pt"
+              cursor="pointer"
+              onClick={() =>
+                router.push(`/users/${postFrontData.senderUsername}`)
+              }
+            >
               {postSenderFullname}
             </Text>
             {!postSenderFullname && <SkeletonText noOfLines={1} width="50px" />}

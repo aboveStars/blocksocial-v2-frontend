@@ -81,14 +81,26 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     const userInformationDocRef = doc(firestore, `users/${username as string}`);
     userDoc = await getDoc(userInformationDocRef);
   } catch (error) {
-    return console.error(
-      "Error while creating userpage. (We were on getting userdoc",
+    console.error(
+      "Error while creating userpage. (We were getting userdoc)",
       error
     );
+    return {
+      props: {
+        userInformation: null,
+        postItemDatas: [],
+      },
+    };
   }
 
   if (!userDoc.exists()) {
-    return console.error("User doesn't exist");
+    console.warn("User doesn't exist");
+    return {
+      props: {
+        userInformation: null,
+        postItemDatas: [],
+      },
+    };
   }
 
   const tempUserInformation: UserInformation = {
@@ -118,9 +130,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
     userPostDatasSnapshot = await getDocs(userPostDatasQuery);
   } catch (error) {
-    return console.error(
+    console.error(
       "Error while creating userpage. (We were getting user's posts)"
     );
+    return {
+      props: {
+        userInformation: userInformation,
+        postItemDatas: [],
+      },
+    };
   }
 
   const tempPostDatas: PostItemData[] = [];
