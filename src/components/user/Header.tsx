@@ -1,10 +1,20 @@
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   Button,
   Circle,
   Flex,
   Icon,
   Image,
   Input,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   SkeletonCircle,
   Stack,
   Text,
@@ -24,7 +34,6 @@ import { defaultCurrentUserState, UserInformation } from "../types/User";
 
 import useSortByUsername from "@/hooks/useSortByUsername";
 import FollowInformationModal from "../Modals/User/FollowInformationModal";
-import NFTAdministrationPanel from "../Modals/User/NFTAdministrationPanel";
 import ProfilePhotoUpdateModal from "../Modals/User/ProfilePhotoUpdateModal";
 
 import { auth } from "@/firebase/clientApp";
@@ -93,6 +102,12 @@ export default function Header({ userInformation }: Props) {
     useState(false);
 
   const [signOutLoading, setSignOutLoading] = useState(false);
+
+  const [profilephotoDeleteDialogOpen, setProfilePhotoDeleteDialogOpen] =
+    useState(false);
+  const leastDestructiveRef = useRef<HTMLButtonElement>(null);
+
+  const { profilePhotoDelete, profilePhotoDeleteLoading } = useProfilePhoto();
 
   /**
    * userData is already being controlled then, comes here
@@ -219,6 +234,11 @@ export default function Header({ userInformation }: Props) {
     setSignOutLoading(false);
   };
 
+  useEffect(() => {
+    if (!willBeCroppedProfilePhoto) return;
+    setProiflePhotoUpdateModalOpen(true);
+  }, [willBeCroppedProfilePhoto]);
+
   return (
     <>
       <ProfilePhotoUpdateModal
@@ -253,6 +273,54 @@ export default function Header({ userInformation }: Props) {
         nftAdministrationPanelOpenValue={nftAdministrationPanelShow}
         currentUserUsername={currentUserState.username}
       /> */}
+
+      <AlertDialog
+        id="profilePhotoDelete-dialog"
+        isOpen={profilephotoDeleteDialogOpen}
+        leastDestructiveRef={leastDestructiveRef}
+        onClose={() => setProfilePhotoDeleteDialogOpen(false)}
+        returnFocusOnClose={false}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Delete Profile Photo
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure? You can&apos;t undo this action afterwards.
+            </AlertDialogBody>
+
+            <AlertDialogFooter gap={2}>
+              <Button
+                ref={leastDestructiveRef}
+                onClick={() => setProfilePhotoDeleteDialogOpen(false)}
+                variant="solid"
+                size="md"
+                colorScheme="blue"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="outline"
+                colorScheme="red"
+                size="md"
+                onClick={async () => {
+                  await profilePhotoDelete();
+                  setOstensibleUserInformation((prev) => ({
+                    ...prev,
+                    profilePhoto: "",
+                  }));
+                  setProfilePhotoDeleteDialogOpen(false);
+                }}
+                isLoading={profilePhotoDeleteLoading}
+              >
+                Delete Profile Photo
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
 
       <Flex direction="column" justify="center" align="center" mt={3}>
         <Flex
@@ -299,13 +367,39 @@ export default function Header({ userInformation }: Props) {
             bg="gray.700"
             minWidth="30px"
             minHeight="30px"
-            cursor="pointer"
-            onClick={() => {
-              setProiflePhotoUpdateModalOpen(true);
-            }}
-            hidden={!isCurrentUserPage}
+            hidden={!isCurrentUserPage || !!selectedProfilePhoto}
           >
-            <Icon as={BiPencil} color="white" fontSize="15px" />
+            <Menu computePositionOnMount>
+              <MenuButton mt={1}>
+                <Icon
+                  as={BiPencil}
+                  color="white"
+                  fontSize="15px"
+                  cursor="pointer"
+                />
+              </MenuButton>
+              <MenuList>
+                <MenuItem
+                  onClick={() => {
+                    if (inputRef.current) inputRef.current.click();
+                  }}
+                >
+                  {ostensibleUserInformation.profilePhoto
+                    ? "New Profile Photo"
+                    : "Set Profile Photo"}
+                </MenuItem>
+
+                <MenuItem
+                  onClick={() => setProfilePhotoDeleteDialogOpen(true)}
+                  hidden={
+                    !!willBeCroppedProfilePhoto ||
+                    !ostensibleUserInformation.profilePhoto
+                  }
+                >
+                  Delete
+                </MenuItem>
+              </MenuList>
+            </Menu>
           </Circle>
 
           <Stack direction="row" gap={1} mt={3} hidden={!modifying}>
