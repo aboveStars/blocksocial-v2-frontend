@@ -7,15 +7,8 @@ import {
 } from "@/components/types/User";
 
 import { auth, firestore } from "@/firebase/clientApp";
-import { updateCurrentUser, User } from "firebase/auth";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+import { User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { useSetRecoilState } from "recoil";
@@ -142,18 +135,37 @@ const useLoginOperations = () => {
   const handleDisplayNameUpdate = async () => {
     console.log("We are updating user");
 
-    const idToken = await auth.currentUser?.getIdToken();
+    let idToken = "";
+    try {
+      idToken = (await auth.currentUser?.getIdToken()) as string;
+    } catch (error) {
+      console.error("Error while getting 'idToken'", error);
+      return;
+    }
 
-    const response = await fetch("/api/update", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        authorization: `Bearer ${idToken}`,
-      },
-      body: JSON.stringify({
-        idToken: idToken,
-      }),
-    });
+    let response: Response;
+
+    try {
+      response = await fetch("/api/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          idToken: idToken,
+        }),
+      });
+    } catch (error) {
+      return console.error("Error while fetching to 'update' API", error);
+    }
+
+    if (!response.ok) {
+      return console.error(
+        "Error on update from 'update' API",
+        await response.json()
+      );
+    }
 
     const { createdDisplayName } = await response.json();
 

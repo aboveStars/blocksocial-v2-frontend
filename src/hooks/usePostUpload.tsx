@@ -1,13 +1,10 @@
-import { postCreateModalStateAtom } from "@/components/atoms/postCreateModalAtom";
 import { PostCreateForm } from "@/components/types/Post";
 import { auth } from "@/firebase/clientApp";
 import { useState } from "react";
-import { useSetRecoilState } from "recoil";
 
 const usePostCreate = () => {
   const [willBeCroppedPostPhoto, setWillBeCroppedPostPhoto] = useState("");
   const [postUploadLoading, setPostUploadUpdating] = useState(false);
-  const setPostCreateModalState = useSetRecoilState(postCreateModalStateAtom);
 
   const onSelectWillBeCroppedPhoto = (
     event: React.ChangeEvent<HTMLInputElement>

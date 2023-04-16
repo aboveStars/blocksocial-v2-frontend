@@ -1,3 +1,4 @@
+import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { auth, firestore } from "../../firebase/adminApp";
 
@@ -18,28 +19,55 @@ export default async function handler(
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  if (req.method === "POST") {
-    try {
-      const idToken = authorization.split("Bearer ")[1];
-      const decodedToken = await auth.verifyIdToken(idToken);
-      const uid = decodedToken.uid;
-
-      const username = (
-        await firestore.collection("users").where("uid", "==", uid).get()
-      ).docs[0].id;
-
-      await auth.updateUser(uid, {
-        displayName: username,
-      });
-
-      return res.status(200).json({
-        createdDisplayName: username,
-      });
-    } catch (error) {
-      console.error("Error while update operation:", error);
-      return res.status(401).json({ error: error });
-    }
-  } else {
-    res.status(405).json({ error: "Method not allowed" });
+  let decodedToken: DecodedIdToken;
+  try {
+    decodedToken = await verifyToken(authorization as string);
+  } catch (error) {
+    console.error("Error while verifying token", error);
+    return res.status(401).json({ error: "Unauthorized" });
   }
+
+  if (req.method !== "POST")
+    return res.status(405).json({ Error: "Method not allowed" });
+
+  const uid = decodedToken.uid;
+
+  let username: string;
+  try {
+    username = (
+      await firestore.collection("users").where("uid", "==", uid).get()
+    ).docs[0].id;
+  } catch (error) {
+    console.error(
+      "Error while updating. (We were looking for username for dispayname",
+      error
+    );
+    return res.status(503).json({ error: "Firebase error" });
+  }
+
+  try {
+    await auth.updateUser(uid, {
+      displayName: username,
+    });
+  } catch (error) {
+    console.error(
+      "Error while update. (We were updating 'auth' object)",
+      error
+    );
+    return res.status(503).json({ error: "Firebase error" });
+  }
+
+  return res.status(200).json({
+    createdDisplayName: username,
+  });
+}
+
+/**
+ * @param authorization
+ * @returns
+ */
+async function verifyToken(authorization: string) {
+  const idToken = authorization.split("Bearer ")[1];
+  const decodedToken = await auth.verifyIdToken(idToken);
+  return decodedToken;
 }

@@ -9,7 +9,7 @@ import {
   InputGroup,
   InputRightElement,
   Spinner,
-  Text,
+  Text
 } from "@chakra-ui/react";
 
 import React, { useRef, useState } from "react";
@@ -18,11 +18,10 @@ import { useSetRecoilState } from "recoil";
 
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { CurrentUser, UserInformation } from "@/components/types/User";
-import { AuthError } from "firebase/auth";
-import { doc, FirestoreError, getDoc } from "firebase/firestore";
+import { firestore } from "@/firebase/clientApp";
+import { doc, getDoc } from "firebase/firestore";
 import { AiOutlineCheckCircle } from "react-icons/ai";
 import { BiError } from "react-icons/bi";
-import { firestore } from "@/firebase/clientApp";
 
 import ReCAPTCHA from "react-google-recaptcha";
 
@@ -127,75 +126,41 @@ export default function SignUp() {
       return;
     }
 
-    const response = await fetch("/api/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ...signUpForm,
-        captchaToken: captchaToken,
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetch("/api/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...signUpForm,
+          captchaToken: captchaToken,
+        }),
+      });
+    } catch (error) {
+      setSignUpLoading(false);
+      return console.error("Error while fetching to 'signUp' API", error);
+    }
 
     if (!response.ok) {
-      // error handling
-
-      // 400 code for client problems. Same as we check in here. (This is 3rd time but in server this time :) )
-      if (response.status === 400) {
-        // 500 code for Firebase errors (auth/firestore)
-
-        const { error } = await response.json();
-
-        if (error === "BadEmail") {
-          console.error(error);
-          setError("Invalid Email");
-        }
-        if (error === "BadFullname") {
-          console.error(error);
-          setError("Invalid Fullname");
-        }
-        if (error === "BadUsername") {
-          console.error(error);
-          setError("Invalid Username");
-        }
-        if (error === "TakenUsername") {
-          console.error(error);
-          setError("Taken Username");
-        }
-        if (error === "BadFullname") {
-          console.error(error);
-          setError("Invalid Fullname");
-        }
-        if (error === "No-Real-User") {
-          console.error(error);
-          setError("Invalid Captcha");
-        }
-      } else if (response.status === 500) {
-        const { firebaseError } = await response.json();
-        console.error("Firebase Error Code: ", firebaseError);
-        setError((firebaseError as FirestoreError | AuthError).message);
-      }
-
+      const { error } = await response.json();
+      setError(error);
       setSignUpLoading(false);
-      return;
+      return console.error("Error while signup from 'signup' API", error);
     }
 
     const newUserData: UserInformation = await response.json();
-
     setAuthModalState((prev) => ({
       ...prev,
       open: false,
     }));
-
     const currentUserDataTemp: CurrentUser = {
       ...newUserData,
       loading: false,
       isThereCurrentUser: true,
     };
-
     setCurrentUserState(currentUserDataTemp);
-
     setSignUpLoading(false);
   };
 
