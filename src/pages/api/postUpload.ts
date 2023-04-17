@@ -3,6 +3,8 @@ import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { NextApiRequest, NextApiResponse } from "next";
 import { auth, bucket, firestore } from "../../firebase/adminApp";
 
+import { v4 as uuidv4 } from "uuid";
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -37,12 +39,25 @@ export default async function handler(
     return res.status(422).json({ error: "Invalid prop or props" });
   }
 
+  /**
+   * Both for image and post.
+   */
+  let generalPostId = uuidv4().replace(/-/g, "");
+  while (
+    (
+      await firestore
+        .doc(`users/${operationFromUsername}/posts/${generalPostId}`)
+        .get()
+    ).exists
+  ) {
+    generalPostId = uuidv4().replace(/-/g, "");
+  }
+
   let postImagePublicURL = "";
   if (imageDataURL) {
     try {
-      const postImageId = Date.now().toString();
       const file = bucket.file(
-        `users/${operationFromUsername}/postsPhotos/${postImageId}`
+        `users/${operationFromUsername}/postsPhotos/${generalPostId}`
       );
       const buffer = Buffer.from(imageDataURL.split(",")[1], "base64");
       await file.save(buffer, {
@@ -74,8 +89,8 @@ export default async function handler(
 
   try {
     await firestore
-      .collection(`users/${operationFromUsername}/posts`)
-      .add(newPostData);
+      .doc(`users/${operationFromUsername}/posts/${generalPostId}`)
+      .set(newPostData);
   } catch (error) {
     console.error(
       "Error while uploadingPost. (We were on creating doc for new post)",

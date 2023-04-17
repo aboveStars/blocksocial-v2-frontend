@@ -1,3 +1,4 @@
+import { PostServerData } from "@/components/types/Post";
 import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -51,8 +52,12 @@ export default async function handler(
     return res.status(522).json({ error: "Not-Owner" });
   }
 
+  let postDocData: PostServerData;
+  let postDocId: string;
   try {
-    const postDocData = (await firestore.doc(postDocPath).get()).data();
+    const postDoc = await firestore.doc(postDocPath).get();
+    postDocId = postDoc.id;
+    postDocData = postDoc.data() as PostServerData;
     if (postDocData?.nftUrl) {
       const metadataPath = `users/${postDocPath.split("/")[1]}/nftMetadatas/${
         postDocPath.split("/")[3]
@@ -64,6 +69,20 @@ export default async function handler(
   } catch (error) {
     console.error(
       "Errow while deleting post (we were deleting NFT Metadata)",
+      error
+    );
+    return res.status(503).json({ error: "Firebase error" });
+  }
+
+  try {
+    if (postDocData.image) {
+      const postImagePath = `users/${operationFromUsername}/postsPhotos/${postDocId}`;
+      const imageFile = bucket.file(postImagePath);
+      await imageFile.delete();
+    }
+  } catch (error) {
+    console.error(
+      "Errow while deleting post (we were deleting photo of post)",
       error
     );
     return res.status(503).json({ error: "Firebase error" });
