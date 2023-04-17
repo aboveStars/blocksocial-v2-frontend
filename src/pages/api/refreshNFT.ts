@@ -42,7 +42,7 @@ export default async function handler(
   let oldMetadata: NFTMetadata;
   try {
     const oldMetadataFile = bucket.file(
-      `users/${operationFromUsername}/nftMetadatas/${postDocId}`
+      `users/${operationFromUsername}/postsFiles/${postDocId}/nftMetadata`
     );
 
     oldMetadata = JSON.parse(
@@ -96,7 +96,7 @@ export default async function handler(
   const buffer = Buffer.from(safeJsonStringify(refreshedMetadata));
 
   const refreshedMetadataFile = bucket.file(
-    `users/${operationFromUsername}/nftMetadatas/${postDocId}`
+    `users/${operationFromUsername}/postsFiles/${postDocId}/nftMetadata`
   );
 
   try {

@@ -57,7 +57,7 @@ export default async function handler(
   if (imageDataURL) {
     try {
       const file = bucket.file(
-        `users/${operationFromUsername}/postsPhotos/${generalPostId}`
+        `users/${operationFromUsername}/postsFiles/${generalPostId}/image`
       );
       const buffer = Buffer.from(imageDataURL.split(",")[1], "base64");
       await file.save(buffer, {

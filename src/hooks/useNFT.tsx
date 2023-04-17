@@ -74,12 +74,10 @@ export default function useNFT() {
     const safeMetadata = safeJsonStringify(metadata);
     const metadataBlob = new Blob([safeMetadata], { type: "application/json" });
 
-    const fileName = postDocId;
-
     try {
       const storageRef = ref(
         storage,
-        `users/${senderUsername}/nftMetadatas/${fileName}`
+        `users/${senderUsername}/postsFiles/${postDocId}/nftMetadata`
       );
 
       await uploadBytes(storageRef, metadataBlob);

@@ -70,7 +70,7 @@ export default function PostCreateModal() {
 
       const abs = Math.abs(ratio - 1);
 
-      const finalZoomValue = abs * 2 + 1 + 0.1;
+      const finalZoomValue = abs * 2 + 1;
 
       setZoom(finalZoomValue);
       setMinZoom(finalZoomValue);
