@@ -1,18 +1,27 @@
 import { auth } from "@/firebase/clientApp";
+import { useState } from "react";
 
 export default function useSendComment() {
+  const [commentSendLoading, setCommentSendLoading] = useState(false);
+
   /**
    * No need to pass sender, it is currentUser.
    * @param postDocPath
    * @param comment
    */
-  const sendComment = async (postDocPath: string, comment: string) => {
+  const sendComment = async (
+    postDocPath: string,
+    comment: string
+  ): Promise<string> => {
+    setCommentSendLoading(true);
     let idToken = "";
     try {
       idToken = (await auth.currentUser?.getIdToken()) as string;
     } catch (error) {
       console.error("Error while getting 'idToken'", error);
-      return;
+      setCommentSendLoading(false);
+
+      return "";
     }
 
     let response: Response;
@@ -30,15 +39,22 @@ export default function useSendComment() {
       });
     } catch (error) {
       console.error("Error while 'fetching' to 'postComment' API", error);
-      return;
+      setCommentSendLoading(false);
+      return "";
     }
 
     if (!response.ok) {
       console.error("Error from 'postComments' API:", await response.json());
-      return;
+      setCommentSendLoading(false);
+      return "";
     }
+
+    setCommentSendLoading(false);
+
+    return (await response.json()).newCommentDocPath;
   };
   return {
     sendComment,
+    commentSendLoading
   };
 }

@@ -1,24 +1,11 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { firestore } from "@/firebase/clientApp";
 import useCommentDelete from "@/hooks/useCommentDelete";
-import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
-  Button,
-  Flex,
-  Icon,
-  Image,
-  SkeletonCircle,
-  Text,
-} from "@chakra-ui/react";
+import { Flex, Icon, Image, SkeletonCircle, Text } from "@chakra-ui/react";
 import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
-import React, { SetStateAction, use, useEffect, useRef, useState } from "react";
+import React, { SetStateAction, useEffect, useRef, useState } from "react";
 import { BsDot, BsTrash } from "react-icons/bs";
 import { CgProfile } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
@@ -49,13 +36,6 @@ export default function CommentItem({
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
   const { commentDelete } = useCommentDelete();
-
-  const [
-    newCommentDeletionErrorModalOpen,
-    setNewCommentDeletionErrorModalOpen,
-  ] = useState(false);
-
-  const leastDestructiveRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     getPostSenderPhoto();
@@ -155,49 +135,17 @@ export default function CommentItem({
           color="red.700"
           cursor="pointer"
           onClick={async () => {
-            if (!!!commentDataWithCommentDocId.commentDocPath) {
-              setNewCommentDeletionErrorModalOpen(true);
-            } else {
-              commentDelete(commentDataWithCommentDocId.commentDocPath);
-              commentsDatasWithCommentDocPathSetter((prev) =>
-                prev.filter(
-                  (a) =>
-                    a.commentDocPath !==
-                    commentDataWithCommentDocId.commentDocPath
-                )
-              );
-              commentCountSetter((prev) => prev - 1);
-            }
+            commentDelete(commentDataWithCommentDocId.commentDocPath);
+            commentsDatasWithCommentDocPathSetter((prev) =>
+              prev.filter(
+                (a) =>
+                  a.commentDocPath !==
+                  commentDataWithCommentDocId.commentDocPath
+              )
+            );
+            commentCountSetter((prev) => prev - 1);
           }}
         />
-        <AlertDialog
-          leastDestructiveRef={leastDestructiveRef}
-          isOpen={newCommentDeletionErrorModalOpen}
-          autoFocus={false}
-          onClose={() => setNewCommentDeletionErrorModalOpen(false)}
-        >
-          <AlertDialogOverlay>
-            <AlertDialogContent>
-              <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                Delete Comment Error
-              </AlertDialogHeader>
-
-              <AlertDialogBody>
-                You need to open comment dialog again to delete this comment due
-                to technical issues.
-              </AlertDialogBody>
-
-              <AlertDialogFooter>
-                <Button
-                  ref={leastDestructiveRef}
-                  onClick={() => setNewCommentDeletionErrorModalOpen(false)}
-                >
-                  Okay, open again.
-                </Button>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialogOverlay>
-        </AlertDialog>
       </Flex>
     </Flex>
   );

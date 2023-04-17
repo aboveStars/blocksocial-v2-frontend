@@ -6,7 +6,6 @@ import {
   Button,
   Flex,
   Icon,
-  Image,
   Input,
   Modal,
   ModalBody,
@@ -16,7 +15,7 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Cropper from "react-easy-crop";
 import { AiOutlineClose } from "react-icons/ai";
 import { BiImageAdd } from "react-icons/bi";
@@ -54,6 +53,31 @@ export default function PostCreateModal() {
     image: "",
   });
 
+  const [cropSize, setCropSize] = useState(400);
+  const cropRef = useRef<HTMLDivElement>(null);
+  const [minZoom, setMinZoom] = useState(1);
+
+  useEffect(() => {
+    if (cropRef.current) setCropSize(cropRef.current.clientWidth);
+  }, [cropRef.current?.clientWidth]);
+
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      const width = img.width;
+      const height = img.height;
+      const ratio = width / height;
+
+      const abs = Math.abs(ratio - 1);
+
+      const finalZoomValue = abs * 2 + 1 + 0.1;
+
+      setZoom(finalZoomValue);
+      setMinZoom(finalZoomValue);
+    };
+    img.src = willBeCroppedPostPhoto;
+  }, [willBeCroppedPostPhoto]);
+
   const onTextsChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPostCreateForm((prev) => ({
       ...prev,
@@ -68,21 +92,25 @@ export default function PostCreateModal() {
     }
     await sendPost(postCreateForm);
 
-    // State Resets
-    setPostCreateForm({ description: "", image: "" });
+    handleResetCrop();
 
     setPostCreatModaleState((prev) => ({
       ...prev,
       isOpen: false,
     }));
 
+    setPostCreateForm({ description: "", image: "" });
+
+    console.log("Succesfully Uploaded Post");
+  };
+
+  const handleResetCrop = () => {
     setCrop({ x: 0, y: 0 });
     setZoom(1);
     setCroppedAreaPixels(null);
+    setWillBeCroppedPostPhoto("");
 
     if (imageInputRef.current) imageInputRef.current.value = "";
-
-    console.log("Succesfully Uploaded Post");
   };
 
   return (
@@ -96,11 +124,10 @@ export default function PostCreateModal() {
       }}
       isOpen={postCreateModalState.isOpen}
       onClose={() => {
-        // State Resets
-        setPostCreatModaleState((prev) => ({
-          ...prev,
-          isOpen: false,
-        }));
+        handleResetCrop();
+        if (!postUploadLoading)
+          setPostCreateForm({ description: "", image: "" });
+        setPostCreatModaleState({ isOpen: false });
       }}
       autoFocus={false}
     >
@@ -125,19 +152,10 @@ export default function PostCreateModal() {
             fontSize="15pt"
             cursor="pointer"
             onClick={() => {
-              // State Resets
-              setPostCreatModaleState((prev) => ({
-                ...prev,
-                isOpen: false,
-              }));
-
-              setPostCreateForm({ description: "", image: "" });
-
-              setCrop({ x: 0, y: 0 });
-              setZoom(1);
-              setCroppedAreaPixels(null);
-
-              if (imageInputRef.current) imageInputRef.current.value = "";
+              handleResetCrop();
+              if (!postUploadLoading)
+                setPostCreateForm({ description: "", image: "" });
+              setPostCreatModaleState({ isOpen: false });
             }}
           />
         </Flex>
@@ -169,13 +187,8 @@ export default function PostCreateModal() {
                       ...prev,
                       image: croppedImage as string,
                     }));
-                    // Reset States
-                    setWillBeCroppedPostPhoto("");
-                    setCrop({ x: 0, y: 0 });
-                    setZoom(1);
-                    setCroppedAreaPixels(null);
 
-                    if (imageInputRef.current) imageInputRef.current.value = "";
+                    handleResetCrop();
                   }}
                 >
                   Try
@@ -185,21 +198,19 @@ export default function PostCreateModal() {
                   variant="outline"
                   colorScheme="blue"
                   onClick={() => {
-                    // Reset States
-                    setWillBeCroppedPostPhoto("");
-
-                    setWillBeCroppedPostPhoto("");
-                    setCrop({ x: 0, y: 0 });
-                    setZoom(1);
-                    setCroppedAreaPixels(null);
-
-                    if (imageInputRef.current) imageInputRef.current.value = "";
+                    handleResetCrop();
                   }}
                 >
                   Cancel
                 </Button>
               </Flex>
-              <AspectRatio position="relative" width="100%" ratio={1}>
+              <Flex
+                position="relative"
+                height={cropSize}
+                width="100%"
+                mt={4}
+                ref={cropRef}
+              >
                 <Cropper
                   image={willBeCroppedPostPhoto}
                   crop={crop}
@@ -208,18 +219,22 @@ export default function PostCreateModal() {
                   onCropChange={setCrop}
                   onCropComplete={onCropComplete}
                   onZoomChange={setZoom}
+                  cropSize={{ height: cropSize, width: cropSize }}
+                  minZoom={minZoom}
                 />
-              </AspectRatio>
+              </Flex>
             </Flex>
 
-            <AspectRatio hidden={!!!postCreateForm.image} ratio={1}>
-              <Image
-                borderRadius="5px"
+            <Flex hidden={!!!postCreateForm.image}>
+              <img
+                style={{
+                  borderRadius: "10px",
+                }}
                 alt=""
                 src={postCreateForm.image}
                 hidden={!!!postCreateForm.image}
               />
-            </AspectRatio>
+            </Flex>
 
             <Button
               variant="outline"
@@ -228,16 +243,6 @@ export default function PostCreateModal() {
                   ...prev,
                   image: "",
                 }));
-
-                // Reset States
-                setWillBeCroppedPostPhoto("");
-
-                setWillBeCroppedPostPhoto("");
-                setCrop({ x: 0, y: 0 });
-                setZoom(1);
-                setCroppedAreaPixels(null);
-
-                if (imageInputRef.current) imageInputRef.current.value = "";
               }}
               mt={2}
               colorScheme="red"
@@ -278,6 +283,7 @@ export default function PostCreateModal() {
                   accept="image/*"
                   hidden
                   onChange={onSelectWillBeCroppedPhoto}
+                  isDisabled={postUploadLoading}
                 />
               </>
             </AspectRatio>
@@ -293,6 +299,7 @@ export default function PostCreateModal() {
                 fontWeight="600"
                 value={postCreateForm.description}
                 onChange={onTextsChanged}
+                isDisabled={postUploadLoading}
               />
             </Flex>
           </Stack>
@@ -304,19 +311,8 @@ export default function PostCreateModal() {
             colorScheme="blue"
             mr={3}
             onClick={() => {
-              // State Resets
-              setPostCreatModaleState((prev) => ({
-                ...prev,
-                isOpen: false,
-              }));
-
+              setPostCreatModaleState({ isOpen: false });
               setPostCreateForm({ description: "", image: "" });
-
-              setCrop({ x: 0, y: 0 });
-              setZoom(1);
-              setCroppedAreaPixels(null);
-
-              if (imageInputRef.current) imageInputRef.current.value = "";
             }}
             isDisabled={postUploadLoading || !!willBeCroppedPostPhoto}
           >

@@ -5,6 +5,8 @@ import { CommentData } from "@/components/types/Post";
 import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { auth, fieldValue, firestore } from "../../firebase/adminApp";
 
+import { v4 as uuidv4 } from "uuid";
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -46,9 +48,19 @@ export default async function handler(
     creationTime: Date.now(),
   };
 
+  let newCommentDocPath = `${postDocPath}/comments/${operationFromUsername}${Date.now()}${uuidv4()
+    .replace(/-/g, "")
+    .toUpperCase()}`;
+  while ((await firestore.doc(newCommentDocPath).get()).exists) {
+    newCommentDocPath = `${postDocPath}/comments/${operationFromUsername}${Date.now()}${uuidv4().replace(
+      /-/g,
+      ""
+    )}`;
+  }
+
   try {
     await Promise.all([
-      sendComment(postDocPath, newCommentData),
+      sendComment(newCommentDocPath, newCommentData),
       increaseCommentCount(postDocPath),
     ]);
   } catch (error) {
@@ -56,7 +68,7 @@ export default async function handler(
     return res.status(503).json({ error: "Firebase error" });
   }
 
-  return res.status(200).json({});
+  return res.status(200).json({ newCommentDocPath: newCommentDocPath });
 }
 
 /**
@@ -78,9 +90,12 @@ async function getDisplayName(decodedToken: DecodedIdToken) {
   return displayName as string;
 }
 
-async function sendComment(postDocPath: string, newCommentData: CommentData) {
+async function sendComment(
+  newCommentDocPath: string,
+  newCommentData: CommentData
+) {
   try {
-    await firestore.collection(`${postDocPath}/comments`).add(newCommentData);
+    await firestore.doc(newCommentDocPath).set(newCommentData);
   } catch (error) {
     throw new Error(
       `Error while commenting from sendComment function: ${error}`

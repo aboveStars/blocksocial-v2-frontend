@@ -1,5 +1,6 @@
 import { firestore } from "@/firebase/clientApp";
 import useSendComment from "@/hooks/useSendComment";
+import useSortByUsername from "@/hooks/useSortByUsername";
 import {
   Flex,
   Icon,
@@ -10,25 +11,19 @@ import {
   ModalContent,
   ModalOverlay,
   SkeletonCircle,
+  Spinner,
   Stack,
   Text,
 } from "@chakra-ui/react";
-import {
-  collection,
-  getDocs,
-  orderBy,
-  query,
-  Timestamp,
-} from "firebase/firestore";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import React, { useEffect, useRef, useState } from "react";
 import { AiOutlineClose, AiOutlineSend } from "react-icons/ai";
 import { CgProfile } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
 import { currentUserStateAtom } from "../../atoms/currentUserAtom";
-import { CommentDataWithCommentDocPath, OpenPanelName } from "../../types/Post";
 import CommentItem from "../../Items/Post/CommentItem";
 import CommentItemSkeleton from "../../Skeletons/CommentItemSkeleton";
-import useSortByUsername from "@/hooks/useSortByUsername";
+import { CommentDataWithCommentDocPath, OpenPanelName } from "../../types/Post";
 
 type Props = {
   commentsInfo: {
@@ -52,7 +47,7 @@ export default function PostComments({
 
   const [currentComment, setCurrentComment] = useState("");
 
-  const { sendComment } = useSendComment();
+  const { sendComment, commentSendLoading } = useSendComment();
 
   const commentInputRef = useRef<HTMLInputElement>(null);
 
@@ -116,6 +111,33 @@ export default function PostComments({
       setCommentsDatasWithCommentDocPath(commentDatasWithCommentDocPathArray);
 
     setGettingComments(false);
+  };
+
+  const handleSendComment = async () => {
+    if (currentComment.length === 0) return;
+
+    const newCommentDocPath = await sendComment(
+      commentsInfo.postDocPath,
+      currentComment
+    );
+
+    if (!newCommentDocPath) return;
+
+    const newCommentData: CommentDataWithCommentDocPath = {
+      commentDocPath: newCommentDocPath,
+      comment: currentComment,
+      commentSenderUsername: currentUserState.username,
+      creationTime: Date.now(),
+    };
+
+    const prevCommentsDatasWithCommentDocPath = commentsDatasWithCommentDocPath;
+    prevCommentsDatasWithCommentDocPath.unshift(newCommentData);
+    setCommentsDatasWithCommentDocPath(prevCommentsDatasWithCommentDocPath);
+
+    commentCountSetter((prev) => prev + 1);
+
+    setCurrentComment("");
+    if (commentInputRef.current) commentInputRef.current.value = "";
   };
 
   return (
@@ -184,7 +206,6 @@ export default function PostComments({
             No comments yet.
           </Text>
         </ModalBody>
-
         <Flex
           id="comment-send-area"
           position="sticky"
@@ -239,39 +260,23 @@ export default function PostComments({
               ml="3"
               height="40px"
               rounded="full"
+              isDisabled={commentSendLoading}
             />
-            <Icon
-              as={AiOutlineSend}
-              color="white"
-              ml={2}
-              mr={1}
-              cursor="pointer"
-              fontSize="20pt"
-              onClick={() => {
-                if (currentComment.length === 0) return;
-
-                sendComment(commentsInfo.postDocPath, currentComment);
-                if (commentInputRef.current) commentInputRef.current.value = "";
-                const newCommentData: CommentDataWithCommentDocPath = {
-                  commentDocPath: "",
-                  comment: currentComment,
-                  commentSenderUsername: currentUserState.username,
-                  creationTime: Date.now(),
-                };
-
-                const prevCommentsDatasWithCommentDocPath =
-                  commentsDatasWithCommentDocPath;
-                prevCommentsDatasWithCommentDocPath.unshift(newCommentData);
-
-                setCommentsDatasWithCommentDocPath(
-                  prevCommentsDatasWithCommentDocPath
-                );
-
-                commentCountSetter((prev) => prev + 1);
-
-                setCurrentComment("");
-              }}
-            />
+            {commentSendLoading ? (
+              <Flex ml={2} mr={1}>
+                <Spinner color="white" />
+              </Flex>
+            ) : (
+              <Icon
+                as={AiOutlineSend}
+                color="white"
+                ml={2}
+                mr={1}
+                cursor="pointer"
+                fontSize="20pt"
+                onClick={handleSendComment}
+              />
+            )}
           </Flex>
         </Flex>
       </ModalContent>
