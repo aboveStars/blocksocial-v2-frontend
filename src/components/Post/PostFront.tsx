@@ -111,7 +111,6 @@ export default function PostFront({
     setCurrentUserState((prev) => ({
       ...prev,
       followingCount: prev.followingCount + 1,
-      followings: prev.followings.concat(postFrontData.senderUsername),
     }));
   };
 
@@ -129,10 +128,10 @@ export default function PostFront({
     if (!postFrontData || !currentUserState.uid) {
       return;
     }
-    const followingStatus: boolean = currentUserState.followings.includes(
-      postFrontData.senderUsername
-    );
-    setIsCurrentUserFollowThisPostSender(followingStatus);
+    // const followingStatus: boolean = currentUserState.followings.includes(
+    //   postFrontData.senderUsername
+    // );
+    // setIsCurrentUserFollowThisPostSender(followingStatus);
   }, [postFrontData, currentUserState]);
 
   // Skeleton Height Adjustment
