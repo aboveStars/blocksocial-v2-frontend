@@ -1,6 +1,9 @@
-# Block Social
-Block Social is the revolutionary new social media platform that empowers users to truly own their data and even sell it as NFTs, all while utilizing the unbreakable security of blockchain technology and IPFS storage. Say goodbye to the greedy, centralized social media giants and hello to a decentralized and profitable future with "Block Social"!
+# BlockSocial
+
+BlockSocial is the revolutionary new social media platform that empowers users to truly own their data and even sell it as NFTs, all while utilizing the unbreakable security of blockchain technology and IPFS storage. Say goodbye to the greedy, centralized social media giants and hello to a decentralized and profitable future with "Block Social"!
+
 ## Description
+
 Block Social is a decentralized social media platform that utilizes blockchain technology to enable users to truly own their data and have complete control over its usage. Unlike centralized social media platforms, "Block Social" does not collect or sell user data to third parties, but rather, stores all user activity as non-fungible tokens (NFTs) on the blockchain, allowing users to maintain ownership of their data.
 
 Through "Block Social", users can choose their own "feed provider" to fulfill their feed. By granting permission to "feed providers" to collect their data for a "price", users can receive a customized and personalized feed that reflects their interests and preferences. "Feed providers" can then monetize this data by showing relevant ads to users.
