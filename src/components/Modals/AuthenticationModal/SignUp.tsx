@@ -17,7 +17,7 @@ import React, { useRef, useState } from "react";
 import { useSetRecoilState } from "recoil";
 
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
-import { CurrentUser, UserInformation } from "@/components/types/User";
+import { CurrentUser, UserInServer } from "@/components/types/User";
 import { firestore } from "@/firebase/clientApp";
 import { doc, getDoc } from "firebase/firestore";
 import { AiOutlineCheckCircle } from "react-icons/ai";
@@ -150,7 +150,7 @@ export default function SignUp() {
       return console.error("Error while signup from 'signup' API", error);
     }
 
-    const newUserData: UserInformation = await response.json();
+    const newUserData: UserInServer = await response.json();
     setAuthModalState((prev) => ({
       ...prev,
       open: false,

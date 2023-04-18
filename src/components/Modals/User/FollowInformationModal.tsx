@@ -1,3 +1,4 @@
+import { firestore } from "@/firebase/clientApp";
 import {
   Flex,
   Icon,
@@ -8,9 +9,10 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import React, { SetStateAction } from "react";
+import { collection, getDocs } from "firebase/firestore";
+
+import React, { SetStateAction, useEffect, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
-import { UserInformation } from "../../types/User";
 import FollowItem from "../../user/FollowItem";
 import { FollowingsFollowersModalType } from "../../user/Header";
 
@@ -19,14 +21,36 @@ type Props = {
   followInformationModalStateSetter: React.Dispatch<
     SetStateAction<FollowingsFollowersModalType>
   >;
-  ostensibleUserInformation: UserInformation;
+  userName: string;
 };
 
 export default function FollowInformationModal({
   followInformationModalStateValue,
   followInformationModalStateSetter,
-  ostensibleUserInformation,
+  userName,
 }: Props) {
+  /**
+   * Both for followers and followings
+   */
+  const [followData, setFollowData] = useState<string[]>([]);
+
+  useEffect(() => {
+    handleFollowData();
+  }, [followInformationModalStateValue]);
+
+  const handleFollowData = async () => {
+    const followDataCollection = collection(
+      firestore,
+      `users/${userName}/${followInformationModalStateValue.modal}`
+    );
+    const followDataDocs = (await getDocs(followDataCollection)).docs;
+
+    let tempFollowData: string[] = [];
+    for (const doc of followDataDocs) {
+      tempFollowData.push(doc.id);
+    }
+  };
+
   return (
     <Modal
       id="followings-followers-modal"
@@ -57,7 +81,7 @@ export default function FollowInformationModal({
           bg="black"
         >
           <Flex textColor="white" fontSize="17pt" fontWeight="700" gap={2}>
-            <Text> &ldquo;{ostensibleUserInformation.username}&ldquo;</Text>
+            <Text> &ldquo;{userName}&ldquo;</Text>
             <Text>
               {followInformationModalStateValue.modal === "followings"
                 ? "follows"
@@ -81,9 +105,7 @@ export default function FollowInformationModal({
 
         <ModalBody>
           <Stack gap={2}>
-            {ostensibleUserInformation[
-              followInformationModalStateValue.modal
-            ].map((f) => (
+            {followData.map((f) => (
               <FollowItem
                 key={f}
                 username={f}

@@ -33,8 +33,34 @@ export default async function handler(
 
   if (req.method !== "POST") return res.status(405).json("Method not allowed");
 
-  if (!operationFromUsername || !operationToUsername) {
+  if (
+    !operationFromUsername ||
+    !operationToUsername ||
+    (opCode !== 1 && opCode !== -1)
+  ) {
     return res.status(422).json({ error: "Invalid prop or props" });
+  }
+
+  // check if we already follow or not
+  const doesOperationFromFollowOperationTo = (
+    await firestore
+      .doc(`users/${operationFromUsername}/followings/${operationToUsername}`)
+      .get()
+  ).exists;
+  if (opCode === 1) {
+    if (doesOperationFromFollowOperationTo) {
+      console.error(
+        "Error while follow operation. (Detected already followed.)"
+      );
+      return res.status(422).json({ error: "Invalid prop or props" });
+    }
+  } else {
+    if (!doesOperationFromFollowOperationTo) {
+      console.error(
+        "Error while follow operation. (Detected already not-followed.)"
+      );
+      return res.status(422).json({ error: "Invalid prop or props" });
+    }
   }
 
   try {
@@ -62,11 +88,22 @@ async function handleOperationFrom(props: followOperationInterface) {
   try {
     await firestore.doc(`users/${props.operationFromUsername}`).update({
       followingCount: fieldValue.increment(props.opCode),
-      followings:
-        props.opCode === 1
-          ? fieldValue.arrayUnion(props.operationToUsername)
-          : fieldValue.arrayRemove(props.operationToUsername),
     });
+    if (props.opCode === 1) {
+      await firestore
+        .doc(
+          `users/${props.operationFromUsername}/followings/${props.operationToUsername}`
+        )
+        .set({
+          followTime: Date.now(),
+        });
+    } else {
+      await firestore
+        .doc(
+          `users/${props.operationFromUsername}/followings/${props.operationToUsername}`
+        )
+        .delete();
+    }
   } catch (error) {
     throw new Error(
       `Error while follow operation from HANDLE-OPERATION-FROM: ${error} `
@@ -78,11 +115,23 @@ async function handleOperationTo(props: followOperationInterface) {
   try {
     await firestore.doc(`users/${props.operationToUsername}`).update({
       followerCount: fieldValue.increment(props.opCode),
-      followers:
-        props.opCode === 1
-          ? fieldValue.arrayUnion(props.operationFromUsername)
-          : fieldValue.arrayRemove(props.operationFromUsername),
     });
+
+    if (props.opCode === 1) {
+      await firestore
+        .doc(
+          `users/${props.operationToUsername}/followers/${props.operationFromUsername}`
+        )
+        .set({
+          followTime: Date.now(),
+        });
+    } else {
+      await firestore
+        .doc(
+          `users/${props.operationToUsername}/followers/${props.operationFromUsername}`
+        )
+        .delete();
+    }
   } catch (error) {
     throw new Error(
       `Error while follow operation from HANDLE-OPERATION-TO: ${error} `

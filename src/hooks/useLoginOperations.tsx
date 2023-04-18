@@ -1,10 +1,6 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
-import {
-  CurrentUser,
-  defaultUserInformation,
-  UserInformation,
-} from "@/components/types/User";
+import { CurrentUser, UserInServer } from "@/components/types/User";
 
 import { auth, firestore } from "@/firebase/clientApp";
 import { User } from "firebase/auth";
@@ -83,17 +79,17 @@ const useLoginOperations = () => {
 
     const userDoc = await getDoc(doc(firestore, `users/${username}`));
 
-    let currentUserDataOnServer: UserInformation = defaultUserInformation;
+    let currentUserDataOnServer: UserInServer;
 
     if (userDoc.exists())
       currentUserDataOnServer = {
         username: userDoc.data().username,
         fullname: userDoc.data().fullname,
         profilePhoto: userDoc.data().profilePhoto,
+
         followingCount: userDoc.data().followingCount,
-        followings: userDoc.data().followings,
         followerCount: userDoc.data().followerCount,
-        followers: userDoc.data().followers,
+
         email: userDoc.data().email,
         uid: userDoc.data().uid,
       };
@@ -110,13 +106,14 @@ const useLoginOperations = () => {
     const currentUserDataTemp: CurrentUser = {
       isThereCurrentUser: true,
       loading: false,
+
       username: currentUserDataOnServer.username,
       fullname: currentUserDataOnServer.fullname,
       profilePhoto: currentUserDataOnServer.profilePhoto,
+
       followingCount: currentUserDataOnServer.followingCount,
-      followings: currentUserDataOnServer.followings,
       followerCount: currentUserDataOnServer.followerCount,
-      followers: currentUserDataOnServer.followers,
+
       email: currentUserDataOnServer.email,
       uid: currentUserDataOnServer.uid,
     };

@@ -4,6 +4,18 @@ export type UserInSearchbar = {
   profilePhoto: string;
 };
 
+export interface UserInServer {
+  username: string;
+  fullname: string;
+  profilePhoto: string;
+
+  followingCount: number;
+  followerCount: number;
+
+  email: string;
+  uid: string;
+}
+
 export interface CurrentUser {
   isThereCurrentUser: boolean;
   loading: boolean;
@@ -13,10 +25,7 @@ export interface CurrentUser {
   profilePhoto: string;
 
   followingCount: number;
-  followings: string[];
-
   followerCount: number;
-  followers: string[];
 
   email: string;
   uid: string;
@@ -31,43 +40,7 @@ export const defaultCurrentUserState: CurrentUser = {
   profilePhoto: "",
 
   followingCount: 0,
-  followings: [],
-
   followerCount: 0,
-  followers: [],
-
-  email: "",
-  uid: "",
-};
-
-/**
- * Mostly for Single User Page => /users/yunus20korkmaz03
- */
-export interface UserInformation {
-  username: string;
-  fullname: string;
-  profilePhoto: string;
-
-  followingCount: number;
-  followings: string[];
-
-  followerCount: number;
-  followers: string[];
-
-  email: string;
-  uid: string;
-}
-
-export const defaultUserInformation: UserInformation = {
-  username: "",
-  fullname: "",
-  profilePhoto: "",
-
-  followingCount: 0,
-  followings: [],
-
-  followerCount: 0,
-  followers: [],
 
   email: "",
   uid: "",

@@ -1,4 +1,4 @@
-import { UserInformation } from "@/components/types/User";
+import { UserInServer } from "@/components/types/User";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { auth, firestore } from "../../firebase/adminApp";
 
@@ -72,7 +72,7 @@ export default async function handler(
     return res.status(400).json({ error: "Invalid Password" });
   }
 
-  let newUserData: UserInformation;
+  let newUserData: UserInServer;
   try {
     const { uid } = await auth.createUser({
       email: email,
@@ -89,10 +89,7 @@ export default async function handler(
       profilePhoto: "",
 
       followingCount: 0,
-      followings: [],
-
       followerCount: 0,
-      followers: [],
 
       email: email || "",
       uid: uid,

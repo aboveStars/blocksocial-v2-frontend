@@ -2,7 +2,7 @@ import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
 import UserPageLayout from "@/components/Layout/UserPageLayout";
 
 import { PostItemData } from "@/components/types/Post";
-import { UserInformation } from "@/components/types/User";
+import { UserInServer } from "@/components/types/User";
 
 import { firestore } from "@/firebase/clientApp";
 import { Flex, Text } from "@chakra-ui/react";
@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 import { useSetRecoilState } from "recoil";
 
 type Props = {
-  userInformation: UserInformation | undefined;
+  userInformation: UserInServer | undefined;
   postItemDatas: PostItemData[];
 };
 
@@ -73,7 +73,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const username = context.query.username;
 
-  let userInformation: UserInformation | null = null;
+  let userInformation: UserInServer | null = null;
   let postItemDatas: PostItemData[] = [];
 
   let userDoc;
@@ -103,14 +103,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const tempUserInformation: UserInformation = {
+  const tempUserInformation: UserInServer = {
     username: userDoc.data().username,
     fullname: userDoc.data().fullname,
     profilePhoto: userDoc.data().profilePhoto,
+
     followingCount: userDoc.data().followingCount,
-    followings: userDoc.data().followings,
     followerCount: userDoc.data().followerCount,
-    followers: userDoc.data().followers,
+
     email: userDoc.data().email,
     uid: userDoc.data().uid,
   };

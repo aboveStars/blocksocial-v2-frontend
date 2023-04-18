@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 
 import Posts from "../Post/Posts";
 import { PostItemData } from "../types/Post";
-import { UserInformation } from "../types/User";
+import { UserInServer } from "../types/User";
 import Header from "../user/Header";
 
 type Props = {
-  userInformation: UserInformation;
+  userInformation: UserInServer;
   postItemsDatas: PostItemData[];
 };
 

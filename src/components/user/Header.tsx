@@ -30,17 +30,18 @@ import { CgProfile } from "react-icons/cg";
 import useFollow from "@/hooks/useFollow";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
-import { defaultCurrentUserState, UserInformation } from "../types/User";
+import { defaultCurrentUserState, UserInServer } from "../types/User";
 
 import useSortByUsername from "@/hooks/useSortByUsername";
 import FollowInformationModal from "../Modals/User/FollowInformationModal";
 import ProfilePhotoUpdateModal from "../Modals/User/ProfilePhotoUpdateModal";
 
-import { auth } from "@/firebase/clientApp";
+import { auth, firestore } from "@/firebase/clientApp";
 import { signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 type Props = {
-  userInformation: UserInformation;
+  userInformation: UserInServer;
 };
 
 /**
@@ -109,6 +110,9 @@ export default function Header({ userInformation }: Props) {
 
   const { profilePhotoDelete, profilePhotoDeleteLoading } = useProfilePhoto();
 
+  const [currentUserFollowThisMan, setCurrentUserFollowThisMan] =
+    useState(false);
+
   /**
    * userData is already being controlled then, comes here
    * Current user uid, but direcly comes here. So we check it
@@ -116,20 +120,16 @@ export default function Header({ userInformation }: Props) {
    */
 
   useEffect(() => {
-    // Beacuse when page changes (userPage) state variable are not reseted. (ostensible)
-    // We manually reset
-    // But there is no problem at "userInformation" (userInformation.username changes, I mean)
     setSelectedProfilePhoto("");
 
-    handleUserInformation();
-
-    if (currentUserState.uid)
+    if (currentUserState.uid) {
+      handleUserInformation();
       if (currentUserState.uid == userInformation.uid) {
         setIsCurrentUserPage((prev) => true);
       } else {
         setIsCurrentUserPage((prev) => false);
       }
-    else {
+    } else {
       if (currentUserState.loading) return;
       setIsCurrentUserPage((prev) => false);
     }
@@ -143,30 +143,23 @@ export default function Header({ userInformation }: Props) {
     setPoorProfilePhoto(poorStatus);
   }, [ostensibleUserInformation.profilePhoto]);
 
-  const handleUserInformation = () => {
-    let readyUserInformation: UserInformation = userInformation;
-    if (userInformation.followings.includes(currentUserState.username)) {
-      const reviewedFollowings = sortFollowingsByUsername(
-        userInformation.followings,
-        currentUserState.username
-      );
-      readyUserInformation = {
-        ...readyUserInformation,
-        followings: reviewedFollowings,
-      };
-    }
-    if (userInformation.followers.includes(currentUserState.username)) {
-      const reviewedFollowers = sortFollowersByUsername(
-        userInformation.followers,
-        currentUserState.username
-      );
-      readyUserInformation = {
-        ...readyUserInformation,
-        followers: reviewedFollowers,
-      };
-    }
-
+  /**
+   * Checks if we follow this user.
+   */
+  const handleUserInformation = async () => {
+    let readyUserInformation: UserInServer = userInformation;
     setOstensibleUserInformation(readyUserInformation);
+
+    const doesCurrentUserFollowThisMan = (
+      await getDoc(
+        doc(
+          firestore,
+          `users/${currentUserState.username}/followings/${userInformation.username}`
+        )
+      )
+    ).exists();
+
+    setCurrentUserFollowThisMan(doesCurrentUserFollowThisMan);
   };
 
   const handleFollow = () => {
@@ -182,19 +175,13 @@ export default function Header({ userInformation }: Props) {
     }
     // Follow operation
     follow(userInformation.username, 1);
-    // Page Update (locally)
-    // We don't need followers of users but I did.
+
+    // Current User Update (locally)
     setOstensibleUserInformation((prev) => ({
       ...prev,
-      followers: [currentUserState.username, ...prev.followers],
       followerCount: prev.followerCount + 1,
     }));
-    // Current User Update (locally)
-    setCurrentUserState((prev) => ({
-      ...prev,
-      followingCount: prev.followingCount + 1,
-      followings: prev.followings.concat(userInformation.username),
-    }));
+    setCurrentUserFollowThisMan(true);
   };
   const handleDeFollow = () => {
     // Follow Operation
@@ -202,7 +189,6 @@ export default function Header({ userInformation }: Props) {
     // Page Update (locally)
     setOstensibleUserInformation((prev) => ({
       ...prev,
-      followers: prev.followers.filter((f) => f !== currentUserState.username),
 
       followerCount: prev.followerCount - 1,
     }));
@@ -210,8 +196,8 @@ export default function Header({ userInformation }: Props) {
     setCurrentUserState((prev) => ({
       ...prev,
       followingCount: prev.followingCount - 1,
-      followings: prev.followings.filter((f) => f !== userInformation.username),
     }));
+    setCurrentUserFollowThisMan(false);
   };
 
   const handleSignOut = async () => {
@@ -230,6 +216,7 @@ export default function Header({ userInformation }: Props) {
       open: true,
       view: "logIn",
     }));
+    setCurrentUserFollowThisMan(false);
 
     setSignOutLoading(false);
   };
@@ -265,7 +252,7 @@ export default function Header({ userInformation }: Props) {
       <FollowInformationModal
         followInformationModalStateSetter={setFollowingsFollowesrModalState}
         followInformationModalStateValue={followingsFollowersModalState}
-        ostensibleUserInformation={ostensibleUserInformation}
+        userName={userInformation.username}
       />
 
       {/* <NFTAdministrationPanel
@@ -492,7 +479,7 @@ export default function Header({ userInformation }: Props) {
 
         {isCurrentUserPage == false && (
           <Flex mt={2} mb={2}>
-            {currentUserState.followings.includes(userInformation.username) ? (
+            {currentUserFollowThisMan ? (
               <Button
                 variant="outline"
                 colorScheme="blue"
