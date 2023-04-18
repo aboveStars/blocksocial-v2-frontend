@@ -81,7 +81,7 @@ export default function Home() {
     // get current user followings
 
     // this is empty array by default, so no need to check isThereCurrentUser
-    const currentUserFollowings: string[] = currentUserState.followings;
+    const currentUserFollowings: string[] = ["yunuskorkmaz"];
     const celebrities = await getCelebrities();
 
     if (currentUserFollowings.length === 0 && celebrities.length === 0) {
