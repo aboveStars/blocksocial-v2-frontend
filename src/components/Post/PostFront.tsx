@@ -18,7 +18,7 @@ import {
   SkeletonCircle,
   SkeletonText,
   Spinner,
-  Text
+  Text,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 
@@ -26,7 +26,7 @@ import {
   AiFillHeart,
   AiOutlineComment,
   AiOutlineHeart,
-  AiOutlineMenu
+  AiOutlineMenu,
 } from "react-icons/ai";
 import { BsDot } from "react-icons/bs";
 
@@ -85,6 +85,8 @@ export default function PostFront({
 
   const { refreshNFT, nftRefreshLoading } = useNFT();
 
+  const [followOperationLoading, setFollowOperationLoading] = useState(false);
+
   /**
    * Simply gets postSender's pp and fullname.
    * Normally, I used hooks for seperately to get pp and fullname.
@@ -117,14 +119,26 @@ export default function PostFront({
     }
   };
 
-  const handleFollowOnPost = () => {
+  const handleFollowOnPost = async () => {
+    if (!currentUserState.isThereCurrentUser) {
+      console.log("Login First to Follow");
+      setAuthModalState((prev) => ({
+        ...prev,
+        open: true,
+      }));
+      return;
+    }
+
+    setFollowOperationLoading(true);
     // Follow
-    follow(postFrontData.senderUsername, 1);
+    await follow(postFrontData.senderUsername, 1);
 
     setPostSenderInformation((prev) => ({
       ...prev,
       followedByCurrentUser: true,
     }));
+
+    setFollowOperationLoading(false);
   };
 
   useEffect(() => {
@@ -230,6 +244,7 @@ export default function PostFront({
               currentUserState.username == postFrontData.senderUsername ||
               router.asPath.includes("users")
             }
+            isLoading={followOperationLoading}
           >
             Follow
           </Button>

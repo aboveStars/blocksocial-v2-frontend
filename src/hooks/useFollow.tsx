@@ -1,5 +1,7 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { auth } from "@/firebase/clientApp";
+import { useStatStyles } from "@chakra-ui/react";
+import { useState } from "react";
 import { useRecoilValue } from "recoil";
 
 export default function useFollow() {
@@ -23,6 +25,7 @@ export default function useFollow() {
       idToken = (await auth.currentUser?.getIdToken()) as string;
     } catch (error) {
       console.error("Error while getting 'idToken'", error);
+
       return;
     }
 
@@ -41,11 +44,13 @@ export default function useFollow() {
       });
     } catch (error) {
       console.error("Error while 'fetching' to 'follow' API");
+
       return;
     }
 
     if (!response.ok) {
       console.error("Error from 'follow' API:", await response.json());
+
       return;
     }
   };

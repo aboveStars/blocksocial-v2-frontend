@@ -43,11 +43,13 @@ export default function LikeItem({
 
   const { follow } = useFollow();
 
+  const [followOperationLoading, setFollowOperationLoading] = useState(false);
+
   useEffect(() => {
     getLikerData();
   }, [likerUsername]);
 
-  const handleFollowOnLikeItem = () => {
+  const handleFollowOnLikeItem = async () => {
     if (!currentUserState.isThereCurrentUser) {
       console.log("Login First to Follow");
       setAuthModalState((prev) => ({
@@ -57,14 +59,18 @@ export default function LikeItem({
       return;
     }
 
+    setFollowOperationLoading(true);
+
     // Follow
-    follow(likerUsername, 1);
+    await follow(likerUsername, 1);
 
     // update follow status
     setLikerUserInformation((prev) => ({
       ...prev,
       followedByCurrentUser: true,
     }));
+
+    setFollowOperationLoading(false);
   };
 
   const getLikerData = async () => {
@@ -173,6 +179,7 @@ export default function LikeItem({
             likerUsername === currentUserState.username ||
             router.asPath.includes(likerUsername)
           }
+          isLoading={followOperationLoading}
         >
           Follow
         </Button>

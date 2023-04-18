@@ -113,6 +113,9 @@ export default function Header({ userInformation }: Props) {
   const [currentUserFollowThisMan, setCurrentUserFollowThisMan] =
     useState(false);
 
+  const [gettingFollowStatus, setGettingFollowStatus] = useState(true);
+  const [followOperationLoading, setFollowOperationLoading] = useState(false);
+
   /**
    * userData is already being controlled then, comes here
    * Current user uid, but direcly comes here. So we check it
@@ -123,7 +126,7 @@ export default function Header({ userInformation }: Props) {
     setSelectedProfilePhoto("");
 
     if (currentUserState.uid) {
-      handleUserInformation();
+      handleFollowStatus();
       if (currentUserState.uid == userInformation.uid) {
         setIsCurrentUserPage((prev) => true);
       } else {
@@ -146,7 +149,8 @@ export default function Header({ userInformation }: Props) {
   /**
    * Checks if we follow this user.
    */
-  const handleUserInformation = async () => {
+  const handleFollowStatus = async () => {
+    setGettingFollowStatus(true);
     let readyUserInformation: UserInServer = userInformation;
     setOstensibleUserInformation(readyUserInformation);
 
@@ -160,9 +164,10 @@ export default function Header({ userInformation }: Props) {
     ).exists();
 
     setCurrentUserFollowThisMan(doesCurrentUserFollowThisMan);
+    setGettingFollowStatus(false);
   };
 
-  const handleFollow = () => {
+  const handleFollow = async () => {
     // User check
     if (!currentUserState.isThereCurrentUser) {
       console.log("Only Users can follow");
@@ -173,8 +178,9 @@ export default function Header({ userInformation }: Props) {
       }));
       return;
     }
+    setFollowOperationLoading(true);
     // Follow operation
-    follow(userInformation.username, 1);
+    await follow(userInformation.username, 1);
 
     // Current User Update (locally)
     setOstensibleUserInformation((prev) => ({
@@ -182,10 +188,13 @@ export default function Header({ userInformation }: Props) {
       followerCount: prev.followerCount + 1,
     }));
     setCurrentUserFollowThisMan(true);
+
+    setFollowOperationLoading(false);
   };
-  const handleDeFollow = () => {
+  const handleDeFollow = async () => {
+    setFollowOperationLoading(true);
     // Follow Operation
-    follow(userInformation.username, -1);
+    await follow(userInformation.username, -1);
     // Page Update (locally)
     setOstensibleUserInformation((prev) => ({
       ...prev,
@@ -198,6 +207,7 @@ export default function Header({ userInformation }: Props) {
       followingCount: prev.followingCount - 1,
     }));
     setCurrentUserFollowThisMan(false);
+    setFollowOperationLoading(false);
   };
 
   const handleSignOut = async () => {
@@ -485,6 +495,7 @@ export default function Header({ userInformation }: Props) {
                 colorScheme="blue"
                 size="sm"
                 onClick={handleDeFollow}
+                isLoading={followOperationLoading}
               >
                 Followed
               </Button>
@@ -494,7 +505,11 @@ export default function Header({ userInformation }: Props) {
                 colorScheme="blue"
                 size="sm"
                 onClick={handleFollow}
-                isLoading={currentUserState.loading}
+                isLoading={
+                  currentUserState.loading ||
+                  gettingFollowStatus ||
+                  followOperationLoading
+                }
               >
                 Follow
               </Button>
