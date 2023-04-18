@@ -17,16 +17,14 @@ import React, {
   useState,
 } from "react";
 import Cropper from "react-easy-crop";
-import { UserInformation } from "../../types/User";
+import { UserInServer } from "../../types/User";
 import getCroppedImg from "../../utils/GetCroppedImage";
 
 type Props = {
   profilePhotoUpdateModalOpenValue: boolean;
   profilePhotoUpdateModalOpenSetter: React.Dispatch<SetStateAction<boolean>>;
-  ostensibleUserInformationValue: UserInformation;
-  ostensibleUserInformationSetter: React.Dispatch<
-    SetStateAction<UserInformation>
-  >;
+  ostensibleUserInformationValue: UserInServer;
+  ostensibleUserInformationSetter: React.Dispatch<SetStateAction<UserInServer>>;
   inputRef: React.RefObject<HTMLInputElement>;
 
   modifyingSetter: React.Dispatch<SetStateAction<boolean>>;
