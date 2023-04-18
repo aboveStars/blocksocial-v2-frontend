@@ -59,7 +59,6 @@ export default function LikeItem({
     setCurrentUserState((prev) => ({
       ...prev,
       followingCount: prev.followingCount + 1,
-      followings: prev.followings.concat(likerUsername),
     }));
   };
 
@@ -150,7 +149,6 @@ export default function LikeItem({
           colorScheme="blue"
           onClick={handleFollowOnLikeItem}
           hidden={
-            currentUserState.followings.includes(likerUsername) ||
             !!!likerUserInformation.likerFullname ||
             likerUsername === currentUserState.username ||
             router.asPath.includes(likerUsername)

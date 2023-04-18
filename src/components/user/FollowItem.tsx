@@ -94,7 +94,6 @@ export default function FollowItem({
     setCurrentUserState((prev) => ({
       ...prev,
       followingCount: prev.followingCount + 1,
-      followings: prev.followings.concat(followItemState.username),
     }));
   };
 
@@ -111,7 +110,7 @@ export default function FollowItem({
         }}
       >
         <Image
-        alt=""
+          alt=""
           src={followItemState.profilePhoto}
           rounded="full"
           width="50px"
@@ -147,7 +146,6 @@ export default function FollowItem({
           colorScheme="blue"
           onClick={handleFollowonFollowItem}
           hidden={
-            currentUserState.followings.includes(followItemState.username) ||
             !!!followItemState.username ||
             followItemState.username === currentUserState.username
           }
