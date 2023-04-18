@@ -18,7 +18,7 @@ import {
   SkeletonCircle,
   SkeletonText,
   Spinner,
-  Text,
+  Text
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 
@@ -26,9 +26,9 @@ import {
   AiFillHeart,
   AiOutlineComment,
   AiOutlineHeart,
-  AiOutlineMenu,
+  AiOutlineMenu
 } from "react-icons/ai";
-import { BsDot, BsImage } from "react-icons/bs";
+import { BsDot } from "react-icons/bs";
 
 import { firestore } from "@/firebase/clientApp";
 import useFollow from "@/hooks/useFollow";
@@ -58,7 +58,7 @@ export default function PostFront({
     username: postFrontData.senderUsername,
     fullname: "",
     profilePhoto: "",
-    followedByCurrentUser: false,
+    followedByCurrentUser: true,
   });
 
   const { like } = usePost();
@@ -74,11 +74,6 @@ export default function PostFront({
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
 
   const { follow } = useFollow();
-
-  const [
-    isCurrentUserFollowThisPostSender,
-    setIsCurrentUserFollowThisPostSender,
-  ] = useState(true);
 
   const { postDelete, postDeletionLoading } = usePostDelete();
   const [isThisPostDeleted, setIsThisPostDeleted] = useState(false);
@@ -125,11 +120,6 @@ export default function PostFront({
   const handleFollowOnPost = () => {
     // Follow
     follow(postFrontData.senderUsername, 1);
-    // Current User Update (locally)
-    setCurrentUserState((prev) => ({
-      ...prev,
-      followingCount: prev.followingCount + 1,
-    }));
 
     setPostSenderInformation((prev) => ({
       ...prev,
@@ -138,10 +128,8 @@ export default function PostFront({
   };
 
   useEffect(() => {
-    if (postFrontData) {
-      handleGetPostSenderData(postFrontData.senderUsername);
-    }
-  }, [postFrontData, currentUserState]);
+    handleGetPostSenderData(postFrontData.senderUsername);
+  }, [currentUserState.username]);
 
   // Skeleton Height Adjustment
   useEffect(() => {
@@ -238,7 +226,7 @@ export default function PostFront({
             onClick={handleFollowOnPost}
             hidden={
               !currentUserState.username ||
-              isCurrentUserFollowThisPostSender ||
+              postSenderInformation.followedByCurrentUser ||
               currentUserState.username == postFrontData.senderUsername ||
               router.asPath.includes("users")
             }

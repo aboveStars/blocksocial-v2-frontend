@@ -36,6 +36,7 @@ export default function PostItem({ postItemData }: Props) {
           likeCount: postItemData.likeCount,
           likeDocPath: `users/${postItemData.senderUsername}/posts/${postItemData.postDocId}`,
         }}
+        postSenderUsername={postItemData.senderUsername}
         openPanelNameSetter={setOpenPanelName}
         openPanelNameValue={openPanelName}
       />

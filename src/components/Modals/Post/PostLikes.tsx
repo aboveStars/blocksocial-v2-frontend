@@ -10,7 +10,7 @@ import {
   ModalOverlay,
   Spinner,
   Stack,
-  Text
+  Text,
 } from "@chakra-ui/react";
 import { doc, getDoc } from "firebase/firestore";
 import { SetStateAction, useEffect, useState } from "react";
@@ -23,12 +23,14 @@ type Props = {
   likeData: LikeData;
   openPanelNameSetter: React.Dispatch<SetStateAction<OpenPanelName>>;
   openPanelNameValue: OpenPanelName;
+  postSenderUsername: string;
 };
 
 export default function PostLikes({
   likeData,
   openPanelNameSetter,
   openPanelNameValue,
+  postSenderUsername,
 }: Props) {
   const [likeDatas, setLikeDatas] = useState<string[]>([]);
 
@@ -107,6 +109,7 @@ export default function PostLikes({
           <Stack gap={1} hidden={gettingLikes}>
             {likeDatas.map((w, i) => (
               <LikeItem
+                postSenderUsername={postSenderUsername}
                 likerUsername={w}
                 openPanelNameSetter={openPanelNameSetter}
                 key={i}

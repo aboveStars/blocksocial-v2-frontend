@@ -39,7 +39,7 @@ export default function FollowItem({
     username: "",
     fullname: "",
     profilePhoto: "",
-    followedByCurrentUser: false,
+    followedByCurrentUser: true,
   });
   const [gettingFollowItemState, setGettingFollowItemState] = useState(false);
 

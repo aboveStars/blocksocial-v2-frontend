@@ -21,18 +21,20 @@ import { OpenPanelName } from "../../types/Post";
 type Props = {
   likerUsername: string;
   openPanelNameSetter: React.Dispatch<SetStateAction<OpenPanelName>>;
+  postSenderUsername: string;
 };
 
 export default function LikeItem({
   likerUsername,
   openPanelNameSetter,
+  postSenderUsername,
 }: Props) {
   const [gettingLikerInformation, setGettingLikerInformation] = useState(false);
 
   const [likerUserInformation, setLikerUserInformation] = useState({
     likerFullname: "",
     likerProfilePhoto: "",
-    followedByCurrentUser: false,
+    followedByCurrentUser: true,
   });
 
   const [currentUserState, setCurrentUserState] =
@@ -54,13 +56,10 @@ export default function LikeItem({
       }));
       return;
     }
+
     // Follow
     follow(likerUsername, 1);
-    // Current User Update (locally)
-    setCurrentUserState((prev) => ({
-      ...prev,
-      followingCount: prev.followingCount + 1,
-    }));
+
     // update follow status
     setLikerUserInformation((prev) => ({
       ...prev,
@@ -168,6 +167,7 @@ export default function LikeItem({
           colorScheme="blue"
           onClick={handleFollowOnLikeItem}
           hidden={
+            postSenderUsername === likerUsername ||
             likerUserInformation.followedByCurrentUser ||
             !!!likerUserInformation.likerFullname ||
             likerUsername === currentUserState.username ||
@@ -175,6 +175,17 @@ export default function LikeItem({
           }
         >
           Follow
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          colorScheme="blue"
+          onClick={() => {
+            router.push(`/users/${postSenderUsername}`);
+          }}
+          hidden={postSenderUsername !== likerUsername}
+        >
+          Owner
         </Button>
       </Flex>
     </Flex>
