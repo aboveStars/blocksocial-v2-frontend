@@ -80,8 +80,16 @@ export default function Home() {
 
     // get current user followings
 
-    // this is empty array by default, so no need to check isThereCurrentUser
-    const currentUserFollowings: string[] = ["yunuskorkmaz"];
+    let currentUserFollowings: string[] = [];
+    if (currentUserState.isThereCurrentUser) {
+      const followingsDocsSnapshot = await getDocs(
+        collection(firestore, `users/${currentUserState.username}/followings`)
+      );
+      for (const doc of followingsDocsSnapshot.docs) {
+        currentUserFollowings.push(doc.id);
+      }
+    }
+
     const celebrities = await getCelebrities();
 
     if (currentUserFollowings.length === 0 && celebrities.length === 0) {

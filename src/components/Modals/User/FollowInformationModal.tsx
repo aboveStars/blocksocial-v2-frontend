@@ -49,6 +49,7 @@ export default function FollowInformationModal({
     for (const doc of followDataDocs) {
       tempFollowData.push(doc.id);
     }
+    setFollowData(tempFollowData)
   };
 
   return (

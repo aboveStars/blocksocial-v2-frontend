@@ -54,10 +54,12 @@ export default function PostFront({
   postFrontData,
   openPanelNameSetter,
 }: Props) {
-  const [postSenderProfilePhotoURL, setPostSenderProfilePhotoURL] =
-    useState("");
-
-  const [postSenderFullname, setPostSenderFullname] = useState("");
+  const [postSenderInformation, setPostSenderInformation] = useState({
+    username: postFrontData.senderUsername,
+    fullname: "",
+    profilePhoto: "",
+    followedByCurrentUser: false,
+  });
 
   const { like } = usePost();
 
@@ -98,9 +100,25 @@ export default function PostFront({
   const handleGetPostSenderData = async (username: string) => {
     const userDocRef = doc(firestore, `users/${username}`);
     const userDocSnapshot = await getDoc(userDocRef);
+
+    let currentUserFollowsThisPostSender = false;
+    if (currentUserState.isThereCurrentUser)
+      currentUserFollowsThisPostSender = (
+        await getDoc(
+          doc(
+            firestore,
+            `users/${currentUserState.username}/followings/${username}`
+          )
+        )
+      ).exists();
+
     if (userDocSnapshot.exists()) {
-      setPostSenderFullname(userDocSnapshot.data().fullname);
-      setPostSenderProfilePhotoURL(userDocSnapshot.data().profilePhoto);
+      setPostSenderInformation((prev) => ({
+        ...prev,
+        fullname: userDocSnapshot.data().fullname,
+        profilePhoto: userDocSnapshot.data().profilePhoto,
+        followedByCurrentUser: currentUserFollowsThisPostSender,
+      }));
     }
   };
 
@@ -112,26 +130,17 @@ export default function PostFront({
       ...prev,
       followingCount: prev.followingCount + 1,
     }));
+
+    setPostSenderInformation((prev) => ({
+      ...prev,
+      followedByCurrentUser: true,
+    }));
   };
 
   useEffect(() => {
     if (postFrontData) {
       handleGetPostSenderData(postFrontData.senderUsername);
     }
-  }, [postFrontData]);
-
-  /**
-   * I gave UID just because, I can not trust 'currentUserState'
-   * There is no UID usage in here so.
-   */
-  useEffect(() => {
-    if (!postFrontData || !currentUserState.uid) {
-      return;
-    }
-    // const followingStatus: boolean = currentUserState.followings.includes(
-    //   postFrontData.senderUsername
-    // );
-    // setIsCurrentUserFollowThisPostSender(followingStatus);
   }, [postFrontData, currentUserState]);
 
   // Skeleton Height Adjustment
@@ -154,12 +163,12 @@ export default function PostFront({
       >
         <Image
           alt=""
-          src={postSenderProfilePhotoURL}
+          src={postSenderInformation.profilePhoto}
           width="50px"
           height="50px"
           rounded="full"
           fallback={
-            postSenderProfilePhotoURL ? (
+            postSenderInformation.profilePhoto ? (
               <SkeletonCircle
                 width="50px"
                 height="50px"
@@ -207,9 +216,11 @@ export default function PostFront({
                 router.push(`/users/${postFrontData.senderUsername}`)
               }
             >
-              {postSenderFullname}
+              {postSenderInformation.fullname}
             </Text>
-            {!postSenderFullname && <SkeletonText noOfLines={1} width="50px" />}
+            {!postSenderInformation.fullname && (
+              <SkeletonText noOfLines={1} width="50px" />
+            )}
 
             <Icon as={BsDot} color="white" fontSize="13px" />
 

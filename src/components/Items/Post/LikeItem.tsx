@@ -32,6 +32,7 @@ export default function LikeItem({
   const [likerUserInformation, setLikerUserInformation] = useState({
     likerFullname: "",
     likerProfilePhoto: "",
+    followedByCurrentUser: false,
   });
 
   const [currentUserState, setCurrentUserState] =
@@ -41,7 +42,7 @@ export default function LikeItem({
   const { follow } = useFollow();
 
   useEffect(() => {
-    getPostSenderPhoto();
+    getLikerData();
   }, [likerUsername]);
 
   const handleFollowOnLikeItem = () => {
@@ -60,16 +61,34 @@ export default function LikeItem({
       ...prev,
       followingCount: prev.followingCount + 1,
     }));
+    // update follow status
+    setLikerUserInformation((prev) => ({
+      ...prev,
+      followedByCurrentUser: true,
+    }));
   };
 
-  const getPostSenderPhoto = async () => {
+  const getLikerData = async () => {
     setGettingLikerInformation(true);
-    const commentSenderDocRef = doc(firestore, `users/${likerUsername}`);
-    const commentDocSnapshot = await getDoc(commentSenderDocRef);
-    if (commentDocSnapshot.exists()) {
+    const likerDocRef = doc(firestore, `users/${likerUsername}`);
+    const likerDocSnapshot = await getDoc(likerDocRef);
+
+    let currentUserFollowsThisLiker = false;
+    if (currentUserState.isThereCurrentUser)
+      currentUserFollowsThisLiker = (
+        await getDoc(
+          doc(
+            firestore,
+            `users/${currentUserState.username}/followings/${likerUsername}`
+          )
+        )
+      ).exists();
+
+    if (likerDocSnapshot.exists()) {
       setLikerUserInformation({
-        likerFullname: commentDocSnapshot.data().fullname,
-        likerProfilePhoto: commentDocSnapshot.data().profilePhoto,
+        likerFullname: likerDocSnapshot.data().fullname,
+        likerProfilePhoto: likerDocSnapshot.data().profilePhoto,
+        followedByCurrentUser: currentUserFollowsThisLiker,
       });
     }
     setGettingLikerInformation(false);
@@ -149,6 +168,7 @@ export default function LikeItem({
           colorScheme="blue"
           onClick={handleFollowOnLikeItem}
           hidden={
+            likerUserInformation.followedByCurrentUser ||
             !!!likerUserInformation.likerFullname ||
             likerUsername === currentUserState.username ||
             router.asPath.includes(likerUsername)

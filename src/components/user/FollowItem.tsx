@@ -28,6 +28,7 @@ type FollowItemState = {
   username: string;
   fullname: string;
   profilePhoto?: string;
+  followedByCurrentUser: boolean;
 };
 
 export default function FollowItem({
@@ -38,6 +39,7 @@ export default function FollowItem({
     username: "",
     fullname: "",
     profilePhoto: "",
+    followedByCurrentUser: false,
   });
   const [gettingFollowItemState, setGettingFollowItemState] = useState(false);
 
@@ -64,15 +66,28 @@ export default function FollowItem({
       setFollowItemState({
         username: "NO USER",
         fullname: "NO USER",
+        followedByCurrentUser: false,
       });
       return;
     }
+
+    let currentUserFollowsThisFollowObject = false;
+    if (currentUserState.isThereCurrentUser)
+      currentUserFollowsThisFollowObject = (
+        await getDoc(
+          doc(
+            firestore,
+            `users/${currentUserState.username}/followings/${username}`
+          )
+        )
+      ).exists();
 
     const followItemStateServer: FollowItemState = {
       // We know username but if I download from server,I use it.
       username: followItemUserDocSnaphot.data().username,
       fullname: followItemUserDocSnaphot.data().fullname,
       profilePhoto: followItemUserDocSnaphot.data().profilePhoto,
+      followedByCurrentUser: currentUserFollowsThisFollowObject,
     };
 
     setFollowItemState(followItemStateServer);
@@ -94,6 +109,11 @@ export default function FollowItem({
     setCurrentUserState((prev) => ({
       ...prev,
       followingCount: prev.followingCount + 1,
+    }));
+    // update follow status
+    setFollowItemState((prev) => ({
+      ...prev,
+      followedByCurrentUser: true,
     }));
   };
 
@@ -146,6 +166,7 @@ export default function FollowItem({
           colorScheme="blue"
           onClick={handleFollowonFollowItem}
           hidden={
+            followItemState.followedByCurrentUser ||
             !!!followItemState.username ||
             followItemState.username === currentUserState.username
           }
