@@ -45,10 +45,7 @@ export default async function handler(
     if (!imageDataURL)
       return res.status(422).json({ error: "Invalid prop or props" });
 
-    const photoId = Date.now().toString();
-    const file = bucket.file(
-      `users/${operationFromUsername}/profilePhotos/${photoId}`
-    );
+    const file = bucket.file(`users/${operationFromUsername}/profilePhoto`);
     const buffer = Buffer.from(imageDataURL.split(",")[1], "base64");
 
     try {

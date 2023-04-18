@@ -9,7 +9,7 @@ import {
   InputGroup,
   InputRightElement,
   Spinner,
-  Text
+  Text,
 } from "@chakra-ui/react";
 
 import React, { useRef, useState } from "react";
@@ -24,6 +24,7 @@ import { AiOutlineCheckCircle } from "react-icons/ai";
 import { BiError } from "react-icons/bi";
 
 import ReCAPTCHA from "react-google-recaptcha";
+import useLoginOperations from "@/hooks/useLoginOperations";
 
 export default function SignUp() {
   const [signUpForm, setSignUpForm] = useState({
@@ -52,6 +53,8 @@ export default function SignUp() {
   const [error, setError] = useState("");
 
   const captchaRef = useRef<ReCAPTCHA>(null);
+
+  const { directLogin } = useLoginOperations();
 
   const isUserNameTaken = async (susUsername: string) => {
     if (!susUsername) return false;
@@ -150,17 +153,7 @@ export default function SignUp() {
       return console.error("Error while signup from 'signup' API", error);
     }
 
-    const newUserData: UserInServer = await response.json();
-    setAuthModalState((prev) => ({
-      ...prev,
-      open: false,
-    }));
-    const currentUserDataTemp: CurrentUser = {
-      ...newUserData,
-      loading: false,
-      isThereCurrentUser: true,
-    };
-    setCurrentUserState(currentUserDataTemp);
+    await directLogin(signUpForm.email, signUpForm.password);
     setSignUpLoading(false);
   };
 
