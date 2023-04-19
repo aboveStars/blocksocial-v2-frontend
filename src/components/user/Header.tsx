@@ -121,7 +121,9 @@ export default function Header({ userInformation }: Props) {
   useEffect(() => {
     setSelectedProfilePhoto("");
 
-    if (currentUserState.uid) {
+    setOstensibleUserInformation(userInformation);
+
+    if (currentUserState.isThereCurrentUser) {
       handleFollowStatus();
       if (currentUserState.uid == userInformation.uid) {
         setIsCurrentUserPage((prev) => true);
@@ -130,12 +132,13 @@ export default function Header({ userInformation }: Props) {
       }
     } else {
       if (currentUserState.loading) return;
+      setGettingFollowStatus(false);
       setIsCurrentUserPage((prev) => false);
     }
-  }, [userInformation, currentUserState.uid]);
+  }, [userInformation, currentUserState]);
 
   useEffect(() => {
-    const poorStatus: boolean = !!!(
+    const poorStatus: boolean = !(
       ostensibleUserInformation.profilePhoto || selectedProfilePhoto
     );
 
