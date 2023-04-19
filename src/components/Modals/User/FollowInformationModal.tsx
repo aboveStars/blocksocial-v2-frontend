@@ -1,6 +1,5 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { firestore } from "@/firebase/clientApp";
-
 import {
   Flex,
   Icon,
@@ -11,7 +10,7 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 
 import React, { SetStateAction, useEffect, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
@@ -47,7 +46,8 @@ export default function FollowInformationModal({
       firestore,
       `users/${userName}/${followInformationModalStateValue.modal}`
     );
-    const followDataDocs = (await getDocs(followDataCollection)).docs;
+    const q = query(followDataCollection, orderBy("followTime", "desc"));
+    const followDataDocs = (await getDocs(q)).docs;
 
     let tempFollowData: string[] = [];
     for (const doc of followDataDocs) {
