@@ -45,28 +45,23 @@ export default function PostComments({
   const [commentsDatasWithCommentDocPath, setCommentsDatasWithCommentDocPath] =
     useState<CommentDataWithCommentDocPath[]>([]);
 
-  const [currentComment, setCurrentComment] = useState("");
-
-  const { sendComment, commentSendLoading } = useSendComment();
+  const { sendComment } = useSendComment();
 
   const commentInputRef = useRef<HTMLInputElement>(null);
 
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
   const [gettingComments, setGettingComments] = useState(true);
+  const [commentSendLoading, setCommentSendLoading] = useState(false);
 
   useEffect(() => {
-    if (openPanelNameValue !== "comments") return;
-
-    if (commentsInfo.postCommentCount > 0) {
+    if (openPanelNameValue === "comments") {
       handleLoadComments();
-    } else {
-      setGettingComments(false);
-      setCommentsDatasWithCommentDocPath([]);
     }
   }, [openPanelNameValue]);
 
   const handleLoadComments = async () => {
+    console.log("HandleComments fired");
     setGettingComments(true);
 
     // get comment docs
@@ -126,7 +121,12 @@ export default function PostComments({
   };
 
   const handleSendComment = async () => {
+    if (!commentInputRef.current) return;
+
+    const currentComment = commentInputRef.current.value;
     if (currentComment.length === 0) return;
+
+    setCommentSendLoading(true);
 
     const newCommentDocPath = await sendComment(
       commentsInfo.postDocPath,
@@ -148,150 +148,151 @@ export default function PostComments({
 
     commentCountSetter((prev) => prev + 1);
 
-    setCurrentComment("");
     if (commentInputRef.current) commentInputRef.current.value = "";
+    setCommentSendLoading(false);
   };
 
   return (
-    <Modal
-      onClose={() => openPanelNameSetter("main")}
-      size={{
-        base: "full",
-        sm: "full",
-        md: "md",
-        lg: "md",
-      }}
-      isOpen={openPanelNameValue === "comments"}
-      autoFocus={false}
-    >
-      <ModalOverlay />
-      <ModalContent bg="black">
-        <Flex
-          position="sticky"
-          top="0"
-          px={6}
-          align="center"
-          justify="space-between"
-          height="50px"
-          bg="black"
-        >
-          <Text textColor="white" fontSize="17pt" fontWeight="700">
-            Comments
-          </Text>
+    <>
+      <Modal
+        onClose={() => openPanelNameSetter("main")}
+        size={{
+          base: "full",
+          sm: "full",
+          md: "md",
+          lg: "md",
+        }}
+        isOpen={openPanelNameValue === "comments"}
+        autoFocus={false}
+      >
+        <ModalOverlay />
+        <ModalContent bg="black">
+          <Flex
+            position="sticky"
+            top="0"
+            px={6}
+            align="center"
+            justify="space-between"
+            height="50px"
+            bg="black"
+          >
+            <Text textColor="white" fontSize="17pt" fontWeight="700">
+              Comments
+            </Text>
 
-          <Icon
-            as={AiOutlineClose}
-            color="white"
-            fontSize="15pt"
-            cursor="pointer"
-            onClick={() => openPanelNameSetter("main")}
-          />
-        </Flex>
+            <Icon
+              as={AiOutlineClose}
+              color="white"
+              fontSize="15pt"
+              cursor="pointer"
+              onClick={() => openPanelNameSetter("main")}
+            />
+          </Flex>
 
-        <ModalBody>
-          <Stack gap={1} hidden={gettingComments}>
-            {commentsDatasWithCommentDocPath.map((cdwcdi, i) => (
-              <CommentItem
-                key={`${cdwcdi.commentDocPath}${Date.now()}${i}`}
-                commentDataWithCommentDocId={cdwcdi}
-                openPanelNameSetter={openPanelNameSetter}
-                commentCountSetter={commentCountSetter}
-                commentsDatasWithCommentDocPathSetter={
-                  setCommentsDatasWithCommentDocPath
+          <ModalBody>
+            <Stack gap={1} hidden={gettingComments}>
+              {commentsDatasWithCommentDocPath.map((cdwcdi, i) => (
+                <CommentItem
+                  key={`${cdwcdi.commentDocPath}${Date.now()}${i}`}
+                  commentDataWithCommentDocId={cdwcdi}
+                  openPanelNameSetter={openPanelNameSetter}
+                  commentCountSetter={commentCountSetter}
+                  commentsDatasWithCommentDocPathSetter={
+                    setCommentsDatasWithCommentDocPath
+                  }
+                />
+              ))}
+            </Stack>
+            <Stack gap={1} hidden={!gettingComments}>
+              {Array.from(
+                { length: commentsInfo.postCommentCount },
+                (_, index) => (
+                  <CommentItemSkeleton key={index} />
+                )
+              )}
+            </Stack>
+            <Text
+              fontSize="10pt"
+              textColor="white"
+              hidden={
+                !(!gettingComments && commentsInfo.postCommentCount === 0)
+              }
+            >
+              No comments yet.
+            </Text>
+          </ModalBody>
+          <Flex
+            id="comment-send-area"
+            position="sticky"
+            bottom={2}
+            width="100%"
+            height="70px"
+            bg="black"
+            px={3}
+            hidden={!currentUserState.isThereCurrentUser}
+          >
+            <Flex align="center" width="100%" border="1px" rounded="full" p={2}>
+              <Image
+                alt=""
+                src={currentUserState.profilePhoto}
+                rounded="full"
+                width="50px"
+                height="50px"
+                fallback={
+                  currentUserState.profilePhoto ? (
+                    <Flex>
+                      <SkeletonCircle
+                        size="50px"
+                        startColor="gray.100"
+                        endColor="gray.800"
+                      />
+                    </Flex>
+                  ) : (
+                    <Icon
+                      as={CgProfile}
+                      color="white"
+                      height="50px"
+                      width="50px"
+                    />
+                  )
                 }
               />
-            ))}
-          </Stack>
-          <Stack gap={1} hidden={!gettingComments}>
-            {Array.from(
-              { length: commentsInfo.postCommentCount },
-              (_, index) => (
-                <CommentItemSkeleton key={index} />
-              )
-            )}
-          </Stack>
-          <Text
-            fontSize="10pt"
-            textColor="white"
-            hidden={!(!gettingComments && commentsInfo.postCommentCount === 0)}
-          >
-            No comments yet.
-          </Text>
-        </ModalBody>
-        <Flex
-          id="comment-send-area"
-          position="sticky"
-          bottom={2}
-          width="100%"
-          height="70px"
-          bg="black"
-          px={3}
-          hidden={!currentUserState.isThereCurrentUser}
-        >
-          <Flex align="center" width="100%" border="1px" rounded="full" p={2}>
-            <Image
-              alt=""
-              src={currentUserState.profilePhoto}
-              rounded="full"
-              width="50px"
-              height="50px"
-              fallback={
-                currentUserState.profilePhoto ? (
-                  <Flex>
-                    <SkeletonCircle
-                      size="50px"
-                      startColor="gray.100"
-                      endColor="gray.800"
-                    />
-                  </Flex>
-                ) : (
-                  <Icon
-                    as={CgProfile}
-                    color="white"
-                    height="50px"
-                    width="50px"
-                  />
-                )
-              }
-            />
-            <Input
-              ref={commentInputRef}
-              placeholder="Add a comment..."
-              _placeholder={{
-                fontSize: "10pt",
-              }}
-              textColor="white"
-              focusBorderColor="gray.900"
-              borderColor="gray.900"
-              _hover={{
-                borderColor: "gray.900",
-              }}
-              onChange={(event) => {
-                setCurrentComment(event.target.value);
-              }}
-              ml="3"
-              height="40px"
-              rounded="full"
-              isDisabled={commentSendLoading}
-            />
-            {commentSendLoading ? (
-              <Flex ml={2} mr={1}>
-                <Spinner color="white" />
-              </Flex>
-            ) : (
-              <Icon
-                as={AiOutlineSend}
-                color="white"
-                ml={2}
-                mr={1}
-                cursor="pointer"
-                fontSize="20pt"
-                onClick={handleSendComment}
+              <Input
+                ref={commentInputRef}
+                placeholder="Add a comment..."
+                _placeholder={{
+                  fontSize: "10pt",
+                }}
+                textColor="white"
+                focusBorderColor="gray.900"
+                borderColor="gray.900"
+                _hover={{
+                  borderColor: "gray.900",
+                }}
+                ml="3"
+                height="40px"
+                rounded="full"
+                isDisabled={commentSendLoading}
               />
-            )}
+              {commentSendLoading ? (
+                <Flex ml={2} mr={1}>
+                  <Spinner color="white" />
+                </Flex>
+              ) : (
+                <Icon
+                  as={AiOutlineSend}
+                  color="white"
+                  ml={2}
+                  mr={1}
+                  cursor="pointer"
+                  fontSize="20pt"
+                  onClick={handleSendComment}
+                />
+              )}
+            </Flex>
           </Flex>
-        </Flex>
-      </ModalContent>
-    </Modal>
+        </ModalContent>
+      </Modal>
+    </>
   );
 }
