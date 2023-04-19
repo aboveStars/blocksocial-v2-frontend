@@ -1,6 +1,5 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { firestore } from "@/firebase/clientApp";
-import useSortByUsername from "@/hooks/useSortByUsername";
 import {
   Flex,
   Icon,
@@ -34,8 +33,6 @@ export default function PostLikes({
 }: Props) {
   const [likeDatas, setLikeDatas] = useState<string[]>([]);
 
-  const { sortLikesByUsername } = useSortByUsername();
-
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
   const [gettingLikes, setGettingLikes] = useState(true);
@@ -54,18 +51,19 @@ export default function PostLikes({
       return;
     }
 
-    let tempLikeDatas = likeDoc.data().whoLiked;
+    let finalLikeDatas: string[] = likeDoc.data().whoLiked;
 
-    if (tempLikeDatas.includes(currentUserState.username)) {
-      const sortedWhoLiked = sortLikesByUsername(
-        tempLikeDatas,
-        currentUserState.username
+    if (currentUserState.isThereCurrentUser) {
+      const filtered = finalLikeDatas.filter(
+        (a) => a !== currentUserState.username
       );
 
-      tempLikeDatas = sortedWhoLiked;
+      filtered.unshift(currentUserState.username);
+
+      finalLikeDatas = filtered;
     }
 
-    setLikeDatas(tempLikeDatas);
+    setLikeDatas(finalLikeDatas);
     setGettingLikes(false);
   };
 
@@ -112,7 +110,7 @@ export default function PostLikes({
                 postSenderUsername={postSenderUsername}
                 likerUsername={w}
                 openPanelNameSetter={openPanelNameSetter}
-                key={i}
+                key={`${w}${Date.now()}`}
               />
             ))}
           </Stack>

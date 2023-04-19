@@ -1,6 +1,6 @@
 import { firestore } from "@/firebase/clientApp";
 import useSendComment from "@/hooks/useSendComment";
-import useSortByUsername from "@/hooks/useSortByUsername";
+
 import {
   Flex,
   Icon,
@@ -55,8 +55,6 @@ export default function PostComments({
 
   const [gettingComments, setGettingComments] = useState(true);
 
-  const { sortCommentsByUsername } = useSortByUsername();
-
   useEffect(() => {
     if (openPanelNameValue !== "comments") return;
 
@@ -97,18 +95,30 @@ export default function PostComments({
       commentDatasWithCommentDocPathArray.push(commentDataObject);
     });
 
-    // Sorts if there is a current user
+    let finalCommentDatasWithCommentDocPathArray: CommentDataWithCommentDocPath[] =
+      commentDatasWithCommentDocPathArray;
+
+    // Don't need to control if this user commented
     if (currentUserState.isThereCurrentUser) {
-      const sortedCommentDatasWithCommentDocPathArray = sortCommentsByUsername(
-        commentDatasWithCommentDocPathArray,
-        currentUserState.username
+      const currentUserCommentObjects =
+        finalCommentDatasWithCommentDocPathArray.filter(
+          (a) => a.commentSenderUsername === currentUserState.username
+        );
+
+      const filtered = finalCommentDatasWithCommentDocPathArray.filter(
+        (a) => a.commentSenderUsername !== currentUserState.username
       );
 
-      setCommentsDatasWithCommentDocPath(
-        sortedCommentDatasWithCommentDocPathArray
-      );
-    } else
-      setCommentsDatasWithCommentDocPath(commentDatasWithCommentDocPathArray);
+      for (const a of currentUserCommentObjects) {
+        filtered.unshift(a);
+      }
+
+      finalCommentDatasWithCommentDocPathArray = filtered;
+    }
+
+    setCommentsDatasWithCommentDocPath(
+      finalCommentDatasWithCommentDocPathArray
+    );
 
     setGettingComments(false);
   };
@@ -180,7 +190,7 @@ export default function PostComments({
           <Stack gap={1} hidden={gettingComments}>
             {commentsDatasWithCommentDocPath.map((cdwcdi, i) => (
               <CommentItem
-                key={i}
+                key={`${cdwcdi.commentSenderUsername}${Date.now()}`}
                 commentDataWithCommentDocId={cdwcdi}
                 openPanelNameSetter={openPanelNameSetter}
                 commentCountSetter={commentCountSetter}

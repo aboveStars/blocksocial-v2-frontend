@@ -1,4 +1,6 @@
+import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { firestore } from "@/firebase/clientApp";
+
 import {
   Flex,
   Icon,
@@ -13,6 +15,7 @@ import { collection, getDocs } from "firebase/firestore";
 
 import React, { SetStateAction, useEffect, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
+import { useRecoilValue } from "recoil";
 import FollowItem from "../../user/FollowItem";
 import { FollowingsFollowersModalType } from "../../user/Header";
 
@@ -33,6 +36,7 @@ export default function FollowInformationModal({
    * Both for followers and followings
    */
   const [followData, setFollowData] = useState<string[]>([]);
+  const currentUserState = useRecoilValue(currentUserStateAtom);
 
   useEffect(() => {
     handleFollowData();
@@ -49,7 +53,17 @@ export default function FollowInformationModal({
     for (const doc of followDataDocs) {
       tempFollowData.push(doc.id);
     }
-    setFollowData(tempFollowData)
+
+    let finalFollowData: string[] = tempFollowData;
+    if (currentUserState.isThereCurrentUser) {
+      const filtered = finalFollowData.filter(
+        (a) => a !== currentUserState.username
+      );
+
+      filtered.unshift(currentUserState.username);
+      finalFollowData = filtered;
+    }
+    setFollowData(finalFollowData);
   };
 
   return (
@@ -108,7 +122,7 @@ export default function FollowInformationModal({
           <Stack gap={2}>
             {followData.map((f) => (
               <FollowItem
-                key={f}
+                key={`${f}${Date.now()}`}
                 username={f}
                 followingsFollowersModalStateSetter={
                   followInformationModalStateSetter

@@ -32,7 +32,6 @@ import { useRecoilState, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
 import { defaultCurrentUserState, UserInServer } from "../types/User";
 
-import useSortByUsername from "@/hooks/useSortByUsername";
 import FollowInformationModal from "../Modals/User/FollowInformationModal";
 import ProfilePhotoUpdateModal from "../Modals/User/ProfilePhotoUpdateModal";
 
@@ -95,9 +94,6 @@ export default function Header({ userInformation }: Props) {
     useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const { sortFollowersByUsername, sortFollowingsByUsername } =
-    useSortByUsername();
 
   const [nftAdministrationPanelShow, setNftAdministrationPanelShow] =
     useState(false);
