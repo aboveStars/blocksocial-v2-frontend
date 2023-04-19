@@ -56,12 +56,14 @@ export default function FollowInformationModal({
 
     let finalFollowData: string[] = tempFollowData;
     if (currentUserState.isThereCurrentUser) {
-      const filtered = finalFollowData.filter(
-        (a) => a !== currentUserState.username
-      );
+      if (finalFollowData.includes(currentUserState.username)) {
+        const filtered = finalFollowData.filter(
+          (a) => a !== currentUserState.username
+        );
 
-      filtered.unshift(currentUserState.username);
-      finalFollowData = filtered;
+        filtered.unshift(currentUserState.username);
+        finalFollowData = filtered;
+      }
     }
     setFollowData(finalFollowData);
   };

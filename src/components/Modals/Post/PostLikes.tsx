@@ -54,13 +54,15 @@ export default function PostLikes({
     let finalLikeDatas: string[] = likeDoc.data().whoLiked;
 
     if (currentUserState.isThereCurrentUser) {
-      const filtered = finalLikeDatas.filter(
-        (a) => a !== currentUserState.username
-      );
+      if (finalLikeDatas.includes(currentUserState.username)) {
+        const filtered = finalLikeDatas.filter(
+          (a) => a !== currentUserState.username
+        );
 
-      filtered.unshift(currentUserState.username);
+        filtered.unshift(currentUserState.username);
 
-      finalLikeDatas = filtered;
+        finalLikeDatas = filtered;
+      }
     }
 
     setLikeDatas(finalLikeDatas);

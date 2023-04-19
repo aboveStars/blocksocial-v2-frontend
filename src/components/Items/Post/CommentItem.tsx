@@ -1,7 +1,14 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { firestore } from "@/firebase/clientApp";
 import useCommentDelete from "@/hooks/useCommentDelete";
-import { Flex, Icon, Image, SkeletonCircle, Text } from "@chakra-ui/react";
+import {
+  Flex,
+  Icon,
+  Image,
+  SkeletonCircle,
+  Spinner,
+  Text,
+} from "@chakra-ui/react";
 import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
@@ -37,11 +44,13 @@ export default function CommentItem({
 
   const { commentDelete } = useCommentDelete();
 
+  const [commentDeleteLoading, setCommentDeleteLoading] = useState(false);
+
   useEffect(() => {
-    getPostSenderPhoto();
+    getCommentSenderPhoto();
   }, [commentDataWithCommentDocId]);
 
-  const getPostSenderPhoto = async () => {
+  const getCommentSenderPhoto = async () => {
     setGettingCommentSenderPhoto(true);
     const commentSenderDocRef = doc(
       firestore,
@@ -52,6 +61,18 @@ export default function CommentItem({
       setCommentSenderPhoto(commentDocSnapshot.data().profilePhoto);
     }
     setGettingCommentSenderPhoto(false);
+  };
+
+  const handleDeleteComment = async () => {
+    setCommentDeleteLoading(true);
+    await commentDelete(commentDataWithCommentDocId.commentDocPath);
+    commentsDatasWithCommentDocPathSetter((prev) =>
+      prev.filter(
+        (a) => a.commentDocPath !== commentDataWithCommentDocId.commentDocPath
+      )
+    );
+    commentCountSetter((prev) => prev - 1);
+    setCommentDeleteLoading(false);
   };
 
   return (
@@ -130,22 +151,18 @@ export default function CommentItem({
           currentUserState.username
         }
       >
-        <Icon
-          as={BsTrash}
-          color="red.700"
-          cursor="pointer"
-          onClick={async () => {
-            commentDelete(commentDataWithCommentDocId.commentDocPath);
-            commentsDatasWithCommentDocPathSetter((prev) =>
-              prev.filter(
-                (a) =>
-                  a.commentDocPath !==
-                  commentDataWithCommentDocId.commentDocPath
-              )
-            );
-            commentCountSetter((prev) => prev - 1);
-          }}
-        />
+        {commentDeleteLoading ? (
+          <Flex>
+            <Spinner color="white" />
+          </Flex>
+        ) : (
+          <Icon
+            as={BsTrash}
+            color="red.700"
+            cursor="pointer"
+            onClick={handleDeleteComment}
+          />
+        )}
       </Flex>
     </Flex>
   );

@@ -105,15 +105,17 @@ export default function PostComments({
           (a) => a.commentSenderUsername === currentUserState.username
         );
 
-      const filtered = finalCommentDatasWithCommentDocPathArray.filter(
-        (a) => a.commentSenderUsername !== currentUserState.username
-      );
+      if (currentUserCommentObjects.length !== 0) {
+        const filtered = finalCommentDatasWithCommentDocPathArray.filter(
+          (a) => a.commentSenderUsername !== currentUserState.username
+        );
 
-      for (const a of currentUserCommentObjects) {
-        filtered.unshift(a);
+        for (const a of currentUserCommentObjects) {
+          filtered.unshift(a);
+        }
+
+        finalCommentDatasWithCommentDocPathArray = filtered;
       }
-
-      finalCommentDatasWithCommentDocPathArray = filtered;
     }
 
     setCommentsDatasWithCommentDocPath(
@@ -190,7 +192,7 @@ export default function PostComments({
           <Stack gap={1} hidden={gettingComments}>
             {commentsDatasWithCommentDocPath.map((cdwcdi, i) => (
               <CommentItem
-                key={`${cdwcdi.commentSenderUsername}${Date.now()}`}
+                key={`${cdwcdi.commentDocPath}${Date.now()}`}
                 commentDataWithCommentDocId={cdwcdi}
                 openPanelNameSetter={openPanelNameSetter}
                 commentCountSetter={commentCountSetter}
