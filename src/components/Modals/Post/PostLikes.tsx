@@ -112,7 +112,7 @@ export default function PostLikes({
                 postSenderUsername={postSenderUsername}
                 likerUsername={w}
                 openPanelNameSetter={openPanelNameSetter}
-                key={`${w}${Date.now()}`}
+                key={`${w}${Date.now()}${i}`}
               />
             ))}
           </Stack>

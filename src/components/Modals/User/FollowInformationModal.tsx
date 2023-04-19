@@ -122,9 +122,9 @@ export default function FollowInformationModal({
 
         <ModalBody>
           <Stack gap={2}>
-            {followData.map((f) => (
+            {followData.map((f, i) => (
               <FollowItem
-                key={`${f}${Date.now()}`}
+                key={`${f}${Date.now()}${i}`}
                 username={f}
                 followingsFollowersModalStateSetter={
                   followInformationModalStateSetter

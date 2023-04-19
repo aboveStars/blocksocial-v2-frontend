@@ -20,11 +20,11 @@ export default function Posts({ postsItemDatas }: Props) {
           Array.from({ length: 1 }, (_, index) => <PostSkeleton key={index} />)
         ) : (
           <>
-            {postsItemDatas.map((postItemData) => (
+            {postsItemDatas.map((postItemData, i) => (
               <PostItem
                 key={`${postItemData.senderUsername}/${
                   postItemData.postDocId
-                }/${Date.now()}`}
+                }/${Date.now()}${i}`}
                 postItemData={postItemData}
               />
             ))}

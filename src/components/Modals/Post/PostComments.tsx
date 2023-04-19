@@ -192,7 +192,7 @@ export default function PostComments({
           <Stack gap={1} hidden={gettingComments}>
             {commentsDatasWithCommentDocPath.map((cdwcdi, i) => (
               <CommentItem
-                key={`${cdwcdi.commentDocPath}${Date.now()}`}
+                key={`${cdwcdi.commentDocPath}${Date.now()}${i}`}
                 commentDataWithCommentDocId={cdwcdi}
                 openPanelNameSetter={openPanelNameSetter}
                 commentCountSetter={commentCountSetter}
