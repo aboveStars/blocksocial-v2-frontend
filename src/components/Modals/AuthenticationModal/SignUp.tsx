@@ -9,7 +9,7 @@ import {
   InputGroup,
   InputRightElement,
   Spinner,
-  Text
+  Text,
 } from "@chakra-ui/react";
 
 import React, { useRef, useState } from "react";
@@ -105,7 +105,7 @@ export default function SignUp() {
       setError("Fullname is invalid");
       return;
     }
-    const usernameRegex = /^[a-z0-9]{3,18}$/;
+    const usernameRegex = /^[a-z0-9]{3,20}$/;
     if (!usernameRegex.test(signUpForm.username)) {
       setUserNameRight(false);
       setSignUpLoading(false);
@@ -191,7 +191,7 @@ export default function SignUp() {
       if (!zeroFlag) {
         setUsernameLowercaseValue(event.target.value.toLowerCase());
         let regexFailFlag = false;
-        const usernameRegex = /^[a-z0-9]{3,18}$/;
+        const usernameRegex = /^[a-z0-9]{3,20}$/;
 
         if (!usernameRegex.test(event.target.value.toLowerCase())) {
           setUserNameRight(false);
