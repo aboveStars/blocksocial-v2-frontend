@@ -47,7 +47,7 @@ export default async function handler(
   if (!fullnameRegex.test(fullname)) {
     return res.status(422).json({ error: "Invalid Fullname" });
   }
-  const usernameRegex = /^[a-z0-9]+$/;
+  const usernameRegex = /^[a-z0-9]{3,18}$/;
   if (!usernameRegex.test(username)) {
     return res.status(422).json({ error: "Invalid Username" });
   }

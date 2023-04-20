@@ -9,7 +9,7 @@ import {
   InputGroup,
   InputRightElement,
   Spinner,
-  Text,
+  Text
 } from "@chakra-ui/react";
 
 import React, { useRef, useState } from "react";
@@ -17,14 +17,13 @@ import React, { useRef, useState } from "react";
 import { useSetRecoilState } from "recoil";
 
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
-import { CurrentUser, UserInServer } from "@/components/types/User";
 import { firestore } from "@/firebase/clientApp";
 import { doc, getDoc } from "firebase/firestore";
 import { AiOutlineCheckCircle } from "react-icons/ai";
 import { BiError } from "react-icons/bi";
 
-import ReCAPTCHA from "react-google-recaptcha";
 import useLoginOperations from "@/hooks/useLoginOperations";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function SignUp() {
   const [signUpForm, setSignUpForm] = useState({
@@ -106,7 +105,7 @@ export default function SignUp() {
       setError("Fullname is invalid");
       return;
     }
-    const usernameRegex = /^[a-z0-9]+$/;
+    const usernameRegex = /^[a-z0-9]{3,18}$/;
     if (!usernameRegex.test(signUpForm.username)) {
       setUserNameRight(false);
       setSignUpLoading(false);
@@ -192,7 +191,7 @@ export default function SignUp() {
       if (!zeroFlag) {
         setUsernameLowercaseValue(event.target.value.toLowerCase());
         let regexFailFlag = false;
-        const usernameRegex = /^[a-z0-9_]{3,18}$/;
+        const usernameRegex = /^[a-z0-9]{3,18}$/;
 
         if (!usernameRegex.test(event.target.value.toLowerCase())) {
           setUserNameRight(false);
