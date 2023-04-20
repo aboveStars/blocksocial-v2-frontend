@@ -15,7 +15,10 @@ export default async function handler(
     return res.status(200).json({ status: "Request by Server-Warmer" });
   }
 
+  return res.status(503).json({ error: "server in maintenance" });
+
   let decodedToken: DecodedIdToken;
+
   try {
     decodedToken = await verifyToken(authorization as string);
   } catch (error) {
