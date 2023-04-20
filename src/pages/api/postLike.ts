@@ -15,10 +15,7 @@ export default async function handler(
     return res.status(200).json({ status: "Request by Server-Warmer" });
   }
 
-  return res.status(503).json({ error: "server in maintenance" });
-
   let decodedToken: DecodedIdToken;
-
   try {
     decodedToken = await verifyToken(authorization as string);
   } catch (error) {
@@ -36,8 +33,30 @@ export default async function handler(
 
   if (req.method !== "POST") return res.status(405).json("Method not allowed");
 
-  if (!opCode || !postDocPath || !operationFromUsername) {
+  if (
+    (opCode !== 1 && opCode !== -1) ||
+    !postDocPath ||
+    !operationFromUsername
+  ) {
     return res.status(422).json({ error: "Invalid prop or props" });
+  }
+
+  const operationFromHaveLikeAlready: boolean = (
+    await firestore.doc(`${postDocPath}/likes/${operationFromUsername}`).get()
+  ).exists;
+
+  if (opCode === 1) {
+    if (operationFromHaveLikeAlready) {
+      console.error("Error while like operation. (Detected already liked.)");
+      return res.status(422).json({ error: "Invalid prop or props" });
+    }
+  } else {
+    if (!operationFromHaveLikeAlready) {
+      console.error(
+        "Error while follow operation. (Detected already not-liked.)"
+      );
+      return res.status(422).json({ error: "Invalid prop or props" });
+    }
   }
 
   try {
@@ -50,14 +69,20 @@ export default async function handler(
   }
 
   try {
-    await firestore.doc(postDocPath).update({
-      whoLiked:
-        opCode === 1
-          ? fieldValue.arrayUnion(operationFromUsername)
-          : fieldValue.arrayRemove(operationFromUsername),
-    });
+    if (opCode === 1) {
+      await firestore.doc(`${postDocPath}/likes/${operationFromUsername}`).set({
+        likeTime: Date.now(),
+      });
+    } else {
+      await firestore
+        .doc(`${postDocPath}/likes/${operationFromUsername}`)
+        .delete();
+    }
   } catch (error) {
-    console.error("Error while like operation, we were on increment", error);
+    console.error(
+      "Error while like operation, we were creating or deleting new like doc.",
+      error
+    );
     return res.status(503).json({ error: "Firebase error" });
   }
 

@@ -9,7 +9,6 @@ export type PostServerData = {
   description: string;
   image: string;
   likeCount: number;
-  whoLiked: string[];
   commentCount: number;
 
   nftUrl?: string;
@@ -24,8 +23,6 @@ export type PostItemData = {
   image: string;
 
   likeCount: number;
-  whoLiked: string[];
-
   commentCount: number;
 
   postDocId: string;
@@ -42,8 +39,7 @@ export type PostFrontData = {
   image: string;
 
   likeCount: number;
-  whoLiked: string[];
-
+  currentUserLikedThisPost : boolean
   commentCount: number;
 
   postDocId: string;
@@ -80,7 +76,7 @@ export type OpenPanelName = "main" | "comments" | "likes" | "nft";
 
 export type LikeData = {
   likeCount: number;
-  likeDocPath: string;
+  likeColPath: string;
 };
 
 export type SendNftStatus =

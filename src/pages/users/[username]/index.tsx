@@ -150,7 +150,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       image: doc.data().image,
 
       likeCount: doc.data().likeCount,
-      whoLiked: doc.data().whoLiked,
 
       postDocId: doc.id,
 

@@ -135,7 +135,6 @@ export default function Home() {
           image: doc.data().image,
 
           likeCount: doc.data().likeCount,
-          whoLiked: doc.data().whoLiked,
 
           postDocId: doc.id,
 

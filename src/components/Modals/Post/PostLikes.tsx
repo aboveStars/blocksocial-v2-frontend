@@ -11,7 +11,7 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { SetStateAction, useEffect, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 import { useRecoilValue } from "recoil";
@@ -43,15 +43,18 @@ export default function PostLikes({
 
   const getLikes = async () => {
     setGettingLikes(true);
-    const likeDocRef = doc(firestore, likeData.likeDocPath);
-    const likeDoc = await getDoc(likeDocRef);
-    if (!likeDoc.exists()) {
-      console.log("Post Not Found");
-      setGettingLikes(false);
-      return;
+    const likesCol = collection(firestore, likeData.likeColPath);
+    const likesDocs = (await getDocs(likesCol)).docs;
+    if (likesDocs.length === 0) {
+      console.log("No-Like-Found");
+      return setGettingLikes(false);
     }
 
-    let finalLikeDatas: string[] = likeDoc.data().whoLiked;
+    let finalLikeDatas: string[] = [];
+
+    for (const liker of likesDocs) {
+      finalLikeDatas.push(liker.id);
+    }
 
     if (currentUserState.isThereCurrentUser) {
       if (finalLikeDatas.includes(currentUserState.username)) {

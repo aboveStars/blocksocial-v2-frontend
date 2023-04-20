@@ -141,6 +141,8 @@ export default function PostFront({
     setFollowOperationLoading(false);
   };
 
+  const [likeOperationLoading, setLikeOperationLoading] = useState(false);
+
   useEffect(() => {
     handleGetPostSenderData(postFrontData.senderUsername);
   }, [currentUserState.username]);
@@ -150,6 +152,35 @@ export default function PostFront({
     if (imageSkeletonRef.current)
       imageSkeletonRef.current.style.height = `${imageSkeletonRef.current?.clientWidth}px`;
   }, []);
+
+  const handleLike = async (opCode: number) => {
+    if (!currentUserState.username) {
+      console.log("Only Users can like");
+      setAuthModalState((prev) => ({
+        ...prev,
+        open: true,
+        view: "logIn",
+      }));
+      return;
+    }
+
+    if (likeOperationLoading) return;
+
+    setLikeOperationLoading(true);
+
+    setOstensiblePostData((prev) => ({
+      ...prev,
+      likeCount: prev.likeCount + opCode,
+      currentUserLikedThisPost: opCode === 1 ? true : false,
+    }));
+
+    await like(
+      `users/${postFrontData.senderUsername}/posts/${postFrontData.postDocId}`,
+      opCode
+    );
+
+    setLikeOperationLoading(false);
+  };
 
   return (
     <>
@@ -361,27 +392,13 @@ export default function PostFront({
           <Flex>
             <Flex gap={3} p={2}>
               <Flex gap="1">
-                {ostensiblePostData.whoLiked.includes(
-                  currentUserState.username
-                ) ? (
+                {ostensiblePostData.currentUserLikedThisPost ? (
                   <Icon
                     as={AiFillHeart}
                     color="red"
                     fontSize="25px"
                     cursor="pointer"
-                    onClick={() => {
-                      like(
-                        `users/${postFrontData.senderUsername}/posts/${postFrontData.postDocId}`,
-                        -1
-                      );
-                      setOstensiblePostData((prev) => ({
-                        ...prev,
-                        likeCount: prev.likeCount - 1,
-                        whoLiked: prev.whoLiked.filter(
-                          (wL) => wL !== currentUserState.username
-                        ),
-                      }));
-                    }}
+                    onClick={() => handleLike(-1)}
                   />
                 ) : (
                   <Icon
@@ -389,28 +406,7 @@ export default function PostFront({
                     color="white"
                     fontSize="25px"
                     cursor="pointer"
-                    onClick={() => {
-                      if (!currentUserState.username) {
-                        console.log("Only Users can like");
-                        setAuthModalState((prev) => ({
-                          ...prev,
-                          open: true,
-                          view: "logIn",
-                        }));
-                        return;
-                      }
-                      like(
-                        `users/${postFrontData.senderUsername}/posts/${postFrontData.postDocId}`,
-                        1
-                      );
-                      setOstensiblePostData((prev) => ({
-                        ...prev,
-                        likeCount: prev.likeCount + 1,
-                        whoLiked: prev.whoLiked.concat(
-                          currentUserState.username
-                        ),
-                      }));
-                    }}
+                    onClick={() => handleLike(1)}
                   />
                 )}
 

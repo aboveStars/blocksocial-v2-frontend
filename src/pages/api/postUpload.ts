@@ -81,7 +81,6 @@ export default async function handler(
     description: description,
     image: postImagePublicURL,
     likeCount: 0,
-    whoLiked: [],
     commentCount: 0,
     nftUrl: "",
     creationTime: Date.now(),

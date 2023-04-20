@@ -16,7 +16,6 @@ import React, { useRef, useState } from "react";
 
 import { useSetRecoilState } from "recoil";
 
-import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { firestore } from "@/firebase/clientApp";
 import { doc, getDoc } from "firebase/firestore";
 import { AiOutlineCheckCircle } from "react-icons/ai";
@@ -47,7 +46,6 @@ export default function SignUp() {
 
   const [emailRight, setEmailRight] = useState(true);
 
-  const setCurrentUserState = useSetRecoilState(currentUserStateAtom);
   const [signUpLoading, setSignUpLoading] = useState(false);
   const [error, setError] = useState("");
 
