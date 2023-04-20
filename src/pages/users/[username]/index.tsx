@@ -1,3 +1,4 @@
+import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
 import UserPageLayout from "@/components/Layout/UserPageLayout";
 
@@ -17,7 +18,7 @@ import {
 import { GetServerSidePropsContext } from "next";
 
 import { useEffect, useState } from "react";
-import { useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 type Props = {
   userInformation: UserInServer | undefined;
@@ -28,13 +29,49 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
   const [innerHeight, setInnerHeight] = useState("");
 
   const setPostStatus = useSetRecoilState(postsStatusAtom);
+  const currentUserState = useRecoilValue(currentUserStateAtom);
 
-  useEffect(() => {
-    setInnerHeight(`${window.innerHeight}px`);
+  const [reviewedPostDatas, setReviewedPostDatas] = useState(postItemDatas);
+
+  const handleLikeStatus = async () => {
+    let reviewedPostDatasTemp: PostItemData[] = [];
+    for (const post of postItemDatas) {
+      let tempCurrentUserLikedThisPost = false;
+
+      tempCurrentUserLikedThisPost = (
+        await getDoc(
+          doc(
+            firestore,
+            `users/${post.senderUsername}/posts/${post.postDocId}/likes/${currentUserState.username}`
+          )
+        )
+      ).exists();
+
+      const reviewedPostData: PostItemData = {
+        ...post,
+        currentUserLikedThisPost: tempCurrentUserLikedThisPost,
+      };
+
+      reviewedPostDatasTemp.push(reviewedPostData);
+    }
+    setReviewedPostDatas(reviewedPostDatasTemp);
     setPostStatus({
       loading: false,
     });
-  }, []);
+  };
+
+  useEffect(() => {
+    setInnerHeight(`${window.innerHeight}px`);
+  }, [currentUserState]);
+
+  useEffect(() => {
+    if (currentUserState.isThereCurrentUser) handleLikeStatus();
+  }, [currentUserState]);
+
+  useEffect(() => {
+    setPostStatus({ loading: true });
+    handleLikeStatus();
+  }, [postItemDatas]);
 
   if (!userInformation) {
     return (
@@ -54,7 +91,7 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
   return (
     <UserPageLayout
       userInformation={userInformation}
-      postItemsDatas={postItemDatas}
+      postItemsDatas={reviewedPostDatas}
     />
   );
 }
@@ -128,7 +165,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   let userPostDatasSnapshot;
   try {
-    userPostDatasSnapshot = await getDocs(userPostDatasQuery);
+    userPostDatasSnapshot = (await getDocs(userPostDatasQuery)).docs;
   } catch (error) {
     console.error(
       "Error while creating userpage. (We were getting user's posts)"
@@ -142,26 +179,28 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const tempPostDatas: PostItemData[] = [];
-  userPostDatasSnapshot.forEach((doc) => {
+
+  for (const postDoc of userPostDatasSnapshot) {
     const postObject: PostItemData = {
-      senderUsername: doc.data().senderUsername,
+      senderUsername: postDoc.data().senderUsername,
 
-      description: doc.data().description,
-      image: doc.data().image,
+      description: postDoc.data().description,
+      image: postDoc.data().image,
 
-      likeCount: doc.data().likeCount,
+      likeCount: postDoc.data().likeCount,
+      currentUserLikedThisPost: false,
 
-      postDocId: doc.id,
+      postDocId: postDoc.id,
 
-      commentCount: doc.data().commentCount,
+      commentCount: postDoc.data().commentCount,
 
-      nftUrl: doc.data().nftUrl,
-      creationTime: doc.data().creationTime,
+      nftUrl: postDoc.data().nftUrl,
+      creationTime: postDoc.data().creationTime,
     };
-    const serializablePostObject: PostItemData = postObject;
 
-    tempPostDatas.push(serializablePostObject);
-  });
+    tempPostDatas.push(postObject);
+  }
+
   postItemDatas = tempPostDatas;
 
   return {

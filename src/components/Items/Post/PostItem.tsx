@@ -21,14 +21,7 @@ export default function PostItem({ postItemData }: Props) {
 
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
-  const [currentUserLikedThisPost, setCurrentUserLikedThisPost] =
-    useState(false);
-
-  const [gettingLikeStatus, setGettingLikeStatus] = useState(true);
-
   const handlePostInformationForCurrentUser = async () => {
-    setGettingLikeStatus(true);
-
     let tempCurrentUserLikedThisPost: boolean = false;
 
     tempCurrentUserLikedThisPost = (
@@ -45,56 +38,41 @@ export default function PostItem({ postItemData }: Props) {
       " liked this post : ",
       tempCurrentUserLikedThisPost
     );
-    setCurrentUserLikedThisPost(tempCurrentUserLikedThisPost);
-    setGettingLikeStatus(false);
   };
-
-  useEffect(() => {
-    console.log("useEffect fired.In post item");
-    if (currentUserState.isThereCurrentUser) {
-      console.log("There is a current user. We chek if there is like");
-      handlePostInformationForCurrentUser();
-    }
-  }, [currentUserState]);
 
   return (
     <>
-      {!gettingLikeStatus && (
-        <>
-          <PostFront
-            postFrontData={{
-              ...postItemData,
-              commentCount: commentCount,
-              currentUserLikedThisPost: currentUserLikedThisPost,
-            }}
-            openPanelNameSetter={setOpenPanelName}
-            commentCountSetter={setCommentCount}
-          />
-          <PostComments
-            commentsInfo={{
-              postDocPath: `users/${postItemData.senderUsername}/posts/${postItemData.postDocId}`,
-              postCommentCount: commentCount,
-            }}
-            openPanelNameSetter={setOpenPanelName}
-            openPanelNameValue={openPanelName}
-            commentCountSetter={setCommentCount}
-          />
-          <PostLikes
-            likeData={{
-              likeCount: postItemData.likeCount,
-              likeColPath: `users/${postItemData.senderUsername}/posts/${postItemData.postDocId}/likes`,
-            }}
-            postSenderUsername={postItemData.senderUsername}
-            openPanelNameSetter={setOpenPanelName}
-            openPanelNameValue={openPanelName}
-          />
-          <PostMakeNFT
-            openPanelNameValue={openPanelName}
-            openPanelNameValueSetter={setOpenPanelName}
-            postInformation={postItemData}
-          />
-        </>
-      )}
+      <PostFront
+        postFrontData={{
+          ...postItemData,
+          commentCount: commentCount,
+        }}
+        openPanelNameSetter={setOpenPanelName}
+        commentCountSetter={setCommentCount}
+      />
+      <PostComments
+        commentsInfo={{
+          postDocPath: `users/${postItemData.senderUsername}/posts/${postItemData.postDocId}`,
+          postCommentCount: commentCount,
+        }}
+        openPanelNameSetter={setOpenPanelName}
+        openPanelNameValue={openPanelName}
+        commentCountSetter={setCommentCount}
+      />
+      <PostLikes
+        likeData={{
+          likeCount: postItemData.likeCount,
+          likeColPath: `users/${postItemData.senderUsername}/posts/${postItemData.postDocId}/likes`,
+        }}
+        postSenderUsername={postItemData.senderUsername}
+        openPanelNameSetter={setOpenPanelName}
+        openPanelNameValue={openPanelName}
+      />
+      <PostMakeNFT
+        openPanelNameValue={openPanelName}
+        openPanelNameValueSetter={setOpenPanelName}
+        postInformation={postItemData}
+      />
     </>
   );
 }

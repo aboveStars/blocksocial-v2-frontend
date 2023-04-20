@@ -61,7 +61,6 @@ export default function PostComments({
   }, [openPanelNameValue]);
 
   const handleLoadComments = async () => {
-    console.log("HandleComments fired");
     setGettingComments(true);
 
     // get comment docs

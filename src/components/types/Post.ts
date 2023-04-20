@@ -23,6 +23,7 @@ export type PostItemData = {
   image: string;
 
   likeCount: number;
+  currentUserLikedThisPost : boolean
   commentCount: number;
 
   postDocId: string;

@@ -121,32 +121,45 @@ export default function Home() {
         mainIndexSourcePostDatasCollection,
         orderBy("creationTime", "desc")
       );
-      const mainIndexSourcePostsDatasSnapshot = await getDocs(
-        mainIndexSourcePostDatasQuery
-      );
+      const mainIndexSourcePostsDatasSnapshot = (
+        await getDocs(mainIndexSourcePostDatasQuery)
+      ).docs;
 
       const mainIndexSourcePostsDatas: PostItemData[] = [];
 
-      for (const doc of mainIndexSourcePostsDatasSnapshot.docs) {
+      for (const postDoc of mainIndexSourcePostsDatasSnapshot) {
+        let tempCurrentUserLikedThisPost = false;
+        if (currentUserState.isThereCurrentUser) {
+          tempCurrentUserLikedThisPost = (
+            await getDoc(
+              doc(
+                firestore,
+                `users/${postDoc.data().senderUsername}/posts/${
+                  postDoc.id
+                }/likes/${currentUserState.username}`
+              )
+            )
+          ).exists();
+        }
+
         const postDataObject: PostItemData = {
-          senderUsername: doc.data().senderUsername,
+          senderUsername: postDoc.data().senderUsername,
 
-          description: doc.data().description,
-          image: doc.data().image,
+          description: postDoc.data().description,
+          image: postDoc.data().image,
 
-          likeCount: doc.data().likeCount,
+          likeCount: postDoc.data().likeCount,
+          currentUserLikedThisPost: tempCurrentUserLikedThisPost,
 
-          postDocId: doc.id,
+          postDocId: postDoc.id,
 
-          commentCount: doc.data().commentCount,
+          commentCount: postDoc.data().commentCount,
 
-          nftUrl: doc.data().nftUrl,
-          creationTime: doc.data().creationTime,
+          nftUrl: postDoc.data().nftUrl,
+          creationTime: postDoc.data().creationTime,
         };
-        const serializablePostData: PostItemData = JSON.parse(
-          safeJsonStringify(postDataObject)
-        );
-        mainIndexSourcePostsDatas.push(serializablePostData);
+
+        mainIndexSourcePostsDatas.push(postDataObject);
       }
       postsDatas.push(...mainIndexSourcePostsDatas);
     }
