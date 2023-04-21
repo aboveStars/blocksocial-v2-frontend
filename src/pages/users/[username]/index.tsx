@@ -35,7 +35,9 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
 
   const handleLikeStatus = async () => {
     // Sometimes useEffect is not controlling.
-    if (!currentUserState.isThereCurrentUser) return;
+    if (!currentUserState.isThereCurrentUser) {
+      return;
+    }
     let reviewedPostDatasTemp: PostItemData[] = [];
     for (const post of postItemDatas) {
       let tempCurrentUserLikedThisPost = false;
@@ -64,17 +66,26 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
 
   useEffect(() => {
     setInnerHeight(`${window.innerHeight}px`);
-  }, [currentUserState]);
+  }, []);
 
   useEffect(() => {
     if (currentUserState.isThereCurrentUser) {
       handleLikeStatus();
+    } else {
+      setReviewedPostDatas(postItemDatas);
     }
   }, [currentUserState]);
 
   useEffect(() => {
-    setPostStatus({ loading: true });
-    handleLikeStatus();
+    if (!postItemDatas) return;
+
+    if (!currentUserState.isThereCurrentUser) {
+      setReviewedPostDatas(postItemDatas);
+      setPostStatus({ loading: false });
+    } else {
+      setPostStatus({ loading: true });
+      handleLikeStatus();
+    }
   }, [postItemDatas]);
 
   if (!userInformation) {
