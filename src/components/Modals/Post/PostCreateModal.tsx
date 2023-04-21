@@ -225,7 +225,7 @@ export default function PostCreateModal() {
               </Flex>
             </Flex>
 
-            <Flex hidden={!!!postCreateForm.image}>
+            <AspectRatio ratio={1} hidden={!!!postCreateForm.image}>
               <img
                 style={{
                   borderRadius: "10px",
@@ -234,7 +234,7 @@ export default function PostCreateModal() {
                 src={postCreateForm.image}
                 hidden={!!!postCreateForm.image}
               />
-            </Flex>
+            </AspectRatio>
 
             <Button
               variant="outline"

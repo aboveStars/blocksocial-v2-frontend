@@ -7,19 +7,20 @@ import {
   Icon,
   Input,
   InputGroup,
+  InputRightAddon,
   InputRightElement,
   Spinner,
   Text,
 } from "@chakra-ui/react";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { useSetRecoilState } from "recoil";
 
 import { firestore } from "@/firebase/clientApp";
 import { doc, getDoc } from "firebase/firestore";
-import { AiOutlineCheckCircle } from "react-icons/ai";
-import { BiError } from "react-icons/bi";
+import { AiFillCheckCircle, AiOutlineCheckCircle } from "react-icons/ai";
+import { BiError, BiErrorCircle } from "react-icons/bi";
 
 import useLoginOperations from "@/hooks/useLoginOperations";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -41,6 +42,13 @@ export default function SignUp() {
   const [userNameRight, setUserNameRight] = useState(true);
 
   const [passwordStrong, setPassordStrong] = useState(true);
+  const [passwordStatus, setPasswordStatus] = useState({
+    digit: false,
+    lowercase: false,
+    uppercase: false,
+    eightCharacter: false,
+    special: false,
+  });
 
   const [fullnameRight, setFullnameRight] = useState(true);
 
@@ -118,7 +126,8 @@ export default function SignUp() {
       return;
     }
 
-    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+    const passwordRegex =
+      /^(?=.*?\p{Lu})(?=.*?\p{Ll})(?=.*?\d)(?=.*?[^\w\s]|[_]).{12,}$/u;
     if (!passwordRegex.test(signUpForm.password)) {
       setPassordStrong(false);
       setSignUpLoading(false);
@@ -232,7 +241,19 @@ export default function SignUp() {
         zeroFlag = true;
       }
       if (!zeroFlag) {
-        const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+        const susPassword = event.target.value;
+
+        setPasswordStatus({
+          digit: /^(?=.*?\d)/u.test(susPassword),
+          lowercase: /^(?=.*?\p{Ll})/u.test(susPassword),
+          uppercase: /^(?=.*?\p{Lu})/u.test(susPassword),
+          eightCharacter: /^.{12,}$/u.test(susPassword),
+          special: /^(?=.*?[^\w\s]|[_])/u.test(susPassword),
+        });
+
+        const regex =
+          /^(?=.*?\p{Lu})(?=.*?\p{Ll})(?=.*?\d)(?=.*?[^\w\s]).{12,}$/u;
+
         if (!regex.test(event.target.value)) {
           setPassordStrong(false);
         } else setPassordStrong(true);
@@ -256,6 +277,7 @@ export default function SignUp() {
                 name="email"
                 type="email"
                 autoComplete="new-password"
+                pr={!emailRight ? "9" : "2"}
                 mb={2}
                 onChange={onChange}
                 _hover={{
@@ -274,19 +296,10 @@ export default function SignUp() {
               >
                 Email
               </FormLabel>
-
-              <InputRightElement>
-                {!emailRight && (
-                  <Icon
-                    ml={5}
-                    as={BiError}
-                    fontSize="20px"
-                    mr={3}
-                    color="red"
-                  />
-                )}
-              </InputRightElement>
             </FormControl>
+            <InputRightElement>
+              {!emailRight && <Icon as={BiError} fontSize="20px" color="red" />}
+            </InputRightElement>
           </InputGroup>
 
           <InputGroup>
@@ -296,6 +309,7 @@ export default function SignUp() {
                 name="fullname"
                 type="text"
                 autoComplete="new-password"
+                pr={!fullnameRight ? "9" : "2"}
                 mb={2}
                 onChange={onChange}
                 _hover={{
@@ -318,29 +332,12 @@ export default function SignUp() {
 
             <InputRightElement>
               {!fullnameRight && (
-                <Icon ml={5} as={BiError} fontSize="20px" mr={3} color="red" />
+                <Icon as={BiError} fontSize="20px" color="red" />
               )}
             </InputRightElement>
           </InputGroup>
 
           <InputGroup>
-            <InputRightElement>
-              {userNameTakenStateLoading ? (
-                <Spinner size="sm" ml={1.5} />
-              ) : userNameTakenState || !userNameRight ? (
-                <Icon ml={5} as={BiError} fontSize="20px" mr={3} color="red" />
-              ) : (
-                signUpForm.username.length !== 0 && (
-                  <Icon
-                    ml={5}
-                    as={AiOutlineCheckCircle}
-                    fontSize="20px"
-                    mr={3}
-                    color="green"
-                  />
-                )
-              )}
-            </InputRightElement>
             <FormControl variant="floating">
               <Input
                 required
@@ -348,6 +345,7 @@ export default function SignUp() {
                 type="text"
                 autoComplete="new-password"
                 mb={2}
+                pr={signUpForm.username ? "9" : "2"}
                 value={userNameLowerCaseValue}
                 onChange={onChange}
                 borderColor={
@@ -369,14 +367,24 @@ export default function SignUp() {
                 Username
               </FormLabel>
             </FormControl>
+            <InputRightElement>
+              {userNameTakenStateLoading ? (
+                <Spinner size="sm" />
+              ) : userNameTakenState || !userNameRight ? (
+                <Icon as={BiError} fontSize="20px" color="red" />
+              ) : (
+                signUpForm.username.length !== 0 && (
+                  <Icon
+                    as={AiOutlineCheckCircle}
+                    fontSize="20px"
+                    color="green"
+                  />
+                )
+              )}
+            </InputRightElement>
           </InputGroup>
 
           <InputGroup>
-            <InputRightElement>
-              {!passwordStrong && (
-                <Icon ml={5} as={BiError} fontSize="20px" mr={3} color="red" />
-              )}
-            </InputRightElement>
             <FormControl variant="floating">
               <Input
                 required
@@ -384,6 +392,7 @@ export default function SignUp() {
                 type="password"
                 autoComplete="new-password"
                 mb={1}
+                pr={signUpForm.password ? "9" : "2"}
                 onChange={onChange}
                 borderColor={!passwordStrong ? "red" : "gray.200"}
                 _hover={{
@@ -402,7 +411,77 @@ export default function SignUp() {
                 Password
               </FormLabel>
             </FormControl>
+            <InputRightElement>
+              <Flex hidden={signUpForm.password.length === 0}>
+                <Icon
+                  as={passwordStrong ? AiOutlineCheckCircle : BiError}
+                  fontSize="20px"
+                  color={passwordStrong ? "green" : "red"}
+                />
+              </Flex>
+            </InputRightElement>
           </InputGroup>
+          <Flex
+            id="password-requirements"
+            direction="column"
+            hidden={passwordStrong}
+          >
+            <Flex
+              id="digit"
+              align="center"
+              gap={1}
+              hidden={passwordStatus.digit}
+            >
+              <Icon fontSize="17px" color={"red"} as={BiErrorCircle} />
+              <Text fontSize="10pt" color={"red"} as="b">
+                Numbers (0-9)
+              </Text>
+            </Flex>
+            <Flex
+              id="lowercase"
+              align="center"
+              gap={1}
+              hidden={passwordStatus.lowercase}
+            >
+              <Icon fontSize="17px" color={"red"} as={BiErrorCircle} />
+              <Text fontSize="10pt" color={"red"} as="b">
+                Lower case letters (aa)
+              </Text>
+            </Flex>
+            <Flex
+              id="uppercase"
+              align="center"
+              gap={1}
+              hidden={passwordStatus.uppercase}
+            >
+              <Icon fontSize="17px" color={"red"} as={BiErrorCircle} />
+              <Text fontSize="10pt" color={"red"} as="b">
+                Upper case letters (AA)
+              </Text>
+            </Flex>
+            <Flex
+              id="special"
+              align="center"
+              gap={1}
+              hidden={passwordStatus.special}
+            >
+              <Icon fontSize="17px" color={"red"} as={BiErrorCircle} />
+              <Text fontSize="10pt" color={"red"} as="b">
+                Special characters (&*%)
+              </Text>
+            </Flex>
+            <Flex
+              id="eightCharacter"
+              align="center"
+              gap={1}
+              hidden={passwordStatus.eightCharacter}
+            >
+              <Icon fontSize="17px" color={"red"} as={BiErrorCircle} />
+              <Text fontSize="10pt" color={"red"} as="b">
+                At least 12 characters
+              </Text>
+            </Flex>
+          </Flex>
         </Flex>
         <Button
           width="100%"

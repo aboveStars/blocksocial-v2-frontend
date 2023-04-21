@@ -1,4 +1,5 @@
 import { UserInServer } from "@/components/types/User";
+import { AuthError } from "firebase/auth";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { auth, firestore } from "../../firebase/adminApp";
 
@@ -67,7 +68,8 @@ export default async function handler(
     return res.status(409).json({ error: "Username taken" });
   }
 
-  const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+  const passwordRegex =
+    /^(?=.*?\p{Lu})(?=.*?\p{Ll})(?=.*?\d)(?=.*?[^\w\s]|[_]).{12,}$/u;
   if (!passwordRegex.test(password)) {
     return res.status(400).json({ error: "Invalid Password" });
   }
@@ -99,7 +101,8 @@ export default async function handler(
     await batch.commit();
   } catch (error) {
     console.error("Error while signup. (We were creating user)", error);
-    return res.status(503).json({ error: "Firebase Error" });
+    const err = error as AuthError;
+    return res.status(503).json({ error: err.message });
   }
 
   return res.status(200).json(newUserData);
