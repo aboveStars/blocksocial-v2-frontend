@@ -208,23 +208,20 @@ export default function PostComments({
                 />
               ))}
             </Stack>
-            <Stack gap={1} hidden={!gettingComments}>
-              {Array.from(
-                { length: commentsInfo.postCommentCount },
-                (_, index) => (
-                  <CommentItemSkeleton key={index} />
-                )
-              )}
-            </Stack>
+            
             <Text
               fontSize="10pt"
               textColor="white"
               hidden={
-                !(!gettingComments && commentsInfo.postCommentCount === 0)
+                !(
+                  !gettingComments &&
+                  commentsDatasWithCommentDocPath.length === 0
+                )
               }
             >
               No comments yet.
             </Text>
+            <Spinner color="white" hidden={!gettingComments} />
           </ModalBody>
           <Flex
             id="comment-send-area"
