@@ -87,7 +87,13 @@ export default function FollowInformationModal({
       autoFocus={false}
     >
       <ModalOverlay backdropFilter="auto" backdropBlur="8px" />
-      <ModalContent bg="black">
+      <ModalContent
+        bg="black"
+        minHeight={{
+          md: "500px",
+          lg: "500px",
+        }}
+      >
         <Flex
           position="sticky"
           top="0"

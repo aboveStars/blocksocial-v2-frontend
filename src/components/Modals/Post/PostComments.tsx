@@ -165,7 +165,13 @@ export default function PostComments({
         autoFocus={false}
       >
         <ModalOverlay />
-        <ModalContent bg="black">
+        <ModalContent
+          bg="black"
+          minHeight={{
+            md: "500px",
+            lg: "500px",
+          }}
+        >
           <Flex
             position="sticky"
             top="0"

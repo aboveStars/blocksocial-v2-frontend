@@ -34,6 +34,8 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
   const [reviewedPostDatas, setReviewedPostDatas] = useState(postItemDatas);
 
   const handleLikeStatus = async () => {
+    // Sometimes useEffect is not controlling.
+    if (!currentUserState.isThereCurrentUser) return;
     let reviewedPostDatasTemp: PostItemData[] = [];
     for (const post of postItemDatas) {
       let tempCurrentUserLikedThisPost = false;
@@ -65,7 +67,9 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
   }, [currentUserState]);
 
   useEffect(() => {
-    if (currentUserState.isThereCurrentUser) handleLikeStatus();
+    if (currentUserState.isThereCurrentUser) {
+      handleLikeStatus();
+    }
   }, [currentUserState]);
 
   useEffect(() => {

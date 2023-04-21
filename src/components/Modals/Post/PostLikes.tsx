@@ -45,8 +45,8 @@ export default function PostLikes({
   const [gettingLikes, setGettingLikes] = useState(true);
 
   useEffect(() => {
-    getLikes();
-  }, [likeData]);
+    if (openPanelNameValue === "likes") getLikes();
+  }, [openPanelNameValue]);
 
   const getLikes = async () => {
     setGettingLikes(true);
@@ -93,7 +93,13 @@ export default function PostLikes({
       autoFocus={false}
     >
       <ModalOverlay />
-      <ModalContent bg="black">
+      <ModalContent
+        bg="black"
+        minHeight={{
+          md: "500px",
+          lg: "500px",
+        }}
+      >
         <Flex
           position="sticky"
           top="0"
