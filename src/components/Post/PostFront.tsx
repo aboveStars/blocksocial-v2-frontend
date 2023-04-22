@@ -39,7 +39,7 @@ import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
 import { CgProfile } from "react-icons/cg";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
 import { OpenPanelName, PostFrontData } from "../types/Post";
@@ -63,8 +63,7 @@ export default function PostFront({
 
   const { like } = usePost();
 
-  const [currentUserState, setCurrentUserState] =
-    useRecoilState(currentUserStateAtom);
+  const currentUserState = useRecoilValue(currentUserStateAtom);
 
   // To update post values locally
   const [ostensiblePostData, setOstensiblePostData] = useState(postFrontData);
@@ -76,7 +75,6 @@ export default function PostFront({
   const { follow } = useFollow();
 
   const { postDelete, postDeletionLoading } = usePostDelete();
-  const [isThisPostDeleted, setIsThisPostDeleted] = useState(false);
 
   const imageSkeletonRef = useRef<HTMLDivElement>(null);
 
@@ -182,9 +180,14 @@ export default function PostFront({
     setLikeOperationLoading(false);
   };
 
+  const handlePostDelete = async () => {
+    await postDelete(postFrontData.postDocId);
+    setShowDeleteUserDialog(false);
+  };
+
   return (
     <>
-      <Flex bg="black" direction="column" p={1} hidden={isThisPostDeleted}>
+      <Flex bg="black" direction="column" p={1}>
         <Flex
           id="postHeader"
           align="center"
@@ -349,13 +352,7 @@ export default function PostFront({
                       variant="outline"
                       colorScheme="red"
                       size="md"
-                      onClick={async () => {
-                        await postDelete(
-                          `users/${postFrontData.senderUsername}/posts/${postFrontData.postDocId}`
-                        );
-                        setIsThisPostDeleted(true);
-                        setShowDeleteUserDialog(false);
-                      }}
+                      onClick={handlePostDelete}
                       isLoading={postDeletionLoading}
                       hidden={
                         currentUserState.username !==

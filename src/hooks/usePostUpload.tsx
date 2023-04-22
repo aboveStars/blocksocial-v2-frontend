@@ -1,10 +1,19 @@
-import { PostCreateForm } from "@/components/types/Post";
+import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { postsAtViewAtom } from "@/components/atoms/postsAtViewAtom";
+import { PostCreateForm, PostItemData } from "@/components/types/Post";
 import { auth } from "@/firebase/clientApp";
+import { useRouter } from "next/router";
 import { useState } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 const usePostCreate = () => {
   const [willBeCroppedPostPhoto, setWillBeCroppedPostPhoto] = useState("");
   const [postUploadLoading, setPostUploadUpdating] = useState(false);
+  const currentUserstate = useRecoilValue(currentUserStateAtom);
+
+  const router = useRouter();
+
+  const [postsAtView, setPostsAtView] = useRecoilState(postsAtViewAtom);
 
   const onSelectWillBeCroppedPhoto = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -74,6 +83,59 @@ const usePostCreate = () => {
       );
     }
 
+    const newPostDocId = (await response.json()).newPostDocId;
+
+    if (router.asPath === `/users/${currentUserstate.username}`) {
+      console.log("Hmm. We posted in our user page.");
+      const newPostData: PostItemData = {
+        senderUsername: currentUserstate.username,
+        description: description,
+        image: image,
+        likeCount: 0,
+        commentCount: 0,
+        nftStatus: {
+          minted: false,
+          mintTime: -1,
+          metadataLink: "",
+          title: "",
+          description: "",
+          tokenId: -1,
+          contractAddress: "",
+          openseaUrl: "",
+          transferred: false,
+          transferredAddress: "",
+        },
+        currentUserLikedThisPost: false,
+        postDocId: newPostDocId,
+        creationTime: Date.now(),
+      };
+      setPostsAtView((prev) => [newPostData, ...prev]);
+    } else if (router.asPath === "/") {
+      console.log("Hmmmmmm. We posted in home page.");
+      const newPostData: PostItemData = {
+        senderUsername: currentUserstate.username,
+        description: description,
+        image: image,
+        likeCount: 0,
+        commentCount: 0,
+        nftStatus: {
+          minted: false,
+          mintTime: -1,
+          metadataLink: "",
+          title: "",
+          description: "",
+          tokenId: -1,
+          contractAddress: "",
+          openseaUrl: "",
+          transferred: false,
+          transferredAddress: "",
+        },
+        currentUserLikedThisPost: false,
+        postDocId: newPostDocId,
+        creationTime: Date.now(),
+      };
+      setPostsAtView((prev) => [newPostData, ...prev]);
+    }
     setPostUploadUpdating(false);
   };
 

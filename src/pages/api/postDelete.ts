@@ -9,7 +9,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const { cron, authorization } = req.headers;
-  const { postDocPath } = req.body;
+  const { postDocId } = req.body;
 
   if (cron === process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
     console.log("Warm-Up Request");
@@ -35,13 +35,13 @@ export default async function handler(
   if (req.method !== "DELETE")
     return res.status(405).json("Method not allowed");
 
-  if (!postDocPath) {
+  if (!postDocId) {
     return res.status(422).json({ error: "Invalid prop or props" });
   }
 
   let isOwner = false;
   try {
-    isOwner = await isOwnerOfPost(postDocPath, operationFromUsername);
+    isOwner = await isOwnerOfPost(postDocId, operationFromUsername);
   } catch (error) {
     console.error("Error while deleting post from 'isOwner' function", error);
     return res.status(503).json({ error: "Firebase error" });
@@ -53,11 +53,12 @@ export default async function handler(
   }
 
   let postDoc;
-  let postDocId;
+
   let postDocData;
   try {
-    postDoc = await firestore.doc(postDocPath).get();
-    postDocId = postDoc.id;
+    postDoc = await firestore
+      .doc(`users/${operationFromUsername}/posts/${postDocId}`)
+      .get();
     postDocData = postDoc.data() as PostServerData;
   } catch (error) {
     console.error(
@@ -97,9 +98,22 @@ export default async function handler(
   }
 
   try {
-    await firestore.doc(postDocPath).delete();
+    if (postDocData.likeCount > 0)
+      await deleteCollection(
+        `users/${operationFromUsername}/posts/${postDocId}/likes`
+      );
+    if (postDocData.commentCount > 0)
+      await deleteCollection(
+        `users/${operationFromUsername}/posts/${postDocId}/comments`
+      );
+    await firestore
+      .doc(`users/${operationFromUsername}/posts/${postDocId}`)
+      .delete();
   } catch (error) {
-    console.error("Error while deleting post.(We were deleting post):", error);
+    console.error(
+      "Error while deleting post.(We were deleting post doc and its subCollections):",
+      error
+    );
     return res.status(503).json({ error: "Firebase error" });
   }
 
@@ -125,10 +139,34 @@ async function getDisplayName(decodedToken: DecodedIdToken) {
   return displayName as string;
 }
 
-async function isOwnerOfPost(
-  postDocPath: string,
-  operationFromUsername: string
-) {
-  const ss = await firestore.doc(postDocPath).get();
+async function isOwnerOfPost(postDocId: string, operationFromUsername: string) {
+  const ss = await firestore
+    .doc(`users/${operationFromUsername}/posts/${postDocId}`)
+    .get();
   return ss.data()?.senderUsername === operationFromUsername;
+}
+
+async function deleteCollection(collectionPath: string) {
+  const limit = 50;
+  try {
+    const docsSnapshot = await firestore
+      .collection(collectionPath)
+      .limit(limit)
+      .get();
+
+    const batch = firestore.batch();
+    docsSnapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+
+    if (docsSnapshot.size > 0) {
+      await deleteCollection(collectionPath);
+    }
+  } catch (error) {
+    throw new Error(
+      `Error while deleting collection (${collectionPath}): ${error} `
+    );
+  }
 }

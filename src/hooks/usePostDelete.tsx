@@ -1,12 +1,15 @@
+import { postsAtViewAtom } from "@/components/atoms/postsAtViewAtom";
 import { auth } from "@/firebase/clientApp";
 import { useState } from "react";
+import { useRecoilState } from "recoil";
 
 export default function usePostDelete() {
   const [postDeletionLoading, setPostDeletionLoading] = useState(false);
 
-  const postDelete = async (postDocPath: string) => {
+  const [postsAtView, setPostsAtView] = useRecoilState(postsAtViewAtom);
+
+  const postDelete = async (postDocId: string) => {
     setPostDeletionLoading(true);
-    console.log("Post Deletion is started");
 
     let idToken = "";
     try {
@@ -26,7 +29,7 @@ export default function usePostDelete() {
           "Content-Type": "application/json",
           authorization: `Bearer ${idToken}`,
         },
-        body: JSON.stringify({ postDocPath: postDocPath }),
+        body: JSON.stringify({ postDocId: postDocId }),
       });
     } catch (error) {
       return console.error("Error while fecthing to 'postDelete API'", error);
@@ -39,7 +42,8 @@ export default function usePostDelete() {
       );
     }
 
-    console.log("Post successfully finished");
+    setPostsAtView((prev) => prev.filter((x) => x.postDocId !== postDocId));
+
     setPostDeletionLoading(false);
   };
   return {

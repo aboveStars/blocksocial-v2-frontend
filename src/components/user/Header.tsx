@@ -5,7 +5,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogOverlay,
-  AspectRatio,
   Button,
   Circle,
   Flex,
@@ -95,9 +94,6 @@ export default function Header({ userInformation }: Props) {
     useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const [nftAdministrationPanelShow, setNftAdministrationPanelShow] =
-    useState(false);
 
   const [signOutLoading, setSignOutLoading] = useState(false);
 
@@ -516,15 +512,6 @@ export default function Header({ userInformation }: Props) {
         {isCurrentUserPage && (
           <Flex align="center">
             <Flex mt={3} direction="column" gap={2}>
-              <Button
-                size="sm"
-                variant="solid"
-                bg="white"
-                textColor="black"
-                onClick={() => setNftAdministrationPanelShow(true)}
-              >
-                NFT Administration
-              </Button>
               <Button
                 variant="outline"
                 colorScheme="red"

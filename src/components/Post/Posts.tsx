@@ -1,5 +1,7 @@
 import { Stack } from "@chakra-ui/react";
-import { useRecoilValue } from "recoil";
+import { useEffect } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { postsAtViewAtom } from "../atoms/postsAtViewAtom";
 import { postsStatusAtom } from "../atoms/postsStatusAtom";
 import PostItem from "../Items/Post/PostItem";
 import PostSkeleton from "../Skeletons/PostSkeleton";
@@ -12,6 +14,13 @@ type Props = {
 
 export default function Posts({ postsItemDatas }: Props) {
   const postsLoading = useRecoilValue(postsStatusAtom).loading;
+  const [postsAtView, setPostsAtView] = useRecoilState(postsAtViewAtom);
+
+  useEffect(() => {
+    if (postsItemDatas) {
+      setPostsAtView(postsItemDatas);
+    }
+  }, [postsItemDatas]);
 
   return (
     <>
@@ -20,7 +29,7 @@ export default function Posts({ postsItemDatas }: Props) {
           Array.from({ length: 1 }, (_, index) => <PostSkeleton key={index} />)
         ) : (
           <>
-            {postsItemDatas.map((postItemData, i) => (
+            {postsAtView.map((postItemData, i) => (
               <PostItem
                 key={`${postItemData.senderUsername}/${
                   postItemData.postDocId

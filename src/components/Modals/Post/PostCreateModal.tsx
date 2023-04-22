@@ -14,7 +14,7 @@ import {
   ModalOverlay,
   Stack,
   Text,
-  Textarea,
+  Textarea
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Cropper from "react-easy-crop";

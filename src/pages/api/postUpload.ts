@@ -109,7 +109,7 @@ export default async function handler(
     return res.status(503).json({ error: "Firebase error" });
   }
 
-  return res.status(200).json({ username: operationFromUsername });
+  return res.status(200).json({ newPostDocId: generalPostId });
 }
 
 /**
