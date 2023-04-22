@@ -125,7 +125,7 @@ export default function PostCreateModal() {
 
   useEffect(() => {
     if (
-      postCreateForm.description.length >= 45 &&
+      postCreateForm.description.length >= 40 &&
       focusedTextInput !== "bigInput"
     ) {
       if (bigInputRef.current) {
@@ -324,7 +324,7 @@ export default function PostCreateModal() {
               <Text as="b" fontSize="14pt" textColor="white">
                 Description
               </Text>
-              {postCreateForm.description.length >= 45 ? (
+              {postCreateForm.description.length >= 40 ? (
                 <Textarea
                   ref={bigInputRef}
                   name="description"
