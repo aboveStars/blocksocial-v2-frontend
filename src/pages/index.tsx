@@ -56,6 +56,8 @@ export default function Home() {
       ];
     }
 
+    postsDatasArray.sort((a, b) => b.creationTime - a.creationTime);
+
     return postsDatasArray;
   };
 
