@@ -14,6 +14,7 @@ import {
   ModalOverlay,
   Stack,
   Text,
+  Textarea,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Cropper from "react-easy-crop";
@@ -57,6 +58,13 @@ export default function PostCreateModal() {
   const cropRef = useRef<HTMLDivElement>(null);
   const [minZoom, setMinZoom] = useState(1);
 
+  const bigInputRef = useRef<HTMLTextAreaElement>(null);
+  const smallInputRef = useRef<HTMLInputElement>(null);
+
+  const [focusedTextInput, setFocusedInput] = useState<
+    "bigInput" | "smallInput"
+  >("smallInput");
+
   useEffect(() => {
     if (cropRef.current) setCropSize(cropRef.current.clientWidth);
   }, [cropRef.current?.clientWidth]);
@@ -78,7 +86,9 @@ export default function PostCreateModal() {
     img.src = willBeCroppedPostPhoto;
   }, [willBeCroppedPostPhoto]);
 
-  const onTextsChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onTextsChanged = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setPostCreateForm((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
@@ -112,6 +122,28 @@ export default function PostCreateModal() {
 
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
+
+  useEffect(() => {
+    if (
+      postCreateForm.description.length >= 45 &&
+      focusedTextInput !== "bigInput"
+    ) {
+      if (bigInputRef.current) {
+        setFocusedInput("bigInput");
+        bigInputRef.current.focus();
+        bigInputRef.current.selectionStart = bigInputRef.current.selectionEnd =
+          postCreateForm.description.length;
+      }
+    } else {
+      if (smallInputRef.current && focusedTextInput !== "smallInput") {
+        setFocusedInput("smallInput");
+        smallInputRef.current.focus();
+        smallInputRef.current.selectionStart =
+          smallInputRef.current.selectionEnd =
+            postCreateForm.description.length;
+      }
+    }
+  }, [postCreateForm.description]);
 
   return (
     <Modal
@@ -292,15 +324,27 @@ export default function PostCreateModal() {
               <Text as="b" fontSize="14pt" textColor="white">
                 Description
               </Text>
-
-              <Input
-                name="description"
-                textColor="white"
-                fontWeight="600"
-                value={postCreateForm.description}
-                onChange={onTextsChanged}
-                isDisabled={postUploadLoading}
-              />
+              {postCreateForm.description.length >= 45 ? (
+                <Textarea
+                  ref={bigInputRef}
+                  name="description"
+                  textColor="white"
+                  fontWeight="600"
+                  value={postCreateForm.description}
+                  onChange={onTextsChanged}
+                  isDisabled={postUploadLoading}
+                />
+              ) : (
+                <Input
+                  ref={smallInputRef}
+                  name="description"
+                  textColor="white"
+                  fontWeight="600"
+                  value={postCreateForm.description}
+                  onChange={onTextsChanged}
+                  isDisabled={postUploadLoading}
+                />
+              )}
             </Flex>
           </Stack>
         </ModalBody>
