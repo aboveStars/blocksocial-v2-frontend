@@ -5,6 +5,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogOverlay,
+  AspectRatio,
   Button,
   Circle,
   Flex,
@@ -264,12 +265,6 @@ export default function Header({ userInformation }: Props) {
         userName={userInformation.username}
       />
 
-      {/* <NFTAdministrationPanel
-        nftAdministrationPanelOpenSetter={setNftAdministrationPanelShow}
-        nftAdministrationPanelOpenValue={nftAdministrationPanelShow}
-        currentUserUsername={currentUserState.username}
-      /> */}
-
       <AlertDialog
         id="profilePhotoDelete-dialog"
         isOpen={profilephotoDeleteDialogOpen}
@@ -319,84 +314,80 @@ export default function Header({ userInformation }: Props) {
       </AlertDialog>
 
       <Flex direction="column" justify="center" align="center" mt={3}>
-        <Flex
-          position="relative"
-          width="100%"
-          direction="column"
-          align="center"
-        >
-          <Image
-            alt=""
-            src={
-              selectedProfilePhoto
-                ? selectedProfilePhoto
-                : ostensibleUserInformation.profilePhoto
-                ? ostensibleUserInformation.profilePhoto
-                : ""
-            }
-            fallback={
-              !poorProfilePhoto ? (
-                <SkeletonCircle
-                  width="200px"
-                  height="200px"
-                  startColor="gray.100"
-                  endColor="gray.800"
-                />
-              ) : (
-                <Icon
-                  as={CgProfile}
-                  color="white"
-                  height="200px"
-                  width="200px"
-                />
-              )
-            }
-            width="200px"
-            height="200px"
-            rounded="full"
-          />
+        <Flex direction="column" align="center">
+          <Flex position="relative" width="200px" height="200px">
+            <Image
+              alt=""
+              src={
+                selectedProfilePhoto
+                  ? selectedProfilePhoto
+                  : ostensibleUserInformation.profilePhoto
+                  ? ostensibleUserInformation.profilePhoto
+                  : ""
+              }
+              fallback={
+                !poorProfilePhoto ? (
+                  <SkeletonCircle
+                    startColor="gray.100"
+                    endColor="gray.800"
+                    width="100%"
+                    height="100%"
+                  />
+                ) : (
+                  <Icon
+                    as={CgProfile}
+                    color="white"
+                    width="100%"
+                    height="100%"
+                  />
+                )
+              }
+              width="100%"
+              height="100%"
+              rounded="full"
+            />
+            <Circle
+              position="absolute"
+              bottom={poorProfilePhoto ? "18px" : "12px"}
+              left={poorProfilePhoto ? "18px" : "12px"}
+              bg="gray.700"
+              minWidth="30px"
+              minHeight="30px"
+              hidden={!isCurrentUserPage || !!selectedProfilePhoto}
+            >
+              <Menu computePositionOnMount>
+                <MenuButton mt={1}>
+                  <Icon
+                    as={BiPencil}
+                    color="white"
+                    fontSize="15px"
+                    cursor="pointer"
+                  />
+                </MenuButton>
+                <MenuList>
+                  <MenuItem
+                    onClick={() => {
+                      if (inputRef.current) inputRef.current.click();
+                    }}
+                  >
+                    {ostensibleUserInformation.profilePhoto
+                      ? "New Profile Photo"
+                      : "Set Profile Photo"}
+                  </MenuItem>
 
-          <Circle
-            position="absolute"
-            top="151px"
-            left="11px"
-            bg="gray.700"
-            minWidth="30px"
-            minHeight="30px"
-            hidden={!isCurrentUserPage || !!selectedProfilePhoto}
-          >
-            <Menu computePositionOnMount>
-              <MenuButton mt={1}>
-                <Icon
-                  as={BiPencil}
-                  color="white"
-                  fontSize="15px"
-                  cursor="pointer"
-                />
-              </MenuButton>
-              <MenuList>
-                <MenuItem
-                  onClick={() => {
-                    if (inputRef.current) inputRef.current.click();
-                  }}
-                >
-                  {ostensibleUserInformation.profilePhoto
-                    ? "New Profile Photo"
-                    : "Set Profile Photo"}
-                </MenuItem>
-
-                <MenuItem
-                  onClick={() => setProfilePhotoDeleteDialogOpen(true)}
-                  hidden={
-                    !!willBeCroppedProfilePhoto ||
-                    !ostensibleUserInformation.profilePhoto
-                  }
-                >
-                  Delete
-                </MenuItem>
-              </MenuList>
-            </Menu>
-          </Circle>
+                  <MenuItem
+                    onClick={() => setProfilePhotoDeleteDialogOpen(true)}
+                    hidden={
+                      !!willBeCroppedProfilePhoto ||
+                      !ostensibleUserInformation.profilePhoto
+                    }
+                  >
+                    Delete
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            </Circle>
+          </Flex>
 
           <Stack direction="row" gap={1} mt={3} hidden={!modifying}>
             <Button
@@ -446,42 +437,48 @@ export default function Header({ userInformation }: Props) {
         </Flex>
 
         <Flex align="center" gap={3} mt={2}>
-          <Flex gap={1}>
+          <Flex
+            gap={1}
+            cursor="pointer"
+            onClick={() =>
+              setFollowingsFollowesrModalState((prev) => ({
+                ...prev,
+                isOpen: true,
+                modal: "followings",
+              }))
+            }
+          >
             <Text as="b" fontSize="12pt" textColor="white">
               {ostensibleUserInformation.followingCount}
             </Text>
-            <Text
-              fontSize="12pt"
-              textColor="gray.500"
-              cursor="pointer"
-              onClick={() =>
-                setFollowingsFollowesrModalState((prev) => ({
-                  ...prev,
-                  isOpen: true,
-                  modal: "followings",
-                }))
-              }
-            >
+            <Text fontSize="12pt" textColor="gray.500">
               Following
+            </Text>
+          </Flex>
+          <Flex
+            gap={1}
+            cursor="pointer"
+            onClick={() =>
+              setFollowingsFollowesrModalState((prev) => ({
+                ...prev,
+                isOpen: true,
+                modal: "followers",
+              }))
+            }
+          >
+            <Text as="b" fontSize="12pt" textColor="white">
+              {ostensibleUserInformation.followerCount}
+            </Text>
+            <Text fontSize="12pt" textColor="gray.500">
+              Follower
             </Text>
           </Flex>
           <Flex gap={1}>
             <Text as="b" fontSize="12pt" textColor="white">
-              {ostensibleUserInformation.followerCount}
+              {ostensibleUserInformation.nftCount}
             </Text>
-            <Text
-              fontSize="12pt"
-              textColor="gray.500"
-              cursor="pointer"
-              onClick={() =>
-                setFollowingsFollowesrModalState((prev) => ({
-                  ...prev,
-                  isOpen: true,
-                  modal: "followers",
-                }))
-              }
-            >
-              Follower
+            <Text fontSize="12pt" textColor="gray.500">
+              NFTs
             </Text>
           </Flex>
         </Flex>
@@ -519,7 +516,7 @@ export default function Header({ userInformation }: Props) {
         {isCurrentUserPage && (
           <Flex align="center">
             <Flex mt={3} direction="column" gap={2}>
-              {/* <Button
+              <Button
                 size="sm"
                 variant="solid"
                 bg="white"
@@ -527,7 +524,7 @@ export default function Header({ userInformation }: Props) {
                 onClick={() => setNftAdministrationPanelShow(true)}
               >
                 NFT Administration
-              </Button> */}
+              </Button>
               <Button
                 variant="outline"
                 colorScheme="red"

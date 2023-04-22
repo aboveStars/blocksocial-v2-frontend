@@ -2,7 +2,7 @@ import { PostServerData } from "@/components/types/Post";
 import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { NextApiRequest, NextApiResponse } from "next";
 
-import { auth, firestore, bucket } from "../../firebase/adminApp";
+import { auth, firestore, bucket, fieldValue } from "../../firebase/adminApp";
 
 export default async function handler(
   req: NextApiRequest,
@@ -52,12 +52,23 @@ export default async function handler(
     return res.status(522).json({ error: "Not-Owner" });
   }
 
+  let postDoc;
+  let postDocId;
+  let postDocData;
   try {
-    const postDoc = await firestore.doc(postDocPath).get();
-    const postDocId = postDoc.id;
-    const postDocData = postDoc.data() as PostServerData;
+    postDoc = await firestore.doc(postDocPath).get();
+    postDocId = postDoc.id;
+    postDocData = postDoc.data() as PostServerData;
+  } catch (error) {
+    console.error(
+      "Error while deleting post. (We were getting post details from server",
+      error
+    );
+    return res.status(503).json({ error: "Firebase error" });
+  }
 
-    if (postDocData.image || postDocData.nftUrl) {
+  try {
+    if (postDocData.image || postDocData.nftStatus.minted) {
       const postFilesPath = `users/${operationFromUsername}/postsFiles/${postDocId}`;
       await bucket.deleteFiles({
         prefix: postFilesPath + "/",
@@ -66,6 +77,20 @@ export default async function handler(
   } catch (error) {
     console.error(
       "Errow while deleting post (we were deleting post files folder.)",
+      error
+    );
+    return res.status(503).json({ error: "Firebase error" });
+  }
+
+  try {
+    if (postDocData.nftStatus.minted) {
+      await firestore.doc(`users/${operationFromUsername}`).update({
+        nftCount: fieldValue.increment(-1),
+      });
+    }
+  } catch (error) {
+    console.error(
+      "Error while deleting post. (We were decrementing NFTs count.)",
       error
     );
     return res.status(503).json({ error: "Firebase error" });

@@ -92,6 +92,7 @@ export default async function handler(
 
       followingCount: 0,
       followerCount: 0,
+      nftCount : 0,
 
       email: email || "",
       uid: uid,

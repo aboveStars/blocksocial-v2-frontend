@@ -145,7 +145,7 @@ export default function PostFront({
 
   useEffect(() => {
     handleGetPostSenderData(postFrontData.senderUsername);
-  }, [currentUserState.username]);
+  }, []);
 
   // Skeleton Height Adjustment
   useEffect(() => {
@@ -294,7 +294,7 @@ export default function PostFront({
                   <Icon as={AiOutlineMenu} color="white" />
                 </MenuButton>
                 <MenuList>
-                  {postFrontData.nftUrl ? (
+                  {postFrontData.nftStatus.minted ? (
                     !nftRefreshLoading ? (
                       <MenuItem
                         onClick={() => refreshNFT(postFrontData.postDocId)}
@@ -441,9 +441,9 @@ export default function PostFront({
               mr="2"
               cursor="pointer"
               onClick={() => {
-                window.open(postFrontData.nftUrl);
+                window.open(postFrontData.nftStatus.openseaUrl);
               }}
-              hidden={!!!postFrontData.nftUrl}
+              hidden={!!!postFrontData.nftStatus.minted}
             >
               <Image
                 alt=""

@@ -3,8 +3,8 @@ import { blockSocialSmartContract } from "@/ethers/clientApp";
 import { mumbaiContractAddress } from "@/ethers/ContractAddresses";
 import { auth, firestore, storage } from "@/firebase/clientApp";
 import { TransactionReceipt } from "ethers";
-import { doc, updateDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, increment, updateDoc } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useState } from "react";
 import safeJsonStringify from "safe-json-stringify";
 
@@ -109,8 +109,23 @@ export default function useNFT() {
         `users/${senderUsername}/posts/${postDocId}`
       );
 
+      await updateDoc(doc(firestore, `users/${senderUsername}`), {
+        nftCount: increment(1),
+      });
+
       await updateDoc(postDocRef, {
-        nftUrl: openSeaLinkCreated,
+        nftStatus: {
+          minted: true,
+          metadataLink: metadataLink,
+          mintTime: Date.now(),
+          title: name,
+          description: description,
+          tokenId: tokenId,
+          contractAddress: mumbaiContractAddress,
+          openseaUrl: openSeaLinkCreated,
+          transferred: false,
+          transferredAddress: "",
+        },
       });
 
       setCreatingNFTLoading(false);

@@ -1,7 +1,7 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
 import MainPageLayout from "@/components/Layout/MainPageLayout";
-import { PostItemData, PostServerData } from "@/components/types/Post";
+import { PostItemData } from "@/components/types/Post";
 import { firestore } from "@/firebase/clientApp";
 import {
   collection,
@@ -13,7 +13,6 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import safeJsonStringify from "safe-json-stringify";
 
 export default function Home() {
   const currentUserState = useRecoilValue(currentUserStateAtom);
@@ -157,7 +156,7 @@ export default function Home() {
 
           commentCount: postDoc.data().commentCount,
 
-          nftUrl: postDoc.data().nftUrl,
+          nftStatus: postDoc.data().nftStatus,
           creationTime: postDoc.data().creationTime,
         };
 

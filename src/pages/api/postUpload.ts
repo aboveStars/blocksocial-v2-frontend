@@ -82,7 +82,18 @@ export default async function handler(
     image: postImagePublicURL,
     likeCount: 0,
     commentCount: 0,
-    nftUrl: "",
+    nftStatus: {
+      minted: false,
+      mintTime: -1,
+      metadataLink: "",
+      title: "",
+      description: "",
+      tokenId: -1,
+      contractAddress: "",
+      openseaUrl: "",
+      transferred: false,
+      transferredAddress: "",
+    },
     creationTime: Date.now(),
   };
 

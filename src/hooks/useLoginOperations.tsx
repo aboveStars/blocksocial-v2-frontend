@@ -90,6 +90,8 @@ const useLoginOperations = () => {
         followingCount: userDoc.data().followingCount,
         followerCount: userDoc.data().followerCount,
 
+        nftCount: userDoc.data().nftCount,
+
         email: userDoc.data().email,
         uid: userDoc.data().uid,
       };
@@ -113,6 +115,8 @@ const useLoginOperations = () => {
 
       followingCount: currentUserDataOnServer.followingCount,
       followerCount: currentUserDataOnServer.followerCount,
+
+      nftCount: currentUserDataOnServer.nftCount,
 
       email: currentUserDataOnServer.email,
       uid: currentUserDataOnServer.uid,

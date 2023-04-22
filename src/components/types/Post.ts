@@ -8,10 +8,22 @@ export type PostServerData = {
 
   description: string;
   image: string;
+
   likeCount: number;
   commentCount: number;
 
-  nftUrl?: string;
+  nftStatus: {
+    minted: boolean;
+    mintTime: number;
+    metadataLink: string;
+    title: string;
+    description: string;
+    tokenId: number;
+    contractAddress: string;
+    openseaUrl: string;
+    transferred: boolean;
+    transferredAddress: string;
+  };
 
   creationTime: number;
 };
@@ -23,12 +35,23 @@ export type PostItemData = {
   image: string;
 
   likeCount: number;
-  currentUserLikedThisPost : boolean
+  currentUserLikedThisPost: boolean;
   commentCount: number;
 
   postDocId: string;
 
-  nftUrl?: string;
+  nftStatus: {
+    minted: boolean;
+    mintTime: number;
+    metadataLink: string;
+    title: string;
+    description: string;
+    tokenId: number;
+    contractAddress: string;
+    openseaUrl: string;
+    transferred: boolean;
+    transferredAddress: string;
+  };
 
   creationTime: number;
 };
@@ -40,12 +63,23 @@ export type PostFrontData = {
   image: string;
 
   likeCount: number;
-  currentUserLikedThisPost : boolean
+  currentUserLikedThisPost: boolean;
   commentCount: number;
 
   postDocId: string;
 
-  nftUrl?: string;
+  nftStatus: {
+    minted: boolean;
+    mintTime: number;
+    metadataLink: string;
+    title: string;
+    description: string;
+    tokenId: number;
+    contractAddress: string;
+    openseaUrl: string;
+    transferred: boolean;
+    transferredAddress: string;
+  };
 
   creationTime: number;
 };
