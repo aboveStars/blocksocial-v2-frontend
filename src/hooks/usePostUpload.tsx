@@ -85,7 +85,7 @@ const usePostCreate = () => {
 
     const newPostDocId = (await response.json()).newPostDocId;
 
-    if (router.asPath === `/users/${currentUserstate.username}`) {
+    if (router.asPath === `/${currentUserstate.username}`) {
       console.log("Hmm. We posted in our user page.");
       const newPostData: PostItemData = {
         senderUsername: currentUserstate.username,
@@ -111,7 +111,6 @@ const usePostCreate = () => {
       };
       setPostsAtView((prev) => [newPostData, ...prev]);
     } else if (router.asPath === "/") {
-      console.log("Hmmmmmm. We posted in home page.");
       const newPostData: PostItemData = {
         senderUsername: currentUserstate.username,
         description: description,
