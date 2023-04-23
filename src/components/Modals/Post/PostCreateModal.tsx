@@ -14,7 +14,7 @@ import {
   ModalOverlay,
   Stack,
   Text,
-  Textarea
+  Textarea,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Cropper from "react-easy-crop";
@@ -175,7 +175,9 @@ export default function PostCreateModal() {
           bg="black"
         >
           <Flex textColor="white" fontSize="17pt" fontWeight="700" gap={2}>
-            <Text>Create Post</Text>
+            <Text>
+              {willBeCroppedPostPhoto ? "Adjust Your Photo" : "Create Post"}
+            </Text>
           </Flex>
 
           <Icon
@@ -194,7 +196,12 @@ export default function PostCreateModal() {
 
         <ModalBody>
           <Stack gap={1}>
-            <Text as="b" fontSize="14pt" textColor="white">
+            <Text
+              as="b"
+              fontSize="14pt"
+              textColor="white"
+              hidden={!!willBeCroppedPostPhoto}
+            >
               Photo
             </Text>
 
@@ -320,9 +327,14 @@ export default function PostCreateModal() {
               </>
             </AspectRatio>
 
-            <Flex direction="column" mt={1} gap="1">
+            <Flex
+              direction="column"
+              mt={1}
+              gap="1"
+              hidden={!!willBeCroppedPostPhoto}
+            >
               <Text as="b" fontSize="14pt" textColor="white">
-                Description
+                {postCreateForm.image ? "Description" : "Message"}
               </Text>
               {postCreateForm.description.length >= 40 ? (
                 <Textarea
@@ -349,7 +361,7 @@ export default function PostCreateModal() {
           </Stack>
         </ModalBody>
 
-        <ModalFooter>
+        <ModalFooter hidden={!!willBeCroppedPostPhoto}>
           <Button
             variant="outline"
             colorScheme="blue"

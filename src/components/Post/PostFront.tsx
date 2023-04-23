@@ -220,14 +220,14 @@ export default function PostFront({
                   width="50px"
                   cursor="pointer"
                   onClick={() =>
-                    router.push(`/users/${postFrontData.senderUsername}`)
+                    router.push(`/${postFrontData.senderUsername}`)
                   }
                 />
               )
             }
             cursor="pointer"
             onClick={() =>
-              router.push(`/users/${postFrontData.senderUsername}`)
+              router.push(`/${postFrontData.senderUsername}`)
             }
           />
           <Flex direction="column">
@@ -237,9 +237,7 @@ export default function PostFront({
                 as="b"
                 fontSize="12pt"
                 cursor="pointer"
-                onClick={() =>
-                  router.push(`/users/${postFrontData.senderUsername}`)
-                }
+                onClick={() => router.push(`/${postFrontData.senderUsername}`)}
               >
                 {postFrontData.senderUsername}
               </Text>
@@ -251,9 +249,7 @@ export default function PostFront({
                 as="i"
                 fontSize="10pt"
                 cursor="pointer"
-                onClick={() =>
-                  router.push(`/users/${postFrontData.senderUsername}`)
-                }
+                onClick={() => router.push(`/${postFrontData.senderUsername}`)}
               >
                 {postSenderInformation.fullname}
               </Text>

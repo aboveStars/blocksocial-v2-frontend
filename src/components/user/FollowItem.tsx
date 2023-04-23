@@ -126,7 +126,7 @@ export default function FollowItem({
             ...prev,
             isOpen: false,
           }));
-          router.push(`/users/${followItemState.username}`);
+          router.push(`/${followItemState.username}`);
         }}
       >
         <Image

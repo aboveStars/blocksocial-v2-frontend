@@ -84,7 +84,7 @@ export default function CommentItem({
             cursor="pointer"
             onClick={() => {
               router.push(
-                `/users/${commentDataWithCommentDocId.commentSenderUsername}`
+                `/${commentDataWithCommentDocId.commentSenderUsername}`
               );
               openPanelNameSetter("main");
             }}
@@ -105,7 +105,7 @@ export default function CommentItem({
                   cursor="pointer"
                   onClick={() => {
                     router.push(
-                      `/users/${commentDataWithCommentDocId.commentSenderUsername}`
+                      `/${commentDataWithCommentDocId.commentSenderUsername}`
                     );
                     openPanelNameSetter("main");
                   }}
@@ -114,18 +114,20 @@ export default function CommentItem({
             }
           />
 
-          <Flex
-            direction="column"
-            cursor="pointer"
-            onClick={() => {
-              router.push(
-                `/users/${commentDataWithCommentDocId.commentSenderUsername}`
-              );
-              openPanelNameSetter("main");
-            }}
-          >
+          <Flex direction="column">
             <Flex align="center">
-              <Text fontSize="10pt" textColor="white" as="b">
+              <Text
+                fontSize="10pt"
+                textColor="white"
+                as="b"
+                cursor="pointer"
+                onClick={() => {
+                  router.push(
+                    `/${commentDataWithCommentDocId.commentSenderUsername}`
+                  );
+                  openPanelNameSetter("main");
+                }}
+              >
                 {commentDataWithCommentDocId.commentSenderUsername}
               </Text>
               <Icon as={BsDot} color="white" fontSize="13px" />

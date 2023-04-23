@@ -13,10 +13,9 @@ import {
   getDoc,
   getDocs,
   orderBy,
-  query,
+  query
 } from "firebase/firestore";
 import { GetServerSidePropsContext } from "next";
-import { useRouter } from "next/router";
 
 import { useEffect, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";

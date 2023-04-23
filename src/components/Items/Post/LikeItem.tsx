@@ -101,18 +101,20 @@ export default function LikeItem({
 
   return (
     <Flex height="60px" align="center" justify="space-between">
-      <Flex gap={2}>
+      <Flex
+        gap={2}
+        cursor="pointer"
+        onClick={() => {
+          router.push(`/${likerUsername}`);
+          openPanelNameSetter("main");
+        }}
+      >
         <Image
           alt=""
           src={likerUserInformation.likerProfilePhoto}
           rounded="full"
           width="50px"
           height="50px"
-          cursor="pointer"
-          onClick={() => {
-            router.push(`/users/${likerUsername}`);
-            openPanelNameSetter("main");
-          }}
           fallback={
             !!likerUserInformation.likerProfilePhoto ||
             gettingLikerInformation ? (
@@ -123,29 +125,12 @@ export default function LikeItem({
                 endColor="gray.800"
               />
             ) : (
-              <Icon
-                as={CgProfile}
-                color="white"
-                height="50px"
-                width="50px"
-                cursor="pointer"
-                onClick={() => {
-                  router.push(`/users/${likerUsername}`);
-                  openPanelNameSetter("main");
-                }}
-              />
+              <Icon as={CgProfile} color="white" height="50px" width="50px" />
             )
           }
         />
 
-        <Flex
-          direction="column"
-          cursor="pointer"
-          onClick={() => {
-            router.push(`/users/${likerUsername}`);
-            openPanelNameSetter("main");
-          }}
-        >
+        <Flex direction="column">
           <Text fontSize="13pt" textColor="white" as="b">
             {likerUsername}
           </Text>
