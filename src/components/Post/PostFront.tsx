@@ -17,7 +17,6 @@ import {
   Skeleton,
   SkeletonCircle,
   SkeletonText,
-  Spinner,
   Text,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
@@ -32,14 +31,13 @@ import { BsDot } from "react-icons/bs";
 
 import { firestore } from "@/firebase/clientApp";
 import useFollow from "@/hooks/useFollow";
-import useNFT from "@/hooks/useNFT";
 import usePost from "@/hooks/usePost";
 import usePostDelete from "@/hooks/usePostDelete";
 import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
 import { CgProfile } from "react-icons/cg";
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
 import { OpenPanelName, PostFrontData } from "../types/Post";
@@ -47,7 +45,11 @@ import { OpenPanelName, PostFrontData } from "../types/Post";
 type Props = {
   postFrontData: PostFrontData;
   openPanelNameSetter: React.Dispatch<React.SetStateAction<OpenPanelName>>;
-  commentCountSetter: React.Dispatch<React.SetStateAction<number>>;
+};
+
+const buttonStyle = {
+  background: "linear-gradient(to right, black, blue)",
+  transition: "background 0.5s ease",
 };
 
 export default function PostFront({
@@ -79,9 +81,7 @@ export default function PostFront({
   const imageSkeletonRef = useRef<HTMLDivElement>(null);
 
   const leastDestructiveRef = useRef<HTMLButtonElement>(null);
-  const [showDeleteUserDialog, setShowDeleteUserDialog] = useState(false);
-
-  const { refreshNFT, nftRefreshLoading } = useNFT();
+  const [showDeletePostDialog, setShowDeletePostDialog] = useState(false);
 
   const [followOperationLoading, setFollowOperationLoading] = useState(false);
 
@@ -182,7 +182,7 @@ export default function PostFront({
 
   const handlePostDelete = async () => {
     await postDelete(postFrontData.postDocId);
-    setShowDeleteUserDialog(false);
+    setShowDeletePostDialog(false);
   };
 
   return (
@@ -226,9 +226,7 @@ export default function PostFront({
               )
             }
             cursor="pointer"
-            onClick={() =>
-              router.push(`/${postFrontData.senderUsername}`)
-            }
+            onClick={() => router.push(`/${postFrontData.senderUsername}`)}
           />
           <Flex direction="column">
             <Flex align="center">
@@ -265,7 +263,7 @@ export default function PostFront({
             </Flex>
           </Flex>
 
-          <Flex position="absolute" right="3" id="followButtonOnPost">
+          <Flex position="absolute" right="3" id="follow-nft-delete">
             <Button
               variant="solid"
               colorScheme="blue"
@@ -294,24 +292,16 @@ export default function PostFront({
                 </MenuButton>
                 <MenuList>
                   {postFrontData.nftStatus.minted ? (
-                    !nftRefreshLoading ? (
-                      <MenuItem
-                        onClick={() => refreshNFT(postFrontData.postDocId)}
-                      >
-                        Refresh NFT
-                      </MenuItem>
-                    ) : (
-                      <MenuItem isDisabled={true}>
-                        <Spinner />
-                      </MenuItem>
-                    )
+                    <MenuItem onClick={() => openPanelNameSetter("nft")}>
+                      Manage NFT
+                    </MenuItem>
                   ) : (
                     <MenuItem onClick={() => openPanelNameSetter("nft")}>
                       Make NFT
                     </MenuItem>
                   )}
 
-                  <MenuItem onClick={() => setShowDeleteUserDialog(true)}>
+                  <MenuItem onClick={() => setShowDeletePostDialog(true)}>
                     Delete
                   </MenuItem>
                 </MenuList>
@@ -319,9 +309,9 @@ export default function PostFront({
             </Flex>
 
             <AlertDialog
-              isOpen={showDeleteUserDialog}
+              isOpen={showDeletePostDialog}
               leastDestructiveRef={leastDestructiveRef}
-              onClose={() => setShowDeleteUserDialog(false)}
+              onClose={() => setShowDeletePostDialog(false)}
               returnFocusOnClose={false}
             >
               <AlertDialogOverlay>
@@ -337,7 +327,7 @@ export default function PostFront({
                   <AlertDialogFooter gap={2}>
                     <Button
                       ref={leastDestructiveRef}
-                      onClick={() => setShowDeleteUserDialog(false)}
+                      onClick={() => setShowDeletePostDialog(false)}
                       variant="solid"
                       size="md"
                       colorScheme="blue"
@@ -434,16 +424,13 @@ export default function PostFront({
               mr="2"
               cursor="pointer"
               onClick={() => {
-                window.open(postFrontData.nftStatus.openseaUrl);
+                openPanelNameSetter("nft");
               }}
               hidden={!!!postFrontData.nftStatus.minted}
             >
-              <Image
-                alt=""
-                src="https://storage.googleapis.com/opensea-static/Logomark/Logomark-Blue.png"
-                width="30px"
-                height="30px"
-              />
+              <Button variant="outline" size="sm" color="white">
+                NFT
+              </Button>
             </Flex>
           </Flex>
         </Flex>

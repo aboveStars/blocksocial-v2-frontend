@@ -16,8 +16,6 @@ export type PostServerData = {
     minted: boolean;
     mintTime: number;
     metadataLink: string;
-    title: string;
-    description: string;
     tokenId: number;
     contractAddress: string;
     openseaUrl: string;
@@ -44,8 +42,6 @@ export type PostItemData = {
     minted: boolean;
     mintTime: number;
     metadataLink: string;
-    title: string;
-    description: string;
     tokenId: number;
     contractAddress: string;
     openseaUrl: string;
@@ -72,8 +68,7 @@ export type PostFrontData = {
     minted: boolean;
     mintTime: number;
     metadataLink: string;
-    title: string;
-    description: string;
+
     tokenId: number;
     contractAddress: string;
     openseaUrl: string;
@@ -83,6 +78,8 @@ export type PostFrontData = {
 
   creationTime: number;
 };
+
+
 
 export type SmallPostItemData = {
   description: string;

@@ -1,4 +1,4 @@
-import PostMakeNFT from "@/components/Modals/Post/PostMakeNFT";
+import PostNFT from "@/components/Modals/Post/PostNFT";
 import { useState } from "react";
 import PostComments from "../../Modals/Post/PostComments";
 import PostLikes from "../../Modals/Post/PostLikes";
@@ -14,6 +14,7 @@ export default function PostItem({ postItemData }: Props) {
 
   // Update realtime comment count when add or delete (locally)
   const [commentCount, setCommentCount] = useState(postItemData.commentCount);
+  const [nftStatus, setNftStatus] = useState(postItemData.nftStatus);
 
   return (
     <>
@@ -21,9 +22,9 @@ export default function PostItem({ postItemData }: Props) {
         postFrontData={{
           ...postItemData,
           commentCount: commentCount,
+          nftStatus: nftStatus,
         }}
         openPanelNameSetter={setOpenPanelName}
-        commentCountSetter={setCommentCount}
       />
       <PostComments
         commentsInfo={{
@@ -43,10 +44,11 @@ export default function PostItem({ postItemData }: Props) {
         openPanelNameSetter={setOpenPanelName}
         openPanelNameValue={openPanelName}
       />
-      <PostMakeNFT
+      <PostNFT
         openPanelNameValue={openPanelName}
         openPanelNameValueSetter={setOpenPanelName}
-        postInformation={postItemData}
+        postInformation={{ ...postItemData, nftStatus: nftStatus }}
+        nftStatusValueSetter={setNftStatus}
       />
     </>
   );

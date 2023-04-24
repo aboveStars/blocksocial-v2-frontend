@@ -13,7 +13,7 @@ import {
   getDoc,
   getDocs,
   orderBy,
-  query
+  query,
 } from "firebase/firestore";
 import { GetServerSidePropsContext } from "next";
 

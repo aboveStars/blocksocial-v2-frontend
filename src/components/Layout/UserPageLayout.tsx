@@ -20,6 +20,7 @@ export default function UserPageLayout({
   useEffect(() => {
     setInnerHeight(`${window.innerHeight}px`);
   }, []);
+
   return (
     <>
       <Flex width="100%">
@@ -63,5 +64,3 @@ export default function UserPageLayout({
     </>
   );
 }
-
-

@@ -1,6 +1,10 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postsAtViewAtom } from "@/components/atoms/postsAtViewAtom";
-import { PostCreateForm, PostItemData } from "@/components/types/Post";
+import {
+  PostCreateForm,
+  PostItemData,
+  PostServerData,
+} from "@/components/types/Post";
 import { auth } from "@/firebase/clientApp";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -83,55 +87,22 @@ const usePostCreate = () => {
       );
     }
 
-    const newPostDocId = (await response.json()).newPostDocId;
+    const result = await response.json();
+    const newPostServerData: PostServerData = result.newPostData;
+    const newPostDocId: string = result.newPostDocId;
 
     if (router.asPath === `/${currentUserstate.username}`) {
-      console.log("Hmm. We posted in our user page.");
       const newPostData: PostItemData = {
-        senderUsername: currentUserstate.username,
-        description: description,
-        image: image,
-        likeCount: 0,
-        commentCount: 0,
-        nftStatus: {
-          minted: false,
-          mintTime: -1,
-          metadataLink: "",
-          title: "",
-          description: "",
-          tokenId: -1,
-          contractAddress: "",
-          openseaUrl: "",
-          transferred: false,
-          transferredAddress: "",
-        },
+        ...newPostServerData,
         currentUserLikedThisPost: false,
         postDocId: newPostDocId,
-        creationTime: Date.now(),
       };
       setPostsAtView((prev) => [newPostData, ...prev]);
     } else if (router.asPath === "/") {
       const newPostData: PostItemData = {
-        senderUsername: currentUserstate.username,
-        description: description,
-        image: image,
-        likeCount: 0,
-        commentCount: 0,
-        nftStatus: {
-          minted: false,
-          mintTime: -1,
-          metadataLink: "",
-          title: "",
-          description: "",
-          tokenId: -1,
-          contractAddress: "",
-          openseaUrl: "",
-          transferred: false,
-          transferredAddress: "",
-        },
+        ...newPostServerData,
         currentUserLikedThisPost: false,
         postDocId: newPostDocId,
-        creationTime: Date.now(),
       };
       setPostsAtView((prev) => [newPostData, ...prev]);
     }

@@ -1,4 +1,5 @@
 import { NFTMetadata } from "@/components/types/NFT";
+import { PostItemData } from "@/components/types/Post";
 import { blockSocialSmartContract } from "@/ethers/clientApp";
 import { mumbaiContractAddress } from "@/ethers/ContractAddresses";
 import { auth, firestore, storage } from "@/firebase/clientApp";
@@ -10,8 +11,6 @@ import safeJsonStringify from "safe-json-stringify";
 
 export default function useNFT() {
   const [creatingNFTLoading, setCreatingNFTLoading] = useState(false);
-
-  const [openSeaLink, setOpenSeaLink] = useState("");
 
   const [nftCreated, setNftCreated] = useState(false);
 
@@ -54,7 +53,7 @@ export default function useNFT() {
         {
           display_type: "date",
           trait_type: "NFT Creation",
-          value: Date.now(),
+          value: Date.now() / 1000,
         },
         {
           trait_type: "Likes",
@@ -102,7 +101,6 @@ export default function useNFT() {
       const tokenId = parseInt(txReceipt.logs[1].topics[2], 16);
 
       const openSeaLinkCreated = `https://testnets.opensea.io/assets/mumbai/${mumbaiContractAddress}/${tokenId}`;
-      setOpenSeaLink(openSeaLinkCreated);
 
       const postDocRef = doc(
         firestore,
@@ -130,9 +128,24 @@ export default function useNFT() {
 
       setCreatingNFTLoading(false);
       setNftCreated(true);
+
+      const nftMintResult: PostItemData["nftStatus"] = {
+        minted: true,
+        metadataLink: metadataLink,
+        mintTime: Date.now(),
+
+        tokenId: tokenId,
+        contractAddress: mumbaiContractAddress,
+        openseaUrl: openSeaLinkCreated,
+        transferred: false,
+        transferredAddress: "",
+      };
+
+      return nftMintResult;
     } catch (error) {
       console.error("Error while creating NFT:", error);
       setCreatingNFTLoading(false);
+      return;
     }
   };
 
@@ -184,8 +197,6 @@ export default function useNFT() {
   return {
     mintNft,
     creatingNFTLoading,
-    openSeaLink,
-    setOpenSeaLink,
     nftCreated,
     setNftCreated,
     refreshNFT,

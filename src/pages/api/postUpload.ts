@@ -86,8 +86,6 @@ export default async function handler(
       minted: false,
       mintTime: -1,
       metadataLink: "",
-      title: "",
-      description: "",
       tokenId: -1,
       contractAddress: "",
       openseaUrl: "",
@@ -109,7 +107,9 @@ export default async function handler(
     return res.status(503).json({ error: "Firebase error" });
   }
 
-  return res.status(200).json({ newPostDocId: generalPostId });
+  return res
+    .status(200)
+    .json({ newPostData: newPostData, newPostDocId: generalPostId });
 }
 
 /**
