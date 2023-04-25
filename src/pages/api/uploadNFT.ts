@@ -1,15 +1,13 @@
-import { NFTMetadata } from "@/components/types/NFT";
-import { PostServerData } from "@/components/types/Post";
 import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { NextApiRequest, NextApiResponse } from "next";
-import { auth, bucket, firestore } from "../../firebase/adminApp";
+import { auth, bucket } from "../../firebase/adminApp";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   const { cron, authorization } = req.headers;
-  const { postDocId } = req.body;
+  const { postDocId, metadata } = req.body;
 
   if (cron === process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
     console.log("Warm-Up Request");
@@ -33,73 +31,19 @@ export default async function handler(
     return res.status(401).json({ error: "Unautorized" });
   }
 
-  if (req.method !== "POST") return res.status(405).json("Method not allowed");
+  const buffer = Buffer.from(JSON.stringify(metadata));
 
-  if (!operationFromUsername || !postDocId) {
-    return res.status(422).json({ error: "Invalid prop or props" });
-  }
-
-  let oldMetadata: NFTMetadata;
-  try {
-    const oldMetadataFile = bucket.file(
-      `users/${operationFromUsername}/postsFiles/${postDocId}/nftMetadata`
-    );
-
-    oldMetadata = JSON.parse(
-      (await oldMetadataFile.download())[0].toString("utf-8")
-    );
-  } catch (error) {
-    console.error(
-      "Error while refreshingNFT.(We were on downloading old metadata.)",
-      error
-    );
-    return res.status(503).json({ error: "Firebase error" });
-  }
-
-  let pd: PostServerData;
-
-  try {
-    pd = (
-      await firestore
-        .doc(`users/${operationFromUsername}/posts/${postDocId}`)
-        .get()
-    ).data() as PostServerData;
-  } catch (error) {
-    console.error(
-      "Error while refreshingNFT.(We were on getting new comment and like count.))",
-      error
-    );
-    return res.status(503).json({ error: "Firebase error" });
-  }
-
-  if (!pd) {
-    console.error(
-      "Error while refreshingNFT.(We were checking if postDocExist. It is not null)"
-    );
-    return res.status(503).json({ error: "Firebase error" });
-  }
-
-  oldMetadata.attributes.find((a) => a.trait_type === "Likes")!.value =
-    pd.likeCount;
-
-  oldMetadata.attributes.find((a) => a.trait_type === "Comments")!.value =
-    pd.commentCount;
-
-  const refreshedMetadata = oldMetadata;
-
-  const buffer = Buffer.from(JSON.stringify(refreshedMetadata));
-
-  const refreshedMetadataFile = bucket.file(
+  const newMetadataFile = bucket.file(
     `users/${operationFromUsername}/postsFiles/${postDocId}/nftMetadata`
   );
 
   try {
-    await refreshedMetadataFile.save(buffer, {
+    await newMetadataFile.save(buffer, {
       metadata: {
         contentType: "application/json",
       },
     });
-    await refreshedMetadataFile.setMetadata({
+    await newMetadataFile.setMetadata({
       cacheControl: "public, max-age=1",
     });
   } catch (error) {
@@ -110,7 +54,7 @@ export default async function handler(
     return res.status(503).json({ error: "Firebase error" });
   }
   try {
-    await refreshedMetadataFile.makePublic();
+    await newMetadataFile.makePublic();
   } catch (error) {
     console.error(
       "Error while refreshingNFT.(We were making new metadata public.)",
@@ -119,7 +63,9 @@ export default async function handler(
     return res.status(503).json({ error: "Firebase error" });
   }
 
-  return res.status(200).json({});
+  return res.status(200).json({
+    metadataLink: newMetadataFile.publicUrl(),
+  });
 }
 
 /**

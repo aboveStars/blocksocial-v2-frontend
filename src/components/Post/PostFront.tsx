@@ -45,6 +45,7 @@ import { OpenPanelName, PostFrontData } from "../types/Post";
 type Props = {
   postFrontData: PostFrontData;
   openPanelNameSetter: React.Dispatch<React.SetStateAction<OpenPanelName>>;
+  likeCountValueSetter: React.Dispatch<React.SetStateAction<number>>;
 };
 
 const buttonStyle = {
@@ -55,6 +56,7 @@ const buttonStyle = {
 export default function PostFront({
   postFrontData,
   openPanelNameSetter,
+  likeCountValueSetter,
 }: Props) {
   const [postSenderInformation, setPostSenderInformation] = useState({
     username: postFrontData.senderUsername,
@@ -171,6 +173,8 @@ export default function PostFront({
       likeCount: prev.likeCount + opCode,
       currentUserLikedThisPost: opCode === 1 ? true : false,
     }));
+
+    likeCountValueSetter((prev) => prev + opCode);
 
     await like(
       `users/${postFrontData.senderUsername}/posts/${postFrontData.postDocId}`,

@@ -54,6 +54,9 @@ export default async function handler(
           contentType: "image/jpeg",
         },
       });
+      await file.setMetadata({
+        cacheControl: "public, max-age=1",
+      });
     } catch (error) {
       console.error(
         "Error while updating profile photo. (We are on 'file saving'.)",

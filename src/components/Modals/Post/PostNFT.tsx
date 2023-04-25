@@ -18,7 +18,7 @@ import {
   Spinner,
   Text,
 } from "@chakra-ui/react";
-import React, { SetStateAction, useEffect, useState } from "react";
+import React, { SetStateAction, useEffect, useRef, useState } from "react";
 import {
   AiFillHeart,
   AiOutlineCheckCircle,
@@ -31,6 +31,7 @@ import { mumbaiContractAddress } from "@/ethers/ContractAddresses";
 import { format } from "date-fns";
 import { BiTransfer } from "react-icons/bi";
 import {
+  BsArrowRight,
   BsFillCalendarHeartFill,
   BsFillCalendarPlusFill,
 } from "react-icons/bs";
@@ -53,13 +54,8 @@ export default function PostNFT({
   postInformation,
   nftStatusValueSetter,
 }: Props) {
-  const {
-    mintNft,
-    creatingNFTLoading,
-
-    nftCreated,
-    setNftCreated,
-  } = useNFT();
+  const { mintNft, creatingNFTLoading, refreshNFT, nftCreated, setNftCreated } =
+    useNFT();
 
   const [nftTitle, setNftTitle] = useState("");
   const [nftDescription, setNftDescription] = useState(
@@ -68,6 +64,18 @@ export default function PostNFT({
 
   const [gettingNFTDataLoading, setGettingNFTDataLoading] = useState(true);
   const [nftMetadaData, setNFTMetadata] = useState<NFTMetadata>();
+
+  const [refreshNFTLoading, setRefreshNFTLoading] = useState(false);
+
+  const [nftMetadataLikeCommentCount, setNftMetdataLikeCommentCount] = useState(
+    {
+      likeCount: 0,
+      commentCount: 0,
+    }
+  );
+
+  const nftDataFlexRef = useRef<HTMLDivElement>(null);
+  const [nftImageSizePx, setNftImageSizePx] = useState("300px");
 
   const handleSendNFT = async () => {
     const nftMintResult = await mintNft(
@@ -102,7 +110,11 @@ export default function PostNFT({
 
   const getNFTData = async () => {
     setGettingNFTDataLoading(true);
+    setNFTMetadata(undefined);
+    setNftMetdataLikeCommentCount({ commentCount: 0, likeCount: 0 });
+    console.log(postInformation.nftStatus.metadataLink);
     const response = await fetch(postInformation.nftStatus.metadataLink, {
+      cache: "no-store",
       method: "GET",
     });
 
@@ -114,11 +126,34 @@ export default function PostNFT({
       );
     }
 
-    const result = await response.json();
+    const result: NFTMetadata = await response.json();
+    console.log(result);
     setNFTMetadata(result);
+    setNftMetdataLikeCommentCount({
+      likeCount: Number(
+        result.attributes.find((a) => a.trait_type === "Likes")!.value
+      ),
+      commentCount: Number(
+        result.attributes.find((a) => a.trait_type === "Comments")!.value
+      ),
+    });
 
     setGettingNFTDataLoading(false);
   };
+
+  const handleRefreshNFT = async () => {
+    setRefreshNFTLoading(true);
+    await refreshNFT(postInformation.postDocId);
+    setRefreshNFTLoading(false);
+    getNFTData();
+  };
+
+  useEffect(() => {
+    if (nftDataFlexRef.current) {
+      console.log(nftDataFlexRef.current.clientWidth);
+      setNftImageSizePx(`${nftDataFlexRef.current.clientWidth / 2}px`);
+    }
+  }, [nftDataFlexRef.current?.clientWidth]);
 
   useEffect(() => {
     if (
@@ -185,50 +220,56 @@ export default function PostNFT({
                     id="nft-full-data"
                     hidden={gettingNFTDataLoading}
                     gap="5"
+                    ref={nftDataFlexRef}
+                    align="center"
                   >
-                    <AspectRatio ratio={1} width="50%">
-                      <img src={nftMetadaData?.image} />
-                    </AspectRatio>
-                    <Flex id="nft-data" direction="column" width="50%">
+                    <Image
+                      width={nftImageSizePx}
+                      height={nftImageSizePx}
+                      src={nftMetadaData?.image}
+                      borderRadius="5"
+                    />
+
+                    <Flex id="nft-data" direction="column" gap={0.5}>
                       <Flex id="nft-title-data" align="center" gap={1}>
-                        <Icon as={MdTitle} fontSize="13pt" color="white" />
-                        <Text color="white" fontSize="13pt">
+                        <Icon as={MdTitle} fontSize="11pt" color="white" />
+                        <Text color="white" fontSize="11pt">
                           {nftMetadaData?.name}
                         </Text>
                       </Flex>
                       <Flex id="nft-description-data" align="center" gap={1}>
                         <Icon
                           as={GrTextAlignFull}
-                          fontSize="13pt"
+                          fontSize="11pt"
                           color="white"
                         />
-                        <Text color="white" fontSize="13pt">
+                        <Text color="white" fontSize="11pt">
                           {nftMetadaData?.description}
                         </Text>
                       </Flex>
                       <Flex id="nft-like-data" align="center" gap={1}>
-                        <Icon as={AiFillHeart} fontSize="13pt" color="white" />
-                        <Text color="white" fontSize="13pt">
-                          {nftMetadaData?.attributes[2].value}
+                        <Icon as={AiFillHeart} fontSize="11pt" color="white" />
+                        <Text color="white" fontSize="11pt">
+                          {nftMetadataLikeCommentCount.likeCount}
                         </Text>
                       </Flex>
                       <Flex id="nft-comment-data" align="center" gap={1}>
                         <Icon
                           as={AiOutlineComment}
-                          fontSize="13pt"
+                          fontSize="11pt"
                           color="white"
                         />
-                        <Text color="white" fontSize="13pt">
-                          {nftMetadaData?.attributes[3].value}
+                        <Text color="white" fontSize="11pt">
+                          {nftMetadataLikeCommentCount.commentCount}
                         </Text>
                       </Flex>
                       <Flex id="nft-tokenId-data" align="center" gap={1}>
                         <Icon
                           as={AiOutlineNumber}
-                          fontSize="13pt"
+                          fontSize="11pt"
                           color="white"
                         />
-                        <Text color="white" fontSize="13pt">
+                        <Text color="white" fontSize="11pt">
                           {postInformation.nftStatus.tokenId}
                         </Text>
                       </Flex>
@@ -237,7 +278,7 @@ export default function PostNFT({
                           <img src="https://cryptologos.cc/logos/polygon-matic-logo.png?v=024" />
                         </AspectRatio>
 
-                        <Text color="white" fontSize="13pt">
+                        <Text color="white" fontSize="11pt">
                           {`${mumbaiContractAddress.slice(
                             0,
                             5
@@ -254,14 +295,15 @@ export default function PostNFT({
                       >
                         <Icon
                           as={BsFillCalendarPlusFill}
-                          fontSize="13pt"
+                          fontSize="11pt"
                           color="white"
                         />
-                        <Text color="white" fontSize="13pt">
+                        <Text color="white" fontSize="11pt">
                           {format(
                             new Date(
-                              (nftMetadaData?.attributes[0].value as number) *
-                                1000
+                              (nftMetadaData?.attributes.find(
+                                (a) => a.trait_type === "Post Creation"
+                              )?.value as number) * 1000
                             ),
                             "dd MMMM yyyy"
                           )}
@@ -274,14 +316,15 @@ export default function PostNFT({
                       >
                         <Icon
                           as={BsFillCalendarHeartFill}
-                          fontSize="13pt"
+                          fontSize="11pt"
                           color="white"
                         />
-                        <Text color="white" fontSize="13pt">
+                        <Text color="white" fontSize="11pt">
                           {format(
                             new Date(
-                              (nftMetadaData?.attributes[1].value as number) *
-                                1000
+                              (nftMetadaData?.attributes.find(
+                                (a) => a.trait_type === "NFT Creation"
+                              )?.value as number) * 1000
                             ),
                             "dd MMMM yyyy"
                           )}
@@ -290,22 +333,88 @@ export default function PostNFT({
                       <Flex id="nft-owner-data" align="center" gap={1}>
                         <Icon
                           as={FaRegUserCircle}
-                          fontSize="13pt"
+                          fontSize="11pt"
                           color="white"
                         />
-                        <Text color="white" fontSize="13pt">
+                        <Text color="white" fontSize="11pt">
                           {postInformation.nftStatus.transferred
                             ? postInformation.nftStatus.transferredAddress
                             : "BlockSocial"}
                         </Text>
                       </Flex>
                       <Flex id="nft-transfer-data" align="center" gap={1}>
-                        <Icon as={BiTransfer} fontSize="13pt" color="white" />
-                        <Text color="white" fontSize="13pt">
+                        <Icon as={BiTransfer} fontSize="11pt" color="white" />
+                        <Text color="white" fontSize="11pt">
                           {postInformation.nftStatus.transferred ? "Yes" : "No"}
                         </Text>
                       </Flex>
                     </Flex>
+                  </Flex>
+                  <Flex id="refresh-nft-area" direction="column">
+                    <Text color="white" fontSize="15pt" as={"b"}>
+                      NFT Status
+                    </Text>
+                    {postInformation.likeCount !==
+                      nftMetadataLikeCommentCount.likeCount ||
+                    postInformation.commentCount !==
+                      nftMetadataLikeCommentCount.commentCount ? (
+                      <Flex id="nft-update-needed" direction="column" gap="2">
+                        <Text fontSize="9pt" color="red">
+                          Your NFT is not up to date.
+                        </Text>
+                        <Flex
+                          id="like-change"
+                          align="center"
+                          gap={2}
+                          hidden={
+                            nftMetadataLikeCommentCount.likeCount ===
+                            postInformation.likeCount
+                          }
+                        >
+                          <Icon as={AiFillHeart} color="white" />
+                          <Text color="white">
+                            {nftMetadataLikeCommentCount.likeCount}
+                          </Text>
+                          <Icon as={BsArrowRight} color="white" />
+                          <Text color="white">{postInformation.likeCount}</Text>
+                        </Flex>
+                        <Flex
+                          id="comment-change"
+                          align="center"
+                          gap={2}
+                          hidden={
+                            nftMetadataLikeCommentCount.commentCount ===
+                            postInformation.commentCount
+                          }
+                        >
+                          <Icon as={AiOutlineComment} color="white" />
+                          <Text color="white">
+                            {nftMetadataLikeCommentCount.commentCount}
+                          </Text>
+                          <Icon as={BsArrowRight} color="white" />
+                          <Text color="white">
+                            {postInformation.commentCount}
+                          </Text>
+                        </Flex>
+                        <Button
+                          variant="outline"
+                          colorScheme="blue"
+                          size="sm"
+                          onClick={() => {
+                            handleRefreshNFT();
+                          }}
+                          isLoading={refreshNFTLoading}
+                        >
+                          Update NFT
+                        </Button>
+                      </Flex>
+                    ) : (
+                      <>
+                        <Text color="white" fontSize="9pt">
+                          Your NFT is up to date.
+                        </Text>
+                      </>
+                    )}
                   </Flex>
                 </Flex>
               ) : (
