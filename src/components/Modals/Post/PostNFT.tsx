@@ -46,6 +46,8 @@ import { fakeWaiting } from "@/components/utils/FakeWaiting";
 import { auth } from "@/firebase/clientApp";
 import { FiExternalLink } from "react-icons/fi";
 import { RxText } from "react-icons/rx";
+import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { useRecoilValue } from "recoil";
 
 type Props = {
   openPanelNameValue: OpenPanelName;
@@ -88,6 +90,8 @@ export default function PostNFT({
   const [nftTransferAddress, setNftTransferAddress] = useState("");
   const [nftTransferAddressRight, setNftTransferAddressRight] = useState(true);
   const [nftTransferLoading, setNftTransferLoading] = useState(false);
+
+  const currentUserState = useRecoilValue(currentUserStateAtom);
 
   useEffect(() => {
     if (
@@ -275,7 +279,9 @@ export default function PostNFT({
           zIndex="banner"
         >
           <Text textColor="white" fontSize="17pt" as="b">
-            {postInformation.nftStatus.minted
+            {postInformation.senderUsername !== currentUserState.username
+              ? `${postInformation.senderUsername}'s NFT`
+              : postInformation.nftStatus.minted
               ? "Manage Your NFT"
               : "Create NFT"}
           </Text>
@@ -358,7 +364,11 @@ export default function PostNFT({
                       nftMetadataLikeCommentCount.commentCount ? (
                       <Flex id="nft-update-needed" direction="column" gap="2">
                         <Text fontSize="9pt" color="red">
-                          Your NFT is not up to date.
+                          {postInformation.senderUsername ===
+                          currentUserState.username
+                            ? "Your"
+                            : "This"}{" "}
+                          NFT is not up to date.
                         </Text>
                         <Flex
                           id="like-change"
@@ -402,6 +412,10 @@ export default function PostNFT({
                             handleRefreshNFT();
                           }}
                           isLoading={refreshNFTLoading}
+                          hidden={
+                            currentUserState.username !==
+                            postInformation.senderUsername
+                          }
                         >
                           Update NFT
                         </Button>
@@ -409,7 +423,11 @@ export default function PostNFT({
                     ) : (
                       <>
                         <Text color="white" fontSize="9pt">
-                          Your NFT is up to date.
+                          {postInformation.senderUsername ===
+                          currentUserState.username
+                            ? "Your"
+                            : "This"}{" "}
+                          NFT is up to date.
                         </Text>
                       </>
                     )}
@@ -420,7 +438,11 @@ export default function PostNFT({
                     </Text>
                     {postInformation.nftStatus.transferred ? (
                       <Text color="white" fontSize="9pt">
-                        Your NFT is transferred.
+                        {postInformation.senderUsername ===
+                        currentUserState.username
+                          ? "Your"
+                          : "This"}{" "}
+                        NFT is transferred.
                       </Text>
                     ) : (
                       <Flex
@@ -429,7 +451,11 @@ export default function PostNFT({
                         gap={2}
                       >
                         <Text color="red" fontSize="9pt">
-                          Your NFT is not transferred.
+                          {postInformation.senderUsername ===
+                          currentUserState.username
+                            ? "Your"
+                            : "This"}
+                          NFT is not transferred.
                         </Text>
                         <form
                           onSubmit={(event) => {
@@ -439,6 +465,10 @@ export default function PostNFT({
                           style={{
                             marginTop: "1",
                           }}
+                          hidden={
+                            postInformation.senderUsername !==
+                            currentUserState.username
+                          }
                         >
                           <InputGroup>
                             <FormControl variant="floating">

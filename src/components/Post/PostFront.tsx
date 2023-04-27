@@ -420,19 +420,24 @@ export default function PostFront({
               </Flex>
             </Flex>
 
-            <Flex
-              justify="flex-end"
-              align="center"
-              width="100%"
-              mb={2}
-              mr="2"
-              cursor="pointer"
-              onClick={() => {
-                openPanelNameSetter("nft");
-              }}
-              hidden={!!!postFrontData.nftStatus.minted}
-            >
-              <Button variant="outline" size="sm" color="white">
+            <Flex width="100%" position="relative">
+              <Button
+                hidden={!!!postFrontData.nftStatus.minted}
+                position="absolute"
+                right="2.5"
+                bottom="3"
+                colorScheme="pink"
+                size="sm"
+                borderRadius="full"
+                px={4}
+                py={2}
+                fontWeight="bold"
+                _hover={{ bg: "pink.500" }}
+                _active={{ bg: "pink.600" }}
+                onClick={() => {
+                  openPanelNameSetter("nft");
+                }}
+              >
                 NFT
               </Button>
             </Flex>
