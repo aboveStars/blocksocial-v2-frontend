@@ -37,7 +37,7 @@ export default function FollowItem({
   followingsFollowersModalStateSetter,
 }: Props) {
   const [followItemState, setFollowItemState] = useState<FollowItemState>({
-    username: "",
+    username: username,
     fullname: "",
     profilePhoto: "",
     followedByCurrentUser: true,
@@ -52,6 +52,8 @@ export default function FollowItem({
   const { follow } = useFollow();
 
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
+
+  const [followOperationLoading, setFollowOperationLoading] = useState(false);
 
   useEffect(() => {
     if (username) getFollowItemInformation();
@@ -96,7 +98,7 @@ export default function FollowItem({
     setGettingFollowItemState(false);
   };
 
-  const handleFollowonFollowItem = () => {
+  const handleFollowonFollowItem = async () => {
     if (!currentUserState.isThereCurrentUser) {
       console.log("Login First to Follow");
       setAuthModalState((prev) => ({
@@ -105,15 +107,20 @@ export default function FollowItem({
       }));
       return;
     }
+    setFollowOperationLoading(true);
     // Follow
-    follow(followItemState.username, 1);
+    await follow(followItemState.username, 1);
 
     // update follow status
     setFollowItemState((prev) => ({
       ...prev,
       followedByCurrentUser: true,
     }));
+
+    setFollowOperationLoading(false);
   };
+
+
 
   return (
     <Flex align="center" justify="space-between">
@@ -172,6 +179,7 @@ export default function FollowItem({
             !!!followItemState.username ||
             followItemState.username === currentUserState.username
           }
+          isLoading={followOperationLoading}
         >
           Follow
         </Button>

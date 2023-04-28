@@ -1,19 +1,11 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { firestore } from "@/firebase/clientApp";
 import useCommentDelete from "@/hooks/useCommentDelete";
-import {
-  Box,
-  Flex,
-  Icon,
-  Image,
-  SkeletonCircle,
-  Spinner,
-  Text,
-} from "@chakra-ui/react";
+import { Flex, Icon, Image, SkeletonCircle, Text } from "@chakra-ui/react";
 import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
-import React, { SetStateAction, useEffect, useRef, useState } from "react";
+import React, { SetStateAction, useEffect, useState } from "react";
 import { BsDot, BsTrash } from "react-icons/bs";
 import { CgProfile } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
@@ -90,17 +82,17 @@ export default function CommentItem({
           }}
           fallback={
             !!commentSenderPhoto || gettingCommentSenderPhoto ? (
-              <SkeletonCircle
-                width="35px"
-                height="35px"
-                startColor="gray.100"
-                endColor="gray.800"
-              />
+              <Flex id="i-put-this-flex to adjust skeleton">
+                <SkeletonCircle
+                  width="35px"
+                  startColor="gray.100"
+                  endColor="gray.800"
+                />
+              </Flex>
             ) : (
               <Icon
                 as={CgProfile}
                 color="white"
-                height="35px"
                 width="35px"
                 cursor="pointer"
                 onClick={() => {

@@ -22,7 +22,6 @@ import { CgProfile } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
 import { currentUserStateAtom } from "../../atoms/currentUserAtom";
 import CommentItem from "../../Items/Post/CommentItem";
-import CommentItemSkeleton from "../../Skeletons/CommentItemSkeleton";
 import { CommentDataWithCommentDocPath, OpenPanelName } from "../../types/Post";
 
 type Props = {

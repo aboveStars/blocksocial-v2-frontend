@@ -18,6 +18,20 @@ export interface UserInServer {
   uid: string;
 }
 
+export const defaultUserInServer: UserInServer = {
+  username: "",
+  fullname: "",
+  profilePhoto: "",
+
+  followingCount: -1,
+  followerCount: -1,
+
+  nftCount: -1,
+
+  email: "",
+  uid: "",
+};
+
 export interface CurrentUser {
   isThereCurrentUser: boolean;
   loading: boolean;

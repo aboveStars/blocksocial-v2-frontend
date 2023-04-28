@@ -49,6 +49,8 @@ export type PostItemData = {
     transferredAddress: string;
   };
 
+  currentUserFollowThisSender: boolean;
+
   creationTime: number;
 };
 
@@ -76,17 +78,7 @@ export type PostFrontData = {
     transferredAddress: string;
   };
 
-  creationTime: number;
-};
-
-
-
-export type SmallPostItemData = {
-  description: string;
-  image: string;
-  likeCount: number;
-
-  commentCount: number;
+  currentUserFollowThisSender: boolean;
 
   creationTime: number;
 };

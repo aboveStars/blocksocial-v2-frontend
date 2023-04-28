@@ -211,6 +211,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
       commentCount: postDoc.data().commentCount,
 
+      currentUserFollowThisSender: false,
+
       nftStatus: postDoc.data().nftStatus,
       creationTime: postDoc.data().creationTime,
     };

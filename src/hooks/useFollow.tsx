@@ -1,11 +1,15 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { headerAtViewAtom } from "@/components/atoms/headerAtViewAtom";
 import { auth } from "@/firebase/clientApp";
-import { useStatStyles } from "@chakra-ui/react";
-import { useState } from "react";
-import { useRecoilValue } from "recoil";
+import { useRouter } from "next/router";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 export default function useFollow() {
   const currentUserState = useRecoilValue(currentUserStateAtom);
+
+  const setHeaderAtView = useSetRecoilState(headerAtViewAtom);
+
+  const router = useRouter();
 
   /**
    * @param username username to operate
@@ -15,11 +19,9 @@ export default function useFollow() {
     if (!currentUserState.isThereCurrentUser) {
       return;
     }
-
     if (operateToUserName == currentUserState.username) {
       return;
     }
-
     let idToken = "";
     try {
       idToken = (await auth.currentUser?.getIdToken()) as string;
@@ -50,8 +52,23 @@ export default function useFollow() {
 
     if (!response.ok) {
       console.error("Error from 'follow' API:", await response.json());
-
       return;
+    }
+
+    // update "header" locally
+
+    // 1-) If we are in our page => we can just "follow" people so we should just update our "following" count
+    // 2-) If we are in someone else page => we can follow that user or one of it follows or followers so we just need update its "follower count" (If we are in that user page.)
+    if (router.asPath.includes(currentUserState.username)) {
+      setHeaderAtView((prev) => ({
+        ...prev,
+        followingCount: prev.followingCount + opCode,
+      }));
+    } else if (router.asPath.includes(operateToUserName)) {
+      setHeaderAtView((prev) => ({
+        ...prev,
+        followerCount: prev.followingCount + opCode,
+      }));
     }
   };
 

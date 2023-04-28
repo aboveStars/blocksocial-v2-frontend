@@ -38,6 +38,7 @@ import ProfilePhotoUpdateModal from "../Modals/User/ProfilePhotoUpdateModal";
 import { auth, firestore } from "@/firebase/clientApp";
 import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
+import { headerAtViewAtom } from "../atoms/headerAtViewAtom";
 
 type Props = {
   userInformation: UserInServer;
@@ -77,9 +78,6 @@ export default function Header({ userInformation }: Props) {
 
   const [poorProfilePhoto, setPoorProfilePhoto] = useState(false);
 
-  const [ostensibleUserInformation, setOstensibleUserInformation] =
-    useState(userInformation);
-
   const { follow } = useFollow();
 
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
@@ -109,17 +107,13 @@ export default function Header({ userInformation }: Props) {
   const [gettingFollowStatus, setGettingFollowStatus] = useState(true);
   const [followOperationLoading, setFollowOperationLoading] = useState(false);
 
-  /**
-   * userData is already being controlled then, comes here
-   * Current user uid, but direcly comes here. So we check it
-   * UID is secure?
-   */
+  const [headerAtView, setHeaderAtView] = useRecoilState(headerAtViewAtom);
 
   useEffect(() => {
     // after updating photo, we are using raw base64 selected photo as pp until refresh.
     setSelectedProfilePhoto("");
 
-    if (userInformation) setOstensibleUserInformation(userInformation);
+    if (userInformation) setHeaderAtView(userInformation);
 
     if (currentUserState.isThereCurrentUser) {
       handleFollowStatus();
@@ -133,15 +127,15 @@ export default function Header({ userInformation }: Props) {
       setGettingFollowStatus(false);
       setIsCurrentUserPage((prev) => false);
     }
-  }, [userInformation, currentUserState]);
+  }, [userInformation, currentUserState.isThereCurrentUser]);
 
   useEffect(() => {
     const poorStatus: boolean = !(
-      ostensibleUserInformation.profilePhoto || selectedProfilePhoto
+      headerAtView.profilePhoto || selectedProfilePhoto
     );
 
     setPoorProfilePhoto(poorStatus);
-  }, [ostensibleUserInformation.profilePhoto]);
+  }, [headerAtView.profilePhoto]);
 
   /**
    * Checks if we follow this user.
@@ -177,12 +171,7 @@ export default function Header({ userInformation }: Props) {
     // Follow operation
     await follow(userInformation.username, 1);
 
-    setOstensibleUserInformation((prev) => ({
-      ...prev,
-      followerCount: prev.followerCount + 1,
-    }));
     setCurrentUserFollowThisMan(true);
-
     setFollowOperationLoading(false);
   };
   const handleDeFollow = async () => {
@@ -198,13 +187,7 @@ export default function Header({ userInformation }: Props) {
     setFollowOperationLoading(true);
     // Follow Operation
     await follow(userInformation.username, -1);
-    // Page Update (locally)
-    setOstensibleUserInformation((prev) => ({
-      ...prev,
-      followerCount: prev.followerCount - 1,
-    }));
-    // Current User Update (locally)
-   
+
     setCurrentUserFollowThisMan(false);
     setFollowOperationLoading(false);
   };
@@ -231,8 +214,8 @@ export default function Header({ userInformation }: Props) {
   };
 
   useEffect(() => {
-    console.log(ostensibleUserInformation);
-  }, [ostensibleUserInformation]);
+    console.log(headerAtView);
+  }, [headerAtView]);
 
   useEffect(() => {
     if (!willBeCroppedProfilePhoto) return;
@@ -243,8 +226,8 @@ export default function Header({ userInformation }: Props) {
     <>
       <ProfilePhotoUpdateModal
         modifyingSetter={setModifying}
-        ostensibleUserInformationValue={ostensibleUserInformation}
-        ostensibleUserInformationSetter={setOstensibleUserInformation}
+        ostensibleUserInformationValue={headerAtView}
+        ostensibleUserInformationSetter={setHeaderAtView}
         profilePhotoUpdateModalOpenSetter={setProiflePhotoUpdateModalOpen}
         profilePhotoUpdateModalOpenValue={profilePhotoUpdateModalOpen}
         inputRef={inputRef}
@@ -301,7 +284,7 @@ export default function Header({ userInformation }: Props) {
                 size="md"
                 onClick={async () => {
                   await profilePhotoDelete();
-                  setOstensibleUserInformation((prev) => ({
+                  setHeaderAtView((prev) => ({
                     ...prev,
                     profilePhoto: "",
                   }));
@@ -324,8 +307,8 @@ export default function Header({ userInformation }: Props) {
               src={
                 selectedProfilePhoto
                   ? selectedProfilePhoto
-                  : ostensibleUserInformation.profilePhoto
-                  ? ostensibleUserInformation.profilePhoto
+                  : headerAtView.profilePhoto
+                  ? headerAtView.profilePhoto
                   : ""
               }
               fallback={
@@ -373,7 +356,7 @@ export default function Header({ userInformation }: Props) {
                       if (inputRef.current) inputRef.current.click();
                     }}
                   >
-                    {ostensibleUserInformation.profilePhoto
+                    {headerAtView.profilePhoto
                       ? "New Profile Photo"
                       : "Set Profile Photo"}
                   </MenuItem>
@@ -381,8 +364,7 @@ export default function Header({ userInformation }: Props) {
                   <MenuItem
                     onClick={() => setProfilePhotoDeleteDialogOpen(true)}
                     hidden={
-                      !!willBeCroppedProfilePhoto ||
-                      !ostensibleUserInformation.profilePhoto
+                      !!willBeCroppedProfilePhoto || !headerAtView.profilePhoto
                     }
                   >
                     Delete
@@ -399,7 +381,7 @@ export default function Header({ userInformation }: Props) {
               size="sm"
               onClick={async () => {
                 await profilePhotoUpload();
-                setOstensibleUserInformation((prev) => ({
+                setHeaderAtView((prev) => ({
                   ...prev,
                   profilePhoto: selectedProfilePhoto,
                 }));
@@ -449,7 +431,7 @@ export default function Header({ userInformation }: Props) {
             }
           >
             <Text as="b" fontSize="12pt" textColor="white">
-              {ostensibleUserInformation.followingCount}
+              {headerAtView.followingCount}
             </Text>
             <Text fontSize="12pt" textColor="gray.500">
               Following
@@ -467,7 +449,7 @@ export default function Header({ userInformation }: Props) {
             }
           >
             <Text as="b" fontSize="12pt" textColor="white">
-              {ostensibleUserInformation.followerCount}
+              {headerAtView.followerCount}
             </Text>
             <Text fontSize="12pt" textColor="gray.500">
               Follower
@@ -475,7 +457,7 @@ export default function Header({ userInformation }: Props) {
           </Flex>
           <Flex gap={1}>
             <Text as="b" fontSize="12pt" textColor="white">
-              {ostensibleUserInformation.nftCount}
+              {headerAtView.nftCount}
             </Text>
             <Text fontSize="12pt" textColor="gray.500">
               NFTs

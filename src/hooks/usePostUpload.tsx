@@ -96,6 +96,7 @@ const usePostCreate = () => {
         ...newPostServerData,
         currentUserLikedThisPost: false,
         postDocId: newPostDocId,
+        currentUserFollowThisSender: false,
       };
       setPostsAtView((prev) => [newPostData, ...prev]);
     } else if (router.asPath === "/") {
@@ -103,6 +104,7 @@ const usePostCreate = () => {
         ...newPostServerData,
         currentUserLikedThisPost: false,
         postDocId: newPostDocId,
+        currentUserFollowThisSender: false,
       };
       setPostsAtView((prev) => [newPostData, ...prev]);
     }

@@ -131,6 +131,7 @@ export default function Home() {
 
       for (const postDoc of mainIndexSourcePostsDatasSnapshot) {
         let tempCurrentUserLikedThisPost = false;
+        let tempCurrentUserFollowThisSender = false;
         if (currentUserState.isThereCurrentUser) {
           tempCurrentUserLikedThisPost = (
             await getDoc(
@@ -139,6 +140,17 @@ export default function Home() {
                 `users/${postDoc.data().senderUsername}/posts/${
                   postDoc.id
                 }/likes/${currentUserState.username}`
+              )
+            )
+          ).exists();
+
+          tempCurrentUserFollowThisSender = (
+            await getDoc(
+              doc(
+                firestore,
+                `users/${postDoc.data().senderUsername}/posts/${
+                  postDoc.id
+                }/followers/${currentUserState.username}`
               )
             )
           ).exists();
@@ -156,6 +168,8 @@ export default function Home() {
           postDocId: postDoc.id,
 
           commentCount: postDoc.data().commentCount,
+
+          currentUserFollowThisSender : tempCurrentUserFollowThisSender,
 
           nftStatus: postDoc.data().nftStatus,
           creationTime: postDoc.data().creationTime,
