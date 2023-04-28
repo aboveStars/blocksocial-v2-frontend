@@ -116,9 +116,10 @@ export default function Header({ userInformation }: Props) {
    */
 
   useEffect(() => {
+    // after updating photo, we are using raw base64 selected photo as pp until refresh.
     setSelectedProfilePhoto("");
 
-    setOstensibleUserInformation(userInformation);
+    if (userInformation) setOstensibleUserInformation(userInformation);
 
     if (currentUserState.isThereCurrentUser) {
       handleFollowStatus();
@@ -147,8 +148,6 @@ export default function Header({ userInformation }: Props) {
    */
   const handleFollowStatus = async () => {
     setGettingFollowStatus(true);
-    let readyUserInformation: UserInServer = userInformation;
-    setOstensibleUserInformation(readyUserInformation);
 
     const doesCurrentUserFollowThisMan = (
       await getDoc(
@@ -158,8 +157,8 @@ export default function Header({ userInformation }: Props) {
         )
       )
     ).exists();
-
     setCurrentUserFollowThisMan(doesCurrentUserFollowThisMan);
+
     setGettingFollowStatus(false);
   };
 
@@ -178,7 +177,6 @@ export default function Header({ userInformation }: Props) {
     // Follow operation
     await follow(userInformation.username, 1);
 
-    // Current User Update (locally)
     setOstensibleUserInformation((prev) => ({
       ...prev,
       followerCount: prev.followerCount + 1,
@@ -188,20 +186,25 @@ export default function Header({ userInformation }: Props) {
     setFollowOperationLoading(false);
   };
   const handleDeFollow = async () => {
+    if (!currentUserState.isThereCurrentUser) {
+      console.log("Only Users can follow");
+      setAuthModalState((prev) => ({
+        ...prev,
+        open: true,
+        view: "logIn",
+      }));
+      return;
+    }
     setFollowOperationLoading(true);
     // Follow Operation
     await follow(userInformation.username, -1);
     // Page Update (locally)
     setOstensibleUserInformation((prev) => ({
       ...prev,
-
       followerCount: prev.followerCount - 1,
     }));
     // Current User Update (locally)
-    setCurrentUserState((prev) => ({
-      ...prev,
-      followingCount: prev.followingCount - 1,
-    }));
+   
     setCurrentUserFollowThisMan(false);
     setFollowOperationLoading(false);
   };
@@ -226,6 +229,10 @@ export default function Header({ userInformation }: Props) {
 
     setSignOutLoading(false);
   };
+
+  useEffect(() => {
+    console.log(ostensibleUserInformation);
+  }, [ostensibleUserInformation]);
 
   useEffect(() => {
     if (!willBeCroppedProfilePhoto) return;
@@ -418,9 +425,6 @@ export default function Header({ userInformation }: Props) {
               Cancel
             </Button>
           </Stack>
-          <Text fontSize="10pt" color="red" hidden={!!!profilePhotoError}>
-            {profilePhotoError}
-          </Text>
         </Flex>
 
         <Flex direction="column" align="center" mt={1}>

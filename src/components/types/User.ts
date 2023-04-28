@@ -26,9 +26,6 @@ export interface CurrentUser {
   fullname: string;
   profilePhoto: string;
 
-  followingCount: number;
-  followerCount: number;
-
   nftCount: number;
 
   email: string;
@@ -42,9 +39,6 @@ export const defaultCurrentUserState: CurrentUser = {
   username: "",
   fullname: "",
   profilePhoto: "",
-
-  followingCount: 0,
-  followerCount: 0,
 
   nftCount: 0,
 

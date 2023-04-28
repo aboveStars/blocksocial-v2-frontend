@@ -113,9 +113,6 @@ const useLoginOperations = () => {
       fullname: currentUserDataOnServer.fullname,
       profilePhoto: currentUserDataOnServer.profilePhoto,
 
-      followingCount: currentUserDataOnServer.followingCount,
-      followerCount: currentUserDataOnServer.followerCount,
-
       nftCount: currentUserDataOnServer.nftCount,
 
       email: currentUserDataOnServer.email,

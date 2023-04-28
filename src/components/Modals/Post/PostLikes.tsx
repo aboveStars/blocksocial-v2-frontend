@@ -124,12 +124,12 @@ export default function PostLikes({
 
         <ModalBody>
           <Stack gap={1} hidden={gettingLikes}>
-            {likeDatas.map((w, i) => (
+            {likeDatas.map((w) => (
               <LikeItem
                 postSenderUsername={postSenderUsername}
                 likerUsername={w}
                 openPanelNameSetter={openPanelNameSetter}
-                key={`${w}${Date.now()}${i}`}
+                key={w}
               />
             ))}
           </Stack>

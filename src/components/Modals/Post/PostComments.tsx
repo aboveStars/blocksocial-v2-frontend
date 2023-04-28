@@ -198,7 +198,7 @@ export default function PostComments({
             <Stack gap={1} hidden={gettingComments}>
               {commentsDatasWithCommentDocPath.map((cdwcdi, i) => (
                 <CommentItem
-                  key={`${cdwcdi.commentDocPath}${Date.now()}${i}`}
+                  key={JSON.stringify(cdwcdi)}
                   commentDataWithCommentDocId={cdwcdi}
                   openPanelNameSetter={openPanelNameSetter}
                   commentCountSetter={commentCountSetter}
@@ -208,7 +208,7 @@ export default function PostComments({
                 />
               ))}
             </Stack>
-            
+
             <Text
               fontSize="10pt"
               textColor="white"

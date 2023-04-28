@@ -29,11 +29,9 @@ export default function Posts({ postsItemDatas }: Props) {
           Array.from({ length: 1 }, (_, index) => <PostSkeleton key={index} />)
         ) : (
           <>
-            {postsAtView.map((postItemData, i) => (
+            {postsAtView.map((postItemData) => (
               <PostItem
-                key={`${postItemData.senderUsername}/${
-                  postItemData.postDocId
-                }/${Date.now()}${i}`}
+                key={JSON.stringify(postItemData)}
                 postItemData={postItemData}
               />
             ))}

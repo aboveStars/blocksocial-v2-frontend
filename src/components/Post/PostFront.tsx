@@ -37,20 +37,16 @@ import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
 import { CgProfile } from "react-icons/cg";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
 import { OpenPanelName, PostFrontData } from "../types/Post";
+import { postsAtViewAtom } from "../atoms/postsAtViewAtom";
 
 type Props = {
   postFrontData: PostFrontData;
   openPanelNameSetter: React.Dispatch<React.SetStateAction<OpenPanelName>>;
   likeCountValueSetter: React.Dispatch<React.SetStateAction<number>>;
-};
-
-const buttonStyle = {
-  background: "linear-gradient(to right, black, blue)",
-  transition: "background 0.5s ease",
 };
 
 export default function PostFront({
@@ -86,6 +82,8 @@ export default function PostFront({
   const [showDeletePostDialog, setShowDeletePostDialog] = useState(false);
 
   const [followOperationLoading, setFollowOperationLoading] = useState(false);
+
+  const [postsAtView, setPostsAtView] = useRecoilState(postsAtViewAtom);
 
   /**
    * Simply gets postSender's pp and fullname.
@@ -277,7 +275,7 @@ export default function PostFront({
                 !currentUserState.username ||
                 postSenderInformation.followedByCurrentUser ||
                 currentUserState.username == postFrontData.senderUsername ||
-                router.asPath.includes("users")
+                router.asPath.includes(`${postSenderInformation.username}`)
               }
               isLoading={followOperationLoading}
             >

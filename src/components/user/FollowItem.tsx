@@ -7,6 +7,7 @@ import {
   Icon,
   SkeletonCircle,
   Button,
+  SkeletonText,
 } from "@chakra-ui/react";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
@@ -53,10 +54,11 @@ export default function FollowItem({
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
 
   useEffect(() => {
-    getFollowItemInformation();
+    if (username) getFollowItemInformation();
   }, [username]);
 
   const getFollowItemInformation = async () => {
+    console.log("Getting follow item info");
     setGettingFollowItemState(true);
     const followItemUserDocRef = doc(firestore, `users/${username}`);
     const followItemUserDocSnaphot = await getDoc(followItemUserDocRef);
@@ -105,11 +107,7 @@ export default function FollowItem({
     }
     // Follow
     follow(followItemState.username, 1);
-    // Current User Update (locally)
-    setCurrentUserState((prev) => ({
-      ...prev,
-      followingCount: prev.followingCount + 1,
-    }));
+
     // update follow status
     setFollowItemState((prev) => ({
       ...prev,
@@ -151,10 +149,14 @@ export default function FollowItem({
 
         <Flex justify="center" ml={1} flexDirection="column">
           <Text textColor="white" as="b" fontSize="10pt">
-            {followItemState.username}
+            {username}
           </Text>
           <Text textColor="gray.100" fontSize="9pt" as="i">
-            {followItemState.fullname}
+            {followItemState.fullname ? (
+              followItemState.fullname
+            ) : (
+              <SkeletonText noOfLines={1} mt="1.5" skeletonHeight="2" />
+            )}
           </Text>
         </Flex>
       </Flex>

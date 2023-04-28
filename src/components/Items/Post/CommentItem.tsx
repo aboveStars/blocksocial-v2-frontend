@@ -73,54 +73,35 @@ export default function CommentItem({
   };
 
   return (
-    <>
-      <Flex justify="space-between" align="center">
-        <Flex id="comment" height="50px" align="center" gap={2}>
-          <Image
-            alt=""
-            src={commentSenderPhoto}
-            rounded="full"
-            width="35px"
-            height="35px"
-            cursor="pointer"
-            onClick={() => {
-              router.push(
-                `/${commentDataWithCommentDocId.commentSenderUsername}`
-              );
-              openPanelNameSetter("main");
-            }}
-            fallback={
-              !!commentSenderPhoto || gettingCommentSenderPhoto ? (
-                <SkeletonCircle
-                  width="35px"
-                  height="35px"
-                  startColor="gray.100"
-                  endColor="gray.800"
-                />
-              ) : (
-                <Icon
-                  as={CgProfile}
-                  color="white"
-                  height="35px"
-                  width="35px"
-                  cursor="pointer"
-                  onClick={() => {
-                    router.push(
-                      `/${commentDataWithCommentDocId.commentSenderUsername}`
-                    );
-                    openPanelNameSetter("main");
-                  }}
-                />
-              )
-            }
-          />
-
-          <Flex direction="column">
-            <Flex align="center">
-              <Text
-                fontSize="10pt"
-                textColor="white"
-                as="b"
+    <Flex id="main-comment-area" position="relative" align="center">
+      <Flex align="center" gap={2}>
+        <Image
+          alt=""
+          src={commentSenderPhoto}
+          rounded="full"
+          width="35px"
+          height="35px"
+          cursor="pointer"
+          onClick={() => {
+            router.push(
+              `/${commentDataWithCommentDocId.commentSenderUsername}`
+            );
+            openPanelNameSetter("main");
+          }}
+          fallback={
+            !!commentSenderPhoto || gettingCommentSenderPhoto ? (
+              <SkeletonCircle
+                width="35px"
+                height="35px"
+                startColor="gray.100"
+                endColor="gray.800"
+              />
+            ) : (
+              <Icon
+                as={CgProfile}
+                color="white"
+                height="35px"
+                width="35px"
                 cursor="pointer"
                 onClick={() => {
                   router.push(
@@ -128,37 +109,53 @@ export default function CommentItem({
                   );
                   openPanelNameSetter("main");
                 }}
-              >
-                {commentDataWithCommentDocId.commentSenderUsername}
-              </Text>
-              <Icon as={BsDot} color="white" fontSize="13px" />
-              <Text as="i" fontSize="8pt" textColor="gray.300">
-                {moment(
-                  new Date(commentDataWithCommentDocId.creationTime)
-                ).fromNow(true)}
-              </Text>
-            </Flex>
-
-            <Text fontSize="10pt" textColor="white">
-              {commentDataWithCommentDocId.comment}
-            </Text>
-          </Flex>
-        </Flex>
-        <Flex
-          id="comment-delete-area"
-          hidden={
-            commentDataWithCommentDocId.commentSenderUsername !==
-            currentUserState.username
+              />
+            )
           }
-        >
-          <Icon
-            as={BsTrash}
-            color="red.700"
-            cursor="pointer"
-            onClick={handleDeleteComment}
-          />
+        />
+        <Flex direction="column">
+          <Flex align="center">
+            <Text
+              fontSize="10pt"
+              textColor="white"
+              as="b"
+              cursor="pointer"
+              onClick={() => {
+                router.push(
+                  `/${commentDataWithCommentDocId.commentSenderUsername}`
+                );
+                openPanelNameSetter("main");
+              }}
+            >
+              {commentDataWithCommentDocId.commentSenderUsername}
+            </Text>
+            <Icon as={BsDot} color="white" fontSize="13px" />
+            <Text as="i" fontSize="8pt" textColor="gray.300">
+              {moment(
+                new Date(commentDataWithCommentDocId.creationTime)
+              ).fromNow(true)}
+            </Text>
+            <Flex
+              hidden={
+                commentDataWithCommentDocId.commentSenderUsername !==
+                currentUserState.username
+              }
+            >
+              <Icon
+                ml={1}
+                as={BsTrash}
+                fontSize="7pt"
+                color="red"
+                cursor="pointer"
+                onClick={handleDeleteComment}
+              />
+            </Flex>
+          </Flex>
+          <Text fontSize="10pt" textColor="white" wordBreak="break-word" mr="2">
+            {commentDataWithCommentDocId.comment}
+          </Text>
         </Flex>
       </Flex>
-    </>
+    </Flex>
   );
 }
