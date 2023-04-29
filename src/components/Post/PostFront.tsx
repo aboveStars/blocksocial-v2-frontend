@@ -6,6 +6,7 @@ import {
   AlertDialogHeader,
   AlertDialogOverlay,
   AspectRatio,
+  Box,
   Button,
   Flex,
   Icon,
@@ -81,6 +82,13 @@ export default function PostFront({
   const [followOperationLoading, setFollowOperationLoading] = useState(false);
 
   const [postsAtView, setPostsAtView] = useRecoilState(postsAtViewAtom);
+
+  const [taggedDescription, setTaggedDescription] = useState<
+    {
+      isTagged: boolean;
+      word: string;
+    }[]
+  >([]);
 
   /**
    * Simply gets postSender's pp and fullname.
@@ -161,6 +169,36 @@ export default function PostFront({
     if (imageSkeletonRef.current)
       imageSkeletonRef.current.style.height = `${imageSkeletonRef.current?.clientWidth}px`;
   }, []);
+
+  useEffect(() => {
+    const descriptionContainsTagging = postFrontData.description.includes("@");
+    if (!descriptionContainsTagging) return;
+
+    handleTagging();
+  }, []);
+
+  const handleTagging = () => {
+    const desArr = postFrontData.description.split(" ");
+
+    let tempTaggedDescription: {
+      isTagged: boolean;
+      word: string;
+    }[] = [];
+    for (const word of desArr) {
+      if (word.startsWith("@")) {
+        tempTaggedDescription.push({
+          isTagged: true,
+          word: word,
+        });
+      } else {
+        tempTaggedDescription.push({
+          isTagged: false,
+          word: word,
+        });
+      }
+    }
+    setTaggedDescription(tempTaggedDescription);
+  };
 
   const handleLike = async (opCode: number) => {
     if (!currentUserState.username) {
@@ -382,11 +420,39 @@ export default function PostFront({
           borderRadius="0px 0px 10px 10px"
           height="auto"
         >
-          <Flex ml={2} mt={2}>
-            <Text fontSize="13pt" fontWeight="medium" textColor="white">
-              {postFrontData.description}
-            </Text>
-          </Flex>
+          <Text
+            p={2}
+            fontSize="13pt"
+            fontWeight="medium"
+            wordBreak="break-word"
+          >
+            {taggedDescription.length > 0 ? (
+              taggedDescription.map((w) => {
+                if (w.isTagged) {
+                  return (
+                    <Text
+                      as="span"
+                      color="blue.400"
+                      onClick={() => {
+                        router.push(w.word.slice(1, w.word.length + 1));
+                      }}
+                      cursor="pointer"
+                    >
+                      {w.word}{" "}
+                    </Text>
+                  );
+                } else {
+                  return (
+                    <Text as="span" color="white">
+                      {w.word}{" "}
+                    </Text>
+                  );
+                }
+              })
+            ) : (
+              <Text color="white">{postFrontData.description}</Text>
+            )}
+          </Text>
           <Flex>
             <Flex gap={3} p={2}>
               <Flex gap="1">
