@@ -427,10 +427,11 @@ export default function PostFront({
             wordBreak="break-word"
           >
             {taggedDescription.length > 0 ? (
-              taggedDescription.map((w) => {
+              taggedDescription.map((w, i) => {
                 if (w.isTagged) {
                   return (
                     <Text
+                      key={i}
                       as="span"
                       color="blue.400"
                       onClick={() => {
@@ -443,7 +444,7 @@ export default function PostFront({
                   );
                 } else {
                   return (
-                    <Text as="span" color="white">
+                    <Text key={i} as="span" color="white">
                       {w.word}{" "}
                     </Text>
                   );
