@@ -156,7 +156,7 @@ export default function Header({ userInformation }: Props) {
     setGettingFollowStatus(false);
   };
 
-  const handleFollow = async () => {
+  const handleFollowOnHeader = async (opCode: number) => {
     // User check
     if (!currentUserState.isThereCurrentUser) {
       console.log("Only Users can follow");
@@ -169,26 +169,9 @@ export default function Header({ userInformation }: Props) {
     }
     setFollowOperationLoading(true);
     // Follow operation
-    await follow(userInformation.username, 1);
+    await follow(userInformation.username, opCode);
 
-    setCurrentUserFollowThisMan(true);
-    setFollowOperationLoading(false);
-  };
-  const handleDeFollow = async () => {
-    if (!currentUserState.isThereCurrentUser) {
-      console.log("Only Users can follow");
-      setAuthModalState((prev) => ({
-        ...prev,
-        open: true,
-        view: "logIn",
-      }));
-      return;
-    }
-    setFollowOperationLoading(true);
-    // Follow Operation
-    await follow(userInformation.username, -1);
-
-    setCurrentUserFollowThisMan(false);
+    setCurrentUserFollowThisMan(opCode === 1 ? true : false);
     setFollowOperationLoading(false);
   };
 
@@ -212,10 +195,6 @@ export default function Header({ userInformation }: Props) {
 
     setSignOutLoading(false);
   };
-
-  useEffect(() => {
-    console.log(headerAtView);
-  }, [headerAtView]);
 
   useEffect(() => {
     if (!willBeCroppedProfilePhoto) return;
@@ -472,7 +451,9 @@ export default function Header({ userInformation }: Props) {
                 variant="outline"
                 colorScheme="blue"
                 size="sm"
-                onClick={handleDeFollow}
+                onClick={() => {
+                  handleFollowOnHeader(-1);
+                }}
                 isLoading={followOperationLoading}
               >
                 Followed
@@ -482,7 +463,9 @@ export default function Header({ userInformation }: Props) {
                 variant="solid"
                 colorScheme="blue"
                 size="sm"
-                onClick={handleFollow}
+                onClick={() => {
+                  handleFollowOnHeader(1);
+                }}
                 isLoading={
                   currentUserState.loading ||
                   gettingFollowStatus ||

@@ -47,8 +47,6 @@ export default function FollowInformationModal({
   const handleFollowData = async () => {
     setFollowDataLoading(true);
 
-    console.log("Handle follow data is fired.");
-
     const followDataCollection = collection(
       firestore,
       `users/${userName}/${followInformationModalStateValue.modal}`

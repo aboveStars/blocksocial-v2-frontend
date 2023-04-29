@@ -1,8 +1,11 @@
 import { PostServerData } from "@/components/types/Post";
+import AsyncLock from "async-lock";
 import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { auth, firestore, bucket, fieldValue } from "../../firebase/adminApp";
+
+const lock = new AsyncLock();
 
 export default async function handler(
   req: NextApiRequest,
@@ -39,85 +42,77 @@ export default async function handler(
     return res.status(422).json({ error: "Invalid prop or props" });
   }
 
-  let isOwner = false;
-  try {
-    isOwner = await isOwnerOfPost(postDocId, operationFromUsername);
-  } catch (error) {
-    console.error("Error while deleting post from 'isOwner' function", error);
-    return res.status(503).json({ error: "Firebase error" });
-  }
-
-  if (!isOwner) {
-    console.error("Not owner of the comment");
-    return res.status(522).json({ error: "Not-Owner" });
-  }
-
-  let postDoc;
-
-  let postDocData;
-  try {
-    postDoc = await firestore
-      .doc(`users/${operationFromUsername}/posts/${postDocId}`)
-      .get();
-    postDocData = postDoc.data() as PostServerData;
-  } catch (error) {
-    console.error(
-      "Error while deleting post. (We were getting post details from server",
-      error
-    );
-    return res.status(503).json({ error: "Firebase error" });
-  }
-
-  try {
-    if (postDocData.image || postDocData.nftStatus.minted) {
-      const postFilesPath = `users/${operationFromUsername}/postsFiles/${postDocId}`;
-      await bucket.deleteFiles({
-        prefix: postFilesPath + "/",
-      });
+  await lock.acquire(`postDeleteAPI-${operationFromUsername}`, async () => {
+    let postDoc;
+    let isOwner = false;
+    try {
+      postDoc = await firestore
+        .doc(`users/${operationFromUsername}/posts/${postDocId}`)
+        .get();
+      isOwner = postDoc.data()?.senderUsername === operationFromUsername;
+    } catch (error) {
+      console.error("Error while deleting post from 'isOwner' function", error);
+      return res.status(503).json({ error: "Firebase error" });
     }
-  } catch (error) {
-    console.error(
-      "Errow while deleting post (we were deleting post files folder.)",
-      error
-    );
-    return res.status(503).json({ error: "Firebase error" });
-  }
 
-  try {
-    if (postDocData.nftStatus.minted) {
-      await firestore.doc(`users/${operationFromUsername}`).update({
-        nftCount: fieldValue.increment(-1),
-      });
+    // isOwner is false in undefined too.
+    if (!isOwner) {
+      console.error("Not owner of the comment");
+      return res.status(522).json({ error: "Not-Owner" });
     }
-  } catch (error) {
-    console.error(
-      "Error while deleting post. (We were decrementing NFTs count.)",
-      error
-    );
-    return res.status(503).json({ error: "Firebase error" });
-  }
 
-  try {
-    if (postDocData.likeCount > 0)
-      await deleteCollection(
-        `users/${operationFromUsername}/posts/${postDocId}/likes`
-      );
-    if (postDocData.commentCount > 0)
-      await deleteCollection(
-        `users/${operationFromUsername}/posts/${postDocId}/comments`
-      );
-    await firestore
-      .doc(`users/${operationFromUsername}/posts/${postDocId}`)
-      .delete();
-  } catch (error) {
-    console.error(
-      "Error while deleting post.(We were deleting post doc and its subCollections):",
-      error
-    );
-    return res.status(503).json({ error: "Firebase error" });
-  }
+    const postDocData = postDoc.data() as PostServerData;
 
-  res.status(200).json({});
+    try {
+      if (postDocData.image || postDocData.nftStatus.minted) {
+        const postFilesPath = `users/${operationFromUsername}/postsFiles/${postDocId}`;
+        await bucket.deleteFiles({
+          prefix: postFilesPath + "/",
+        });
+      }
+    } catch (error) {
+      console.error(
+        "Errow while deleting post (we were deleting post files folder.)",
+        error
+      );
+      return res.status(503).json({ error: "Firebase error" });
+    }
+
+    try {
+      if (postDocData.nftStatus.minted) {
+        await firestore.doc(`users/${operationFromUsername}`).update({
+          nftCount: fieldValue.increment(-1),
+        });
+      }
+    } catch (error) {
+      console.error(
+        "Error while deleting post. (We were decrementing NFTs count.)",
+        error
+      );
+      return res.status(503).json({ error: "Firebase error" });
+    }
+
+    try {
+      if (postDocData.likeCount > 0)
+        await deleteCollection(
+          `users/${operationFromUsername}/posts/${postDocId}/likes`
+        );
+      if (postDocData.commentCount > 0)
+        await deleteCollection(
+          `users/${operationFromUsername}/posts/${postDocId}/comments`
+        );
+      await firestore
+        .doc(`users/${operationFromUsername}/posts/${postDocId}`)
+        .delete();
+    } catch (error) {
+      console.error(
+        "Error while deleting post.(We were deleting post doc and its subCollections):",
+        error
+      );
+      return res.status(503).json({ error: "Firebase error" });
+    }
+    return res.status(200).json({});
+  });
 }
 
 /**
@@ -137,13 +132,6 @@ async function getDisplayName(decodedToken: DecodedIdToken) {
   const uid = decodedToken.uid;
   const displayName = (await auth.getUser(uid)).displayName;
   return displayName as string;
-}
-
-async function isOwnerOfPost(postDocId: string, operationFromUsername: string) {
-  const ss = await firestore
-    .doc(`users/${operationFromUsername}/posts/${postDocId}`)
-    .get();
-  return ss.data()?.senderUsername === operationFromUsername;
 }
 
 async function deleteCollection(collectionPath: string) {

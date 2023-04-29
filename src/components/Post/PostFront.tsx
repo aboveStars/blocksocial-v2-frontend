@@ -152,8 +152,6 @@ export default function PostFront({
     setFollowOperationLoading(false);
   };
 
-  const [likeOperationLoading, setLikeOperationLoading] = useState(false);
-
   useEffect(() => {
     handleGetPostSenderData(postFrontData.senderUsername);
   }, []);
@@ -175,10 +173,6 @@ export default function PostFront({
       return;
     }
 
-    if (likeOperationLoading) return;
-
-    setLikeOperationLoading(true);
-
     const updatedPostsAtView = postsAtView.map((a) => {
       if (a.postDocId === postFrontData.postDocId) {
         const updatedPost = { ...a };
@@ -198,8 +192,6 @@ export default function PostFront({
       `users/${postFrontData.senderUsername}/posts/${postFrontData.postDocId}`,
       opCode
     );
-
-    setLikeOperationLoading(false);
   };
 
   const handlePostDelete = async () => {

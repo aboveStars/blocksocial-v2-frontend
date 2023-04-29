@@ -6,6 +6,9 @@ import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { auth, fieldValue, firestore } from "../../firebase/adminApp";
 
 import { v4 as uuidv4 } from "uuid";
+import AsyncLock from "async-lock";
+
+const lock = new AsyncLock();
 
 export default async function handler(
   req: NextApiRequest,
@@ -42,33 +45,34 @@ export default async function handler(
     return res.status(422).json({ error: "Invalid prop or props" });
   }
 
-  const newCommentData: CommentData = {
-    comment: comment,
-    commentSenderUsername: operationFromUsername,
-    creationTime: Date.now(),
-  };
+  await lock.acquire(`postCommentAPI-${operationFromUsername}`, async () => {
+    const newCommentData: CommentData = {
+      comment: comment,
+      commentSenderUsername: operationFromUsername,
+      creationTime: Date.now(),
+    };
 
-  let newCommentDocPath = `${postDocPath}/comments/${operationFromUsername}${Date.now()}${uuidv4()
-    .replace(/-/g, "")
-    .toUpperCase()}`;
-  while ((await firestore.doc(newCommentDocPath).get()).exists) {
-    newCommentDocPath = `${postDocPath}/comments/${operationFromUsername}${Date.now()}${uuidv4().replace(
-      /-/g,
-      ""
-    )}`;
-  }
+    let newCommentDocPath = `${postDocPath}/comments/${operationFromUsername}${Date.now()}${uuidv4()
+      .replace(/-/g, "")
+      .toUpperCase()}`;
+    while ((await firestore.doc(newCommentDocPath).get()).exists) {
+      newCommentDocPath = `${postDocPath}/comments/${operationFromUsername}${Date.now()}${uuidv4().replace(
+        /-/g,
+        ""
+      )}`;
+    }
 
-  try {
-    await Promise.all([
-      sendComment(newCommentDocPath, newCommentData),
-      increaseCommentCount(postDocPath),
-    ]);
-  } catch (error) {
-    console.error("Error while commenting:", error);
-    return res.status(503).json({ error: "Firebase error" });
-  }
-
-  return res.status(200).json({ newCommentDocPath: newCommentDocPath });
+    try {
+      await Promise.all([
+        sendComment(newCommentDocPath, newCommentData),
+        increaseCommentCount(postDocPath),
+      ]);
+    } catch (error) {
+      console.error("Error while commenting:", error);
+      return res.status(503).json({ error: "Firebase error" });
+    }
+    return res.status(200).json({ newCommentDocPath: newCommentDocPath });
+  });
 }
 
 /**

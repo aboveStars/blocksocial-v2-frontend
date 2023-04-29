@@ -1,7 +1,10 @@
+import AsyncLock from "async-lock";
 import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { auth, firestore, fieldValue } from "../../firebase/adminApp";
+
+const lock = new AsyncLock();
 
 export default async function handler(
   req: NextApiRequest,
@@ -41,52 +44,55 @@ export default async function handler(
     return res.status(422).json({ error: "Invalid prop or props" });
   }
 
-  const operationFromHaveLikeAlready: boolean = (
-    await firestore.doc(`${postDocPath}/likes/${operationFromUsername}`).get()
-  ).exists;
+  await lock.acquire(`postLikeApi-${operationFromUsername}`, async () => {
+    const operationFromHaveLikeAlready: boolean = (
+      await firestore.doc(`${postDocPath}/likes/${operationFromUsername}`).get()
+    ).exists;
 
-  if (opCode === 1) {
-    if (operationFromHaveLikeAlready) {
-      console.error("Error while like operation. (Detected already liked.)");
-      return res.status(422).json({ error: "Invalid prop or props" });
-    }
-  } else {
-    if (!operationFromHaveLikeAlready) {
-      console.error(
-        "Error while follow operation. (Detected already not-liked.)"
-      );
-      return res.status(422).json({ error: "Invalid prop or props" });
-    }
-  }
-
-  try {
-    await firestore.doc(postDocPath).update({
-      likeCount: fieldValue.increment(opCode as number),
-    });
-  } catch (error) {
-    console.error("Error while like operation, we were on increment", error);
-    return res.status(503).json({ error: "Firebase error" });
-  }
-
-  try {
     if (opCode === 1) {
-      await firestore.doc(`${postDocPath}/likes/${operationFromUsername}`).set({
-        likeTime: Date.now(),
-      });
+      if (operationFromHaveLikeAlready) {
+        console.error("Error while like operation. (Detected already liked.)");
+        return res.status(422).json({ error: "Invalid prop or props" });
+      }
     } else {
-      await firestore
-        .doc(`${postDocPath}/likes/${operationFromUsername}`)
-        .delete();
+      if (!operationFromHaveLikeAlready) {
+        console.error(
+          "Error while follow operation. (Detected already not-liked.)"
+        );
+        return res.status(422).json({ error: "Invalid prop or props" });
+      }
     }
-  } catch (error) {
-    console.error(
-      "Error while like operation, we were creating or deleting new like doc.",
-      error
-    );
-    return res.status(503).json({ error: "Firebase error" });
-  }
 
-  res.status(200).json({});
+    try {
+      await firestore.doc(postDocPath).update({
+        likeCount: fieldValue.increment(opCode as number),
+      });
+    } catch (error) {
+      console.error("Error while like operation, we were on increment", error);
+      return res.status(503).json({ error: "Firebase error" });
+    }
+
+    try {
+      if (opCode === 1) {
+        await firestore
+          .doc(`${postDocPath}/likes/${operationFromUsername}`)
+          .set({
+            likeTime: Date.now(),
+          });
+      } else {
+        await firestore
+          .doc(`${postDocPath}/likes/${operationFromUsername}`)
+          .delete();
+      }
+    } catch (error) {
+      console.error(
+        "Error while like operation, we were creating or deleting new like doc.",
+        error
+      );
+      return res.status(503).json({ error: "Firebase error" });
+    }
+    return res.status(200).json({});
+  });
 }
 
 /**

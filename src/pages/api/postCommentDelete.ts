@@ -1,7 +1,10 @@
+import AsyncLock from "async-lock";
 import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { auth, firestore, fieldValue } from "../../firebase/adminApp";
+
+const lock = new AsyncLock();
 
 export default async function handler(
   req: NextApiRequest,
@@ -38,33 +41,34 @@ export default async function handler(
     return res.status(422).json({ error: "Invalid prop or props" });
   }
 
-  let isOwner = false;
-  try {
-    isOwner = await isOwnerOfComment(commentDocPath, operationFromUsername);
-  } catch (error) {
-    console.error(
-      "Error while deleting comment from 'isOwner' function",
-      error
-    );
-    return res.status(503).json({ error: "Firebase error" });
-  }
+  await lock.acquire(`postCommentDelete-${operationFromUsername}`, async () => {
+    let isOwner = false;
+    try {
+      isOwner = await isOwnerOfComment(commentDocPath, operationFromUsername);
+    } catch (error) {
+      console.error(
+        "Error while deleting comment from 'isOwner' function",
+        error
+      );
+      return res.status(503).json({ error: "Firebase error" });
+    }
 
-  if (!isOwner) {
-    console.error("Not owner of the comment");
-    return res.status(522).json({ error: "Not-Owner" });
-  }
+    if (!isOwner) {
+      console.error("Not owner of the comment");
+      return res.status(522).json({ error: "Not-Owner" });
+    }
 
-  try {
-    await Promise.all([
-      commentDelete(commentDocPath),
-      commentCountUpdate(postDocPath),
-    ]);
-  } catch (error) {
-    console.error(error);
-    return res.status(503).json({ error: "Firebase error" });
-  }
-
-  return res.status(200).json({});
+    try {
+      await Promise.all([
+        commentDelete(commentDocPath),
+        commentCountUpdate(postDocPath),
+      ]);
+    } catch (error) {
+      console.error(error);
+      return res.status(503).json({ error: "Firebase error" });
+    }
+    return res.status(200).json({});
+  });
 }
 
 /**

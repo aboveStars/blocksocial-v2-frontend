@@ -7,7 +7,6 @@ import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 export default function useFollow() {
   const currentUserState = useRecoilValue(currentUserStateAtom);
-
   const setHeaderAtView = useSetRecoilState(headerAtViewAtom);
 
   const router = useRouter();
@@ -28,11 +27,8 @@ export default function useFollow() {
       idToken = (await auth.currentUser?.getIdToken()) as string;
     } catch (error) {
       console.error("Error while getting 'idToken'", error);
-
       return;
     }
-
-    // if are on home page, disable all follow button other posts whose sender is same.
 
     let response: Response;
     try {
@@ -49,7 +45,6 @@ export default function useFollow() {
       });
     } catch (error) {
       console.error("Error while 'fetching' to 'follow' API");
-
       return;
     }
 
@@ -70,7 +65,7 @@ export default function useFollow() {
     } else if (router.asPath.includes(operateToUserName)) {
       setHeaderAtView((prev) => ({
         ...prev,
-        followerCount: prev.followingCount + opCode,
+        followerCount: prev.followerCount + opCode,
       }));
     }
   };

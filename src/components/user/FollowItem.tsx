@@ -60,7 +60,6 @@ export default function FollowItem({
   }, [username]);
 
   const getFollowItemInformation = async () => {
-    console.log("Getting follow item info");
     setGettingFollowItemState(true);
     const followItemUserDocRef = doc(firestore, `users/${username}`);
     const followItemUserDocSnaphot = await getDoc(followItemUserDocRef);
@@ -119,8 +118,6 @@ export default function FollowItem({
 
     setFollowOperationLoading(false);
   };
-
-
 
   return (
     <Flex align="center" justify="space-between">

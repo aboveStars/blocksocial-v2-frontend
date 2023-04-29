@@ -1,6 +1,10 @@
+import { Bucket } from "@google-cloud/storage";
+import AsyncLock from "async-lock";
 import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { NextApiRequest, NextApiResponse } from "next";
 import { auth, bucket } from "../../firebase/adminApp";
+
+const lock = new AsyncLock();
 
 export default async function handler(
   req: NextApiRequest,
@@ -31,40 +35,41 @@ export default async function handler(
     return res.status(401).json({ error: "Unautorized" });
   }
 
-  const buffer = Buffer.from(JSON.stringify(metadata));
+  await lock.acquire(`uploadNFTAPI-${operationFromUsername}`, async () => {
+    const buffer = Buffer.from(JSON.stringify(metadata));
 
-  const newMetadataFile = bucket.file(
-    `users/${operationFromUsername}/postsFiles/${postDocId}/nftMetadata`
-  );
-
-  try {
-    await newMetadataFile.save(buffer, {
-      metadata: {
-        contentType: "application/json",
-      },
-    });
-    await newMetadataFile.setMetadata({
-      cacheControl: "public, max-age=1",
-    });
-  } catch (error) {
-    console.error(
-      "Error while refreshingNFT.(We were on saving new metadata).",
-      error
+    const newMetadataFile = bucket.file(
+      `users/${operationFromUsername}/postsFiles/${postDocId}/nftMetadata`
     );
-    return res.status(503).json({ error: "Firebase error" });
-  }
-  try {
-    await newMetadataFile.makePublic();
-  } catch (error) {
-    console.error(
-      "Error while refreshingNFT.(We were making new metadata public.)",
-      error
-    );
-    return res.status(503).json({ error: "Firebase error" });
-  }
 
-  return res.status(200).json({
-    metadataLink: newMetadataFile.publicUrl(),
+    try {
+      await newMetadataFile.save(buffer, {
+        metadata: {
+          contentType: "application/json",
+        },
+      });
+      await newMetadataFile.setMetadata({
+        cacheControl: "public, max-age=1",
+      });
+    } catch (error) {
+      console.error(
+        "Error while refreshingNFT.(We were on saving new metadata).",
+        error
+      );
+      return res.status(503).json({ error: "Firebase error" });
+    }
+    try {
+      await newMetadataFile.makePublic();
+    } catch (error) {
+      console.error(
+        "Error while refreshingNFT.(We were making new metadata public.)",
+        error
+      );
+      return res.status(503).json({ error: "Firebase error" });
+    }
+    return res.status(200).json({
+      metadataLink: newMetadataFile?.publicUrl(),
+    });
   });
 }
 
