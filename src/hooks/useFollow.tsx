@@ -1,8 +1,9 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { headerAtViewAtom } from "@/components/atoms/headerAtViewAtom";
+import { postsAtViewAtom } from "@/components/atoms/postsAtViewAtom";
 import { auth } from "@/firebase/clientApp";
 import { useRouter } from "next/router";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 export default function useFollow() {
   const currentUserState = useRecoilValue(currentUserStateAtom);
@@ -31,6 +32,8 @@ export default function useFollow() {
       return;
     }
 
+    // if are on home page, disable all follow button other posts whose sender is same.
+
     let response: Response;
     try {
       response = await fetch("/api/follow", {
@@ -56,9 +59,9 @@ export default function useFollow() {
     }
 
     // update "header" locally
-
     // 1-) If we are in our page => we can just "follow" people so we should just update our "following" count
     // 2-) If we are in someone else page => we can follow that user or one of it follows or followers so we just need update its "follower count" (If we are in that user page.)
+
     if (router.asPath.includes(currentUserState.username)) {
       setHeaderAtView((prev) => ({
         ...prev,

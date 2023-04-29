@@ -46,13 +46,11 @@ import { postsAtViewAtom } from "../atoms/postsAtViewAtom";
 type Props = {
   postFrontData: PostFrontData;
   openPanelNameSetter: React.Dispatch<React.SetStateAction<OpenPanelName>>;
-  likeCountValueSetter: React.Dispatch<React.SetStateAction<number>>;
 };
 
 export default function PostFront({
   postFrontData,
   openPanelNameSetter,
-  likeCountValueSetter,
 }: Props) {
   const [postSenderInformation, setPostSenderInformation] = useState({
     username: postFrontData.senderUsername,
@@ -66,7 +64,6 @@ export default function PostFront({
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
   // To update post values locally
-  const [ostensiblePostData, setOstensiblePostData] = useState(postFrontData);
 
   const router = useRouter();
 
@@ -128,6 +125,22 @@ export default function PostFront({
     }
 
     setFollowOperationLoading(true);
+
+    const updatedPostsAtView = postsAtView.map((a) => {
+      if (
+        a.senderUsername === postFrontData.senderUsername &&
+        a.postDocId !== postFrontData.postDocId
+      ) {
+        const updatedPost = { ...a };
+        updatedPost.currentUserFollowThisSender = true;
+        return updatedPost;
+      } else {
+        return a;
+      }
+    });
+
+    setPostsAtView(updatedPostsAtView);
+
     // Follow
     await follow(postFrontData.senderUsername, 1);
 
@@ -166,13 +179,20 @@ export default function PostFront({
 
     setLikeOperationLoading(true);
 
-    setOstensiblePostData((prev) => ({
-      ...prev,
-      likeCount: prev.likeCount + opCode,
-      currentUserLikedThisPost: opCode === 1 ? true : false,
-    }));
+    const updatedPostsAtView = postsAtView.map((a) => {
+      if (a.postDocId === postFrontData.postDocId) {
+        const updatedPost = { ...a };
+        updatedPost.currentUserLikedThisPost = opCode === 1 ? true : false;
+        updatedPost.likeCount = a.likeCount + opCode;
+        return updatedPost;
+      } else {
+        return a;
+      }
+    });
 
-    likeCountValueSetter((prev) => prev + opCode);
+    setPostsAtView(updatedPostsAtView);
+
+    // likeCountValueSetter((prev) => prev + opCode);
 
     await like(
       `users/${postFrontData.senderUsername}/posts/${postFrontData.postDocId}`,
@@ -274,6 +294,7 @@ export default function PostFront({
               hidden={
                 !currentUserState.username ||
                 postSenderInformation.followedByCurrentUser ||
+                postFrontData.currentUserFollowThisSender ||
                 currentUserState.username == postFrontData.senderUsername ||
                 router.asPath.includes(`${postSenderInformation.username}`)
               }
@@ -377,7 +398,7 @@ export default function PostFront({
           <Flex>
             <Flex gap={3} p={2}>
               <Flex gap="1">
-                {ostensiblePostData.currentUserLikedThisPost ? (
+                {postFrontData.currentUserLikedThisPost ? (
                   <Icon
                     as={AiFillHeart}
                     color="red"
@@ -402,7 +423,7 @@ export default function PostFront({
                     openPanelNameSetter("likes");
                   }}
                 >
-                  {`${ostensiblePostData.likeCount}`}
+                  {`${postFrontData.likeCount}`}
                 </Text>
               </Flex>
 

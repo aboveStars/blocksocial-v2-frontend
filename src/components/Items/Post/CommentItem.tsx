@@ -1,7 +1,14 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { firestore } from "@/firebase/clientApp";
 import useCommentDelete from "@/hooks/useCommentDelete";
-import { Flex, Icon, Image, SkeletonCircle, Text } from "@chakra-ui/react";
+import {
+  Flex,
+  Icon,
+  Image,
+  SkeletonCircle,
+  Spinner,
+  Text,
+} from "@chakra-ui/react";
 import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
@@ -37,6 +44,8 @@ export default function CommentItem({
 
   const { commentDelete } = useCommentDelete();
 
+  const [commentDeletLoading, setCommentDeleteLoading] = useState(false);
+
   useEffect(() => {
     getCommentSenderPhoto();
   }, []);
@@ -55,13 +64,15 @@ export default function CommentItem({
   };
 
   const handleDeleteComment = async () => {
-    commentDelete(commentDataWithCommentDocId.commentDocPath);
+    setCommentDeleteLoading(true);
+    await commentDelete(commentDataWithCommentDocId.commentDocPath);
     commentsDatasWithCommentDocPathSetter((prev) =>
       prev.filter(
         (a) => a.commentDocPath !== commentDataWithCommentDocId.commentDocPath
       )
     );
     commentCountSetter((prev) => prev - 1);
+    setCommentDeleteLoading(false);
   };
 
   return (
@@ -133,14 +144,22 @@ export default function CommentItem({
                 currentUserState.username
               }
             >
-              <Icon
-                ml={1}
-                as={BsTrash}
-                fontSize="7pt"
-                color="red"
-                cursor="pointer"
-                onClick={handleDeleteComment}
-              />
+              <>
+                {commentDeletLoading ? (
+                  <Flex>
+                    <Spinner color="red" size="xs" ml={2} />
+                  </Flex>
+                ) : (
+                  <Icon
+                    ml={2}
+                    as={BsTrash}
+                    fontSize="9pt"
+                    color="red"
+                    cursor="pointer"
+                    onClick={handleDeleteComment}
+                  />
+                )}
+              </>
             </Flex>
           </Flex>
           <Text fontSize="10pt" textColor="white" wordBreak="break-word" mr="2">

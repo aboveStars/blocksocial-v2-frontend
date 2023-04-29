@@ -31,7 +31,7 @@ export default function Posts({ postsItemDatas }: Props) {
           <>
             {postsAtView.map((postItemData) => (
               <PostItem
-                key={JSON.stringify(postItemData)}
+                key={`${postItemData.senderUsername}${postItemData.postDocId}`}
                 postItemData={postItemData}
               />
             ))}

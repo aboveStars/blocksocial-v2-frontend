@@ -14,7 +14,6 @@ export default function PostItem({ postItemData }: Props) {
 
   // Update realtime comment count when add or delete (locally)
   const [commentCount, setCommentCount] = useState(postItemData.commentCount);
-  const [likeCount, setLikeCount] = useState(postItemData.likeCount);
   const [nftStatus, setNftStatus] = useState(postItemData.nftStatus);
 
   return (
@@ -26,7 +25,6 @@ export default function PostItem({ postItemData }: Props) {
           nftStatus: nftStatus,
         }}
         openPanelNameSetter={setOpenPanelName}
-        likeCountValueSetter = {setLikeCount}
       />
       <PostComments
         commentsInfo={{
@@ -53,7 +51,6 @@ export default function PostItem({ postItemData }: Props) {
           ...postItemData,
           nftStatus: nftStatus,
           commentCount: commentCount,
-          likeCount : likeCount
         }}
         nftStatusValueSetter={setNftStatus}
       />
