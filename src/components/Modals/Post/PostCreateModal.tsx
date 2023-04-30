@@ -260,6 +260,7 @@ export default function PostCreateModal() {
                   onZoomChange={setZoom}
                   cropSize={{ height: cropSize, width: cropSize }}
                   minZoom={minZoom}
+                  maxZoom={10}
                 />
               </Flex>
             </Flex>

@@ -6,7 +6,6 @@ import {
   AlertDialogHeader,
   AlertDialogOverlay,
   AspectRatio,
-  Box,
   Button,
   Flex,
   Icon,
@@ -41,8 +40,8 @@ import { CgProfile } from "react-icons/cg";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
-import { OpenPanelName, PostFrontData } from "../types/Post";
 import { postsAtViewAtom } from "../atoms/postsAtViewAtom";
+import { OpenPanelName, PostFrontData } from "../types/Post";
 
 type Props = {
   postFrontData: PostFrontData;
@@ -430,28 +429,28 @@ export default function PostFront({
               taggedDescription.map((w, i) => {
                 if (w.isTagged) {
                   return (
-                    <Text
+                    <span
                       key={i}
-                      as="span"
-                      color="blue.400"
+                      style={{ color: "#00A2FF", cursor: "pointer" }}
                       onClick={() => {
                         router.push(w.word.slice(1, w.word.length + 1));
                       }}
-                      cursor="pointer"
                     >
                       {w.word}{" "}
-                    </Text>
+                    </span>
                   );
                 } else {
                   return (
-                    <Text key={i} as="span" color="white">
+                    <span key={i} style={{ color: "white" }}>
                       {w.word}{" "}
-                    </Text>
+                    </span>
                   );
                 }
               })
             ) : (
-              <Text color="white">{postFrontData.description}</Text>
+              <span style={{ color: "white" }}>
+                {postFrontData.description}
+              </span>
             )}
           </Text>
           <Flex>
