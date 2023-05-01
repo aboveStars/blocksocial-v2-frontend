@@ -1,11 +1,9 @@
-import { NFTMetadata } from "@/components/types/NFT";
-import { PostItemData } from "@/components/types/Post";
-import { blockSocialSmartContract } from "@/ethers/clientApp";
-import { mumbaiContractAddress } from "@/ethers/ContractAddresses";
-import { auth, firestore } from "@/firebase/clientApp";
-import { TransactionReceipt } from "ethers";
-import { doc, increment, updateDoc } from "firebase/firestore";
+import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { headerAtViewAtom } from "@/components/atoms/headerAtViewAtom";
+import { auth } from "@/firebase/clientApp";
+import { useRouter } from "next/router";
 import { useState } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 export default function useNFT() {
   const [creatingNFTLoading, setCreatingNFTLoading] = useState(false);
@@ -14,26 +12,21 @@ export default function useNFT() {
 
   const [nftRefreshLoading, setNftRefreshLoading] = useState(false);
 
+  const [headerAtView, setHeaderAtView] = useRecoilState(headerAtViewAtom);
+  const currentUserState = useRecoilValue(currentUserStateAtom);
+
+  const router = useRouter();
+
   /**
-   *
    * @param name
    * @param description
-   * @param senderUsername
-   * @param image
    * @param postDocId
-   * @param creationTime
-   * @param likeCount
-   * @param commentCount
+   * @returns
    */
   const mintNft = async (
     name: string,
     description: string,
-    senderUsername: string,
-    image: string,
-    postDocId: string,
-    creationTime: number,
-    likeCount: number,
-    commentCount: number
+    postDocId: string
   ) => {
     setNftCreated(false);
     setCreatingNFTLoading(true);
@@ -81,6 +74,10 @@ export default function useNFT() {
 
     setCreatingNFTLoading(false);
     setNftCreated(true);
+
+    if (router.asPath.includes(currentUserState.username)) {
+      setHeaderAtView((prev) => ({ ...prev, nftCount: prev.nftCount + 1 }));
+    }
 
     return await response.json();
   };

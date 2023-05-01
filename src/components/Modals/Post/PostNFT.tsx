@@ -3,7 +3,6 @@ import { OpenPanelName, PostItemData } from "@/components/types/Post";
 import useNFT from "@/hooks/useNFT";
 import {
   AspectRatio,
-  Box,
   Button,
   Flex,
   FormControl,
@@ -30,39 +29,35 @@ import {
   AiOutlineNumber,
 } from "react-icons/ai";
 
+import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { mumbaiContractAddress } from "@/ethers/ContractAddresses";
+import { auth } from "@/firebase/clientApp";
 import { format } from "date-fns";
-import { BiError, BiTransfer } from "react-icons/bi";
+import { ethers } from "ethers";
+import { BiError } from "react-icons/bi";
 import {
   BsArrowRight,
   BsFillCalendarHeartFill,
   BsFillCalendarPlusFill,
 } from "react-icons/bs";
 import { FaRegUserCircle } from "react-icons/fa";
-import { GrTextAlignFull } from "react-icons/gr";
-import { MdContentCopy, MdTitle } from "react-icons/md";
-import { ethers } from "ethers";
-import { fakeWaiting } from "@/components/utils/FakeWaiting";
-import { auth } from "@/firebase/clientApp";
 import { FiExternalLink } from "react-icons/fi";
+import { GrTextAlignFull } from "react-icons/gr";
+import { MdContentCopy } from "react-icons/md";
 import { RxText } from "react-icons/rx";
-import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { postsAtViewAtom } from "@/components/atoms/postsAtViewAtom";
 
 type Props = {
   openPanelNameValue: OpenPanelName;
   openPanelNameValueSetter: React.Dispatch<SetStateAction<OpenPanelName>>;
   postInformation: PostItemData;
-  nftStatusValueSetter: React.Dispatch<
-    SetStateAction<PostItemData["nftStatus"]>
-  >;
 };
 
 export default function PostNFT({
   openPanelNameValue,
   openPanelNameValueSetter,
   postInformation,
-  nftStatusValueSetter,
 }: Props) {
   const { mintNft, creatingNFTLoading, refreshNFT, nftCreated, setNftCreated } =
     useNFT();
@@ -95,6 +90,8 @@ export default function PostNFT({
 
   const nftTransferAddressInputRef = useRef<HTMLInputElement>(null);
 
+  const setPostsAtView = useSetRecoilState(postsAtViewAtom);
+
   useEffect(() => {
     if (
       openPanelNameValue === "nft" &&
@@ -108,19 +105,24 @@ export default function PostNFT({
     const nftMintResult = await mintNft(
       nftTitle,
       postInformation.description,
-      postInformation.senderUsername,
-      postInformation.image,
-      postInformation.postDocId,
-      postInformation.creationTime,
-      postInformation.likeCount,
-      postInformation.commentCount
+      postInformation.postDocId
     );
 
     if (!nftMintResult) {
       return;
     }
 
-    nftStatusValueSetter(nftMintResult);
+    setPostsAtView((prev) => {
+      return prev.map((p) => {
+        if (p.postDocId === postInformation.postDocId) {
+          const updatedPost = { ...p };
+          updatedPost.nftStatus = nftMintResult;
+          return updatedPost;
+        } else {
+          return p;
+        }
+      });
+    });
   };
 
   const resetStatesAfterNFTCreation = () => {
@@ -221,11 +223,18 @@ export default function PostNFT({
       );
     }
 
-    nftStatusValueSetter((prev) => ({
-      ...prev,
-      transferred: true,
-      transferredAddress: nftTransferAddress,
-    }));
+    setPostsAtView((prev) => {
+      return prev.map((p) => {
+        if (p.postDocId === postInformation.postDocId) {
+          const updatedPost = { ...p };
+          updatedPost.nftStatus.transferred = true;
+          updatedPost.nftStatus.transferredAddress = nftTransferAddress;
+          return updatedPost;
+        } else {
+          return p;
+        }
+      });
+    });
 
     getNFTData();
 
