@@ -58,12 +58,18 @@ export default async function handler(
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/update", {
+    fetch("https:/blocksocial.vercel.app/api/transferNFT", {
       headers: {
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/users/***TO-WARM-UP-USER***", {
+    fetch("https:/blocksocial.vercel.app/api/uploadNFT", {
+      headers: {
+        cron: cron,
+      },
+    }),
+
+    fetch("https:/blocksocial.vercel.app/***TO-WARM-UP-USER***", {
       headers: {
         cron: cron,
       },
