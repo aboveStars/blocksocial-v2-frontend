@@ -667,11 +667,7 @@ export default function PostNFT({
                         />
                         <Text color="white" fontSize="11pt">
                           {format(
-                            new Date(
-                              (nftMetadaData?.attributes.find(
-                                (a) => a.trait_type === "Post Creation"
-                              )?.value as number) * 1000
-                            ),
+                            new Date(postInformation.creationTime),
                             "dd MMMM yyyy"
                           )}
                         </Text>
@@ -688,11 +684,7 @@ export default function PostNFT({
                         />
                         <Text color="white" fontSize="11pt">
                           {format(
-                            new Date(
-                              (nftMetadaData?.attributes.find(
-                                (a) => a.trait_type === "NFT Creation"
-                              )?.value as number) * 1000
-                            ),
+                            new Date(postInformation.nftStatus.mintTime),
                             "dd MMMM yyyy"
                           )}
                         </Text>

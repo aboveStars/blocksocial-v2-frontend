@@ -72,12 +72,12 @@ export default async function handler(
         {
           display_type: "date",
           trait_type: "Post Creation",
-          value: Date.now() / 1000,
+          value: postDocData.creationTime,
         },
         {
           display_type: "date",
           trait_type: "NFT Creation",
-          value: Date.now() / 1000,
+          value: Date.now(),
         },
         {
           trait_type: "Likes",
