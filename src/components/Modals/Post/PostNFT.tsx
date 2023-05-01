@@ -441,8 +441,8 @@ export default function PostNFT({
                         <Text color="white" fontSize="9pt">
                           {postInformation.senderUsername ===
                           currentUserState.username
-                            ? "Your "
-                            : "This "}
+                            ? "Your"
+                            : "This"}{" "}
                           NFT is up to date.
                         </Text>
                       </>
@@ -456,8 +456,8 @@ export default function PostNFT({
                       <Text color="white" fontSize="9pt">
                         {postInformation.senderUsername ===
                         currentUserState.username
-                          ? "Your "
-                          : "This "}
+                          ? "Your"
+                          : "This"}{" "}
                         NFT is transferred.
                       </Text>
                     ) : (
@@ -470,7 +470,7 @@ export default function PostNFT({
                           {postInformation.senderUsername ===
                           currentUserState.username
                             ? "Your"
-                            : "This"}
+                            : "This"}{" "}
                           NFT is not transferred.
                         </Text>
                         <form
