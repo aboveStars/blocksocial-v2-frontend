@@ -115,7 +115,7 @@ export default function PostNFT({
     setPostsAtView((prev) => {
       return prev.map((p) => {
         if (p.postDocId === postInformation.postDocId) {
-          const updatedPost = { ...p };
+          const updatedPost = JSON.parse(JSON.stringify(p));
           updatedPost.nftStatus = nftMintResult;
           return updatedPost;
         } else {
@@ -226,7 +226,7 @@ export default function PostNFT({
     setPostsAtView((prev) => {
       return prev.map((p) => {
         if (p.postDocId === postInformation.postDocId) {
-          const updatedPost = { ...p };
+          const updatedPost = JSON.parse(JSON.stringify(p));
           updatedPost.nftStatus.transferred = true;
           updatedPost.nftStatus.transferredAddress = nftTransferAddress;
           return updatedPost;
