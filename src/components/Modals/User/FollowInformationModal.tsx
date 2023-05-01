@@ -7,6 +7,7 @@ import {
   ModalBody,
   ModalContent,
   ModalOverlay,
+  Spinner,
   Stack,
   Text,
 } from "@chakra-ui/react";
@@ -37,11 +38,15 @@ export default function FollowInformationModal({
   const [followData, setFollowData] = useState<string[]>([]);
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
+  const [followDataLoading, setFollowDataLoading] = useState(true);
+
   useEffect(() => {
-    handleFollowData();
+    if (followInformationModalStateValue.isOpen) handleFollowData();
   }, [followInformationModalStateValue]);
 
   const handleFollowData = async () => {
+    setFollowDataLoading(true);
+
     const followDataCollection = collection(
       firestore,
       `users/${userName}/${followInformationModalStateValue.modal}`
@@ -66,6 +71,7 @@ export default function FollowInformationModal({
       }
     }
     setFollowData(finalFollowData);
+    setFollowDataLoading(false);
   };
 
   return (
@@ -127,10 +133,15 @@ export default function FollowInformationModal({
         </Flex>
 
         <ModalBody>
-          <Stack gap={2}>
+          <Spinner color="white" hidden={!followDataLoading} />
+
+          {/**
+           * At second time getting follow, stack uses old value of state. So I put hidden prop to it
+           */}
+          <Stack gap={2} hidden={followDataLoading}>
             {followData.map((f, i) => (
               <FollowItem
-                key={`${f}${Date.now()}${i}`}
+                key={`${f}${i}`}
                 username={f}
                 followingsFollowersModalStateSetter={
                   followInformationModalStateSetter

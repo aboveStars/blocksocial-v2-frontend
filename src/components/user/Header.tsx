@@ -38,6 +38,7 @@ import ProfilePhotoUpdateModal from "../Modals/User/ProfilePhotoUpdateModal";
 import { auth, firestore } from "@/firebase/clientApp";
 import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
+import { headerAtViewAtom } from "../atoms/headerAtViewAtom";
 
 type Props = {
   userInformation: UserInServer;
@@ -77,9 +78,6 @@ export default function Header({ userInformation }: Props) {
 
   const [poorProfilePhoto, setPoorProfilePhoto] = useState(false);
 
-  const [ostensibleUserInformation, setOstensibleUserInformation] =
-    useState(userInformation);
-
   const { follow } = useFollow();
 
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
@@ -95,9 +93,6 @@ export default function Header({ userInformation }: Props) {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [nftAdministrationPanelShow, setNftAdministrationPanelShow] =
-    useState(false);
-
   const [signOutLoading, setSignOutLoading] = useState(false);
 
   const [profilephotoDeleteDialogOpen, setProfilePhotoDeleteDialogOpen] =
@@ -112,16 +107,13 @@ export default function Header({ userInformation }: Props) {
   const [gettingFollowStatus, setGettingFollowStatus] = useState(true);
   const [followOperationLoading, setFollowOperationLoading] = useState(false);
 
-  /**
-   * userData is already being controlled then, comes here
-   * Current user uid, but direcly comes here. So we check it
-   * UID is secure?
-   */
+  const [headerAtView, setHeaderAtView] = useRecoilState(headerAtViewAtom);
 
   useEffect(() => {
+    // after updating photo, we are using raw base64 selected photo as pp until refresh.
     setSelectedProfilePhoto("");
 
-    setOstensibleUserInformation(userInformation);
+    if (userInformation) setHeaderAtView(userInformation);
 
     if (currentUserState.isThereCurrentUser) {
       handleFollowStatus();
@@ -135,23 +127,21 @@ export default function Header({ userInformation }: Props) {
       setGettingFollowStatus(false);
       setIsCurrentUserPage((prev) => false);
     }
-  }, [userInformation, currentUserState]);
+  }, [userInformation, currentUserState.isThereCurrentUser]);
 
   useEffect(() => {
     const poorStatus: boolean = !(
-      ostensibleUserInformation.profilePhoto || selectedProfilePhoto
+      headerAtView.profilePhoto || selectedProfilePhoto
     );
 
     setPoorProfilePhoto(poorStatus);
-  }, [ostensibleUserInformation.profilePhoto]);
+  }, [headerAtView.profilePhoto]);
 
   /**
    * Checks if we follow this user.
    */
   const handleFollowStatus = async () => {
     setGettingFollowStatus(true);
-    let readyUserInformation: UserInServer = userInformation;
-    setOstensibleUserInformation(readyUserInformation);
 
     const doesCurrentUserFollowThisMan = (
       await getDoc(
@@ -161,12 +151,12 @@ export default function Header({ userInformation }: Props) {
         )
       )
     ).exists();
-
     setCurrentUserFollowThisMan(doesCurrentUserFollowThisMan);
+
     setGettingFollowStatus(false);
   };
 
-  const handleFollow = async () => {
+  const handleFollowOnHeader = async (opCode: number) => {
     // User check
     if (!currentUserState.isThereCurrentUser) {
       console.log("Only Users can follow");
@@ -179,33 +169,9 @@ export default function Header({ userInformation }: Props) {
     }
     setFollowOperationLoading(true);
     // Follow operation
-    await follow(userInformation.username, 1);
+    await follow(userInformation.username, opCode);
 
-    // Current User Update (locally)
-    setOstensibleUserInformation((prev) => ({
-      ...prev,
-      followerCount: prev.followerCount + 1,
-    }));
-    setCurrentUserFollowThisMan(true);
-
-    setFollowOperationLoading(false);
-  };
-  const handleDeFollow = async () => {
-    setFollowOperationLoading(true);
-    // Follow Operation
-    await follow(userInformation.username, -1);
-    // Page Update (locally)
-    setOstensibleUserInformation((prev) => ({
-      ...prev,
-
-      followerCount: prev.followerCount - 1,
-    }));
-    // Current User Update (locally)
-    setCurrentUserState((prev) => ({
-      ...prev,
-      followingCount: prev.followingCount - 1,
-    }));
-    setCurrentUserFollowThisMan(false);
+    setCurrentUserFollowThisMan(opCode === 1 ? true : false);
     setFollowOperationLoading(false);
   };
 
@@ -239,8 +205,8 @@ export default function Header({ userInformation }: Props) {
     <>
       <ProfilePhotoUpdateModal
         modifyingSetter={setModifying}
-        ostensibleUserInformationValue={ostensibleUserInformation}
-        ostensibleUserInformationSetter={setOstensibleUserInformation}
+        ostensibleUserInformationValue={headerAtView}
+        ostensibleUserInformationSetter={setHeaderAtView}
         profilePhotoUpdateModalOpenSetter={setProiflePhotoUpdateModalOpen}
         profilePhotoUpdateModalOpenValue={profilePhotoUpdateModalOpen}
         inputRef={inputRef}
@@ -263,12 +229,6 @@ export default function Header({ userInformation }: Props) {
         followInformationModalStateValue={followingsFollowersModalState}
         userName={userInformation.username}
       />
-
-      {/* <NFTAdministrationPanel
-        nftAdministrationPanelOpenSetter={setNftAdministrationPanelShow}
-        nftAdministrationPanelOpenValue={nftAdministrationPanelShow}
-        currentUserUsername={currentUserState.username}
-      /> */}
 
       <AlertDialog
         id="profilePhotoDelete-dialog"
@@ -303,7 +263,7 @@ export default function Header({ userInformation }: Props) {
                 size="md"
                 onClick={async () => {
                   await profilePhotoDelete();
-                  setOstensibleUserInformation((prev) => ({
+                  setHeaderAtView((prev) => ({
                     ...prev,
                     profilePhoto: "",
                   }));
@@ -319,84 +279,79 @@ export default function Header({ userInformation }: Props) {
       </AlertDialog>
 
       <Flex direction="column" justify="center" align="center" mt={3}>
-        <Flex
-          position="relative"
-          width="100%"
-          direction="column"
-          align="center"
-        >
-          <Image
-            alt=""
-            src={
-              selectedProfilePhoto
-                ? selectedProfilePhoto
-                : ostensibleUserInformation.profilePhoto
-                ? ostensibleUserInformation.profilePhoto
-                : ""
-            }
-            fallback={
-              !poorProfilePhoto ? (
-                <SkeletonCircle
-                  width="200px"
-                  height="200px"
-                  startColor="gray.100"
-                  endColor="gray.800"
-                />
-              ) : (
-                <Icon
-                  as={CgProfile}
-                  color="white"
-                  height="200px"
-                  width="200px"
-                />
-              )
-            }
-            width="200px"
-            height="200px"
-            rounded="full"
-          />
+        <Flex direction="column" align="center">
+          <Flex position="relative" width="200px" height="200px">
+            <Image
+              alt=""
+              src={
+                selectedProfilePhoto
+                  ? selectedProfilePhoto
+                  : headerAtView.profilePhoto
+                  ? headerAtView.profilePhoto
+                  : ""
+              }
+              fallback={
+                !poorProfilePhoto ? (
+                  <SkeletonCircle
+                    startColor="gray.100"
+                    endColor="gray.800"
+                    width="100%"
+                    height="100%"
+                  />
+                ) : (
+                  <Icon
+                    as={CgProfile}
+                    color="white"
+                    width="100%"
+                    height="100%"
+                  />
+                )
+              }
+              width="100%"
+              height="100%"
+              rounded="full"
+            />
+            <Circle
+              position="absolute"
+              bottom={poorProfilePhoto ? "18px" : "12px"}
+              left={poorProfilePhoto ? "18px" : "12px"}
+              bg="gray.700"
+              minWidth="30px"
+              minHeight="30px"
+              hidden={!isCurrentUserPage || !!selectedProfilePhoto}
+            >
+              <Menu computePositionOnMount>
+                <MenuButton mt={1}>
+                  <Icon
+                    as={BiPencil}
+                    color="white"
+                    fontSize="15px"
+                    cursor="pointer"
+                  />
+                </MenuButton>
+                <MenuList>
+                  <MenuItem
+                    onClick={() => {
+                      if (inputRef.current) inputRef.current.click();
+                    }}
+                  >
+                    {headerAtView.profilePhoto
+                      ? "New Profile Photo"
+                      : "Set Profile Photo"}
+                  </MenuItem>
 
-          <Circle
-            position="absolute"
-            top="151px"
-            left="11px"
-            bg="gray.700"
-            minWidth="30px"
-            minHeight="30px"
-            hidden={!isCurrentUserPage || !!selectedProfilePhoto}
-          >
-            <Menu computePositionOnMount>
-              <MenuButton mt={1}>
-                <Icon
-                  as={BiPencil}
-                  color="white"
-                  fontSize="15px"
-                  cursor="pointer"
-                />
-              </MenuButton>
-              <MenuList>
-                <MenuItem
-                  onClick={() => {
-                    if (inputRef.current) inputRef.current.click();
-                  }}
-                >
-                  {ostensibleUserInformation.profilePhoto
-                    ? "New Profile Photo"
-                    : "Set Profile Photo"}
-                </MenuItem>
-
-                <MenuItem
-                  onClick={() => setProfilePhotoDeleteDialogOpen(true)}
-                  hidden={
-                    !!willBeCroppedProfilePhoto ||
-                    !ostensibleUserInformation.profilePhoto
-                  }
-                >
-                  Delete
-                </MenuItem>
-              </MenuList>
-            </Menu>
-          </Circle>
+                  <MenuItem
+                    onClick={() => setProfilePhotoDeleteDialogOpen(true)}
+                    hidden={
+                      !!willBeCroppedProfilePhoto || !headerAtView.profilePhoto
+                    }
+                  >
+                    Delete
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            </Circle>
+          </Flex>
 
           <Stack direction="row" gap={1} mt={3} hidden={!modifying}>
             <Button
@@ -405,7 +360,7 @@ export default function Header({ userInformation }: Props) {
               size="sm"
               onClick={async () => {
                 await profilePhotoUpload();
-                setOstensibleUserInformation((prev) => ({
+                setHeaderAtView((prev) => ({
                   ...prev,
                   profilePhoto: selectedProfilePhoto,
                 }));
@@ -431,9 +386,6 @@ export default function Header({ userInformation }: Props) {
               Cancel
             </Button>
           </Stack>
-          <Text fontSize="10pt" color="red" hidden={!!!profilePhotoError}>
-            {profilePhotoError}
-          </Text>
         </Flex>
 
         <Flex direction="column" align="center" mt={1}>
@@ -446,42 +398,48 @@ export default function Header({ userInformation }: Props) {
         </Flex>
 
         <Flex align="center" gap={3} mt={2}>
-          <Flex gap={1}>
+          <Flex
+            gap={1}
+            cursor="pointer"
+            onClick={() =>
+              setFollowingsFollowesrModalState((prev) => ({
+                ...prev,
+                isOpen: true,
+                modal: "followings",
+              }))
+            }
+          >
             <Text as="b" fontSize="12pt" textColor="white">
-              {ostensibleUserInformation.followingCount}
+              {headerAtView.followingCount}
             </Text>
-            <Text
-              fontSize="12pt"
-              textColor="gray.500"
-              cursor="pointer"
-              onClick={() =>
-                setFollowingsFollowesrModalState((prev) => ({
-                  ...prev,
-                  isOpen: true,
-                  modal: "followings",
-                }))
-              }
-            >
+            <Text fontSize="12pt" textColor="gray.500">
               Following
+            </Text>
+          </Flex>
+          <Flex
+            gap={1}
+            cursor="pointer"
+            onClick={() =>
+              setFollowingsFollowesrModalState((prev) => ({
+                ...prev,
+                isOpen: true,
+                modal: "followers",
+              }))
+            }
+          >
+            <Text as="b" fontSize="12pt" textColor="white">
+              {headerAtView.followerCount}
+            </Text>
+            <Text fontSize="12pt" textColor="gray.500">
+              Follower
             </Text>
           </Flex>
           <Flex gap={1}>
             <Text as="b" fontSize="12pt" textColor="white">
-              {ostensibleUserInformation.followerCount}
+              {headerAtView.nftCount}
             </Text>
-            <Text
-              fontSize="12pt"
-              textColor="gray.500"
-              cursor="pointer"
-              onClick={() =>
-                setFollowingsFollowesrModalState((prev) => ({
-                  ...prev,
-                  isOpen: true,
-                  modal: "followers",
-                }))
-              }
-            >
-              Follower
+            <Text fontSize="12pt" textColor="gray.500">
+              NFTs
             </Text>
           </Flex>
         </Flex>
@@ -493,7 +451,9 @@ export default function Header({ userInformation }: Props) {
                 variant="outline"
                 colorScheme="blue"
                 size="sm"
-                onClick={handleDeFollow}
+                onClick={() => {
+                  handleFollowOnHeader(-1);
+                }}
                 isLoading={followOperationLoading}
               >
                 Followed
@@ -503,7 +463,9 @@ export default function Header({ userInformation }: Props) {
                 variant="solid"
                 colorScheme="blue"
                 size="sm"
-                onClick={handleFollow}
+                onClick={() => {
+                  handleFollowOnHeader(1);
+                }}
                 isLoading={
                   currentUserState.loading ||
                   gettingFollowStatus ||
@@ -519,15 +481,6 @@ export default function Header({ userInformation }: Props) {
         {isCurrentUserPage && (
           <Flex align="center">
             <Flex mt={3} direction="column" gap={2}>
-              {/* <Button
-                size="sm"
-                variant="solid"
-                bg="white"
-                textColor="black"
-                onClick={() => setNftAdministrationPanelShow(true)}
-              >
-                NFT Administration
-              </Button> */}
               <Button
                 variant="outline"
                 colorScheme="red"

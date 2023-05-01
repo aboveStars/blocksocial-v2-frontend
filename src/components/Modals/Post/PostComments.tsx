@@ -22,7 +22,6 @@ import { CgProfile } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
 import { currentUserStateAtom } from "../../atoms/currentUserAtom";
 import CommentItem from "../../Items/Post/CommentItem";
-import CommentItemSkeleton from "../../Skeletons/CommentItemSkeleton";
 import { CommentDataWithCommentDocPath, OpenPanelName } from "../../types/Post";
 
 type Props = {
@@ -198,7 +197,7 @@ export default function PostComments({
             <Stack gap={1} hidden={gettingComments}>
               {commentsDatasWithCommentDocPath.map((cdwcdi, i) => (
                 <CommentItem
-                  key={`${cdwcdi.commentDocPath}${Date.now()}${i}`}
+                  key={JSON.stringify(cdwcdi)}
                   commentDataWithCommentDocId={cdwcdi}
                   openPanelNameSetter={openPanelNameSetter}
                   commentCountSetter={commentCountSetter}
@@ -208,7 +207,7 @@ export default function PostComments({
                 />
               ))}
             </Stack>
-            
+
             <Text
               fontSize="10pt"
               textColor="white"

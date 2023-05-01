@@ -26,7 +26,7 @@ export default function SearchItem({
       onClick={() => {
         searchListOpenStateSetter(false);
         if (inputReferance.current) inputReferance.current.value = "";
-        router.push(`/users/${searchItemData.username}`);
+        router.push(`/${searchItemData.username}`);
       }}
     >
       <Image

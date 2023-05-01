@@ -12,9 +12,25 @@ export interface UserInServer {
   followingCount: number;
   followerCount: number;
 
+  nftCount: number;
+
   email: string;
   uid: string;
 }
+
+export const defaultUserInServer: UserInServer = {
+  username: "",
+  fullname: "",
+  profilePhoto: "",
+
+  followingCount: -1,
+  followerCount: -1,
+
+  nftCount: -1,
+
+  email: "",
+  uid: "",
+};
 
 export interface CurrentUser {
   isThereCurrentUser: boolean;
@@ -24,8 +40,7 @@ export interface CurrentUser {
   fullname: string;
   profilePhoto: string;
 
-  followingCount: number;
-  followerCount: number;
+  nftCount: number;
 
   email: string;
   uid: string;
@@ -39,8 +54,7 @@ export const defaultCurrentUserState: CurrentUser = {
   fullname: "",
   profilePhoto: "",
 
-  followingCount: 0,
-  followerCount: 0,
+  nftCount: 0,
 
   email: "",
   uid: "",

@@ -1,4 +1,4 @@
-import PostMakeNFT from "@/components/Modals/Post/PostMakeNFT";
+import PostNFT from "@/components/Modals/Post/PostNFT";
 import { useState } from "react";
 import PostComments from "../../Modals/Post/PostComments";
 import PostLikes from "../../Modals/Post/PostLikes";
@@ -23,7 +23,6 @@ export default function PostItem({ postItemData }: Props) {
           commentCount: commentCount,
         }}
         openPanelNameSetter={setOpenPanelName}
-        commentCountSetter={setCommentCount}
       />
       <PostComments
         commentsInfo={{
@@ -43,10 +42,13 @@ export default function PostItem({ postItemData }: Props) {
         openPanelNameSetter={setOpenPanelName}
         openPanelNameValue={openPanelName}
       />
-      <PostMakeNFT
+      <PostNFT
         openPanelNameValue={openPanelName}
         openPanelNameValueSetter={setOpenPanelName}
-        postInformation={postItemData}
+        postInformation={{
+          ...postItemData,
+          commentCount: commentCount,
+        }}
       />
     </>
   );

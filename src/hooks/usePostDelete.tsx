@@ -1,12 +1,22 @@
+import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { headerAtViewAtom } from "@/components/atoms/headerAtViewAtom";
+import { postsAtViewAtom } from "@/components/atoms/postsAtViewAtom";
 import { auth } from "@/firebase/clientApp";
+import { useRouter } from "next/router";
 import { useState } from "react";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
 export default function usePostDelete() {
   const [postDeletionLoading, setPostDeletionLoading] = useState(false);
 
-  const postDelete = async (postDocPath: string) => {
+  const [postsAtView, setPostsAtView] = useRecoilState(postsAtViewAtom);
+  const setHeaderAtView = useSetRecoilState(headerAtViewAtom);
+
+  const router = useRouter();
+  const currentUserState = useRecoilValue(currentUserStateAtom);
+
+  const postDelete = async (postDocId: string) => {
     setPostDeletionLoading(true);
-    console.log("Post Deletion is started");
 
     let idToken = "";
     try {
@@ -26,7 +36,7 @@ export default function usePostDelete() {
           "Content-Type": "application/json",
           authorization: `Bearer ${idToken}`,
         },
-        body: JSON.stringify({ postDocPath: postDocPath }),
+        body: JSON.stringify({ postDocId: postDocId }),
       });
     } catch (error) {
       return console.error("Error while fecthing to 'postDelete API'", error);
@@ -38,8 +48,14 @@ export default function usePostDelete() {
         await response.json()
       );
     }
+    if (
+      router.asPath.includes(currentUserState.username) &&
+      postsAtView.find((a) => a.postDocId === postDocId)?.nftStatus.minted
+    ) {
+      setHeaderAtView((prev) => ({ ...prev, nftCount: prev.nftCount - 1 }));
+    }
+    setPostsAtView((prev) => prev.filter((x) => x.postDocId !== postDocId));
 
-    console.log("Post successfully finished");
     setPostDeletionLoading(false);
   };
   return {

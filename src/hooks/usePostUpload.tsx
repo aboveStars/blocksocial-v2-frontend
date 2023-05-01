@@ -1,10 +1,24 @@
-import { PostCreateForm } from "@/components/types/Post";
+import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { postsAtViewAtom } from "@/components/atoms/postsAtViewAtom";
+import {
+  PostCreateForm,
+  PostItemData,
+  PostServerData,
+} from "@/components/types/Post";
 import { auth } from "@/firebase/clientApp";
+import bytes from "bytes";
+import { useRouter } from "next/router";
 import { useState } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 const usePostCreate = () => {
   const [willBeCroppedPostPhoto, setWillBeCroppedPostPhoto] = useState("");
   const [postUploadLoading, setPostUploadUpdating] = useState(false);
+  const currentUserstate = useRecoilValue(currentUserStateAtom);
+
+  const router = useRouter();
+
+  const [postsAtView, setPostsAtView] = useRecoilState(postsAtViewAtom);
 
   const onSelectWillBeCroppedPhoto = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -16,8 +30,11 @@ const usePostCreate = () => {
     const file = event.target.files[0];
 
     if (!file.type.startsWith("image/")) {
-      console.log("Only Images");
-      return;
+      return console.log("Only Images");
+    }
+
+    if (file.size > 5 * 10 ** 6) {
+      return console.error("This image is too high quality");
     }
 
     const reader = new FileReader();
@@ -74,6 +91,27 @@ const usePostCreate = () => {
       );
     }
 
+    const result = await response.json();
+    const newPostServerData: PostServerData = result.newPostData;
+    const newPostDocId: string = result.newPostDocId;
+
+    if (router.asPath === `/${currentUserstate.username}`) {
+      const newPostData: PostItemData = {
+        ...newPostServerData,
+        currentUserLikedThisPost: false,
+        postDocId: newPostDocId,
+        currentUserFollowThisSender: false,
+      };
+      setPostsAtView((prev) => [newPostData, ...prev]);
+    } else if (router.asPath === "/") {
+      const newPostData: PostItemData = {
+        ...newPostServerData,
+        currentUserLikedThisPost: false,
+        postDocId: newPostDocId,
+        currentUserFollowThisSender: false,
+      };
+      setPostsAtView((prev) => [newPostData, ...prev]);
+    }
     setPostUploadUpdating(false);
   };
 

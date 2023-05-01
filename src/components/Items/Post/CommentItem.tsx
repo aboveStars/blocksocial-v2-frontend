@@ -12,7 +12,7 @@ import {
 import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
-import React, { SetStateAction, useEffect, useRef, useState } from "react";
+import React, { SetStateAction, useEffect, useState } from "react";
 import { BsDot, BsTrash } from "react-icons/bs";
 import { CgProfile } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
@@ -44,6 +44,8 @@ export default function CommentItem({
 
   const { commentDelete } = useCommentDelete();
 
+  const [commentDeletLoading, setCommentDeleteLoading] = useState(false);
+
   useEffect(() => {
     getCommentSenderPhoto();
   }, []);
@@ -62,100 +64,109 @@ export default function CommentItem({
   };
 
   const handleDeleteComment = async () => {
-    commentDelete(commentDataWithCommentDocId.commentDocPath);
+    setCommentDeleteLoading(true);
+    await commentDelete(commentDataWithCommentDocId.commentDocPath);
     commentsDatasWithCommentDocPathSetter((prev) =>
       prev.filter(
         (a) => a.commentDocPath !== commentDataWithCommentDocId.commentDocPath
       )
     );
     commentCountSetter((prev) => prev - 1);
+    setCommentDeleteLoading(false);
   };
 
   return (
-    <>
-      <Flex justify="space-between" align="center">
-        <Flex id="comment" height="50px" align="center" gap={2}>
-          <Image
-            alt=""
-            src={commentSenderPhoto}
-            rounded="full"
-            width="35px"
-            height="35px"
-            cursor="pointer"
-            onClick={() => {
-              router.push(
-                `/users/${commentDataWithCommentDocId.commentSenderUsername}`
-              );
-              openPanelNameSetter("main");
-            }}
-            fallback={
-              !!commentSenderPhoto || gettingCommentSenderPhoto ? (
+    <Flex id="main-comment-area" position="relative" align="center">
+      <Flex align="center" gap={2}>
+        <Image
+          alt=""
+          src={commentSenderPhoto}
+          rounded="full"
+          width="35px"
+          height="35px"
+          cursor="pointer"
+          onClick={() => {
+            router.push(
+              `/${commentDataWithCommentDocId.commentSenderUsername}`
+            );
+            openPanelNameSetter("main");
+          }}
+          fallback={
+            !!commentSenderPhoto || gettingCommentSenderPhoto ? (
+              <Flex id="i-put-this-flex to adjust skeleton">
                 <SkeletonCircle
                   width="35px"
-                  height="35px"
                   startColor="gray.100"
                   endColor="gray.800"
                 />
-              ) : (
-                <Icon
-                  as={CgProfile}
-                  color="white"
-                  height="35px"
-                  width="35px"
-                  cursor="pointer"
-                  onClick={() => {
-                    router.push(
-                      `/users/${commentDataWithCommentDocId.commentSenderUsername}`
-                    );
-                    openPanelNameSetter("main");
-                  }}
-                />
-              )
-            }
-          />
-
-          <Flex
-            direction="column"
-            cursor="pointer"
-            onClick={() => {
-              router.push(
-                `/users/${commentDataWithCommentDocId.commentSenderUsername}`
-              );
-              openPanelNameSetter("main");
-            }}
-          >
-            <Flex align="center">
-              <Text fontSize="10pt" textColor="white" as="b">
-                {commentDataWithCommentDocId.commentSenderUsername}
-              </Text>
-              <Icon as={BsDot} color="white" fontSize="13px" />
-              <Text as="i" fontSize="8pt" textColor="gray.300">
-                {moment(
-                  new Date(commentDataWithCommentDocId.creationTime)
-                ).fromNow(true)}
-              </Text>
-            </Flex>
-
-            <Text fontSize="10pt" textColor="white">
-              {commentDataWithCommentDocId.comment}
-            </Text>
-          </Flex>
-        </Flex>
-        <Flex
-          id="comment-delete-area"
-          hidden={
-            commentDataWithCommentDocId.commentSenderUsername !==
-            currentUserState.username
+              </Flex>
+            ) : (
+              <Icon
+                as={CgProfile}
+                color="white"
+                width="35px"
+                cursor="pointer"
+                onClick={() => {
+                  router.push(
+                    `/${commentDataWithCommentDocId.commentSenderUsername}`
+                  );
+                  openPanelNameSetter("main");
+                }}
+              />
+            )
           }
-        >
-          <Icon
-            as={BsTrash}
-            color="red.700"
-            cursor="pointer"
-            onClick={handleDeleteComment}
-          />
+        />
+        <Flex direction="column">
+          <Flex align="center">
+            <Text
+              fontSize="10pt"
+              textColor="white"
+              as="b"
+              cursor="pointer"
+              onClick={() => {
+                router.push(
+                  `/${commentDataWithCommentDocId.commentSenderUsername}`
+                );
+                openPanelNameSetter("main");
+              }}
+            >
+              {commentDataWithCommentDocId.commentSenderUsername}
+            </Text>
+            <Icon as={BsDot} color="white" fontSize="13px" />
+            <Text as="i" fontSize="8pt" textColor="gray.300">
+              {moment(
+                new Date(commentDataWithCommentDocId.creationTime)
+              ).fromNow(true)}
+            </Text>
+            <Flex
+              hidden={
+                commentDataWithCommentDocId.commentSenderUsername !==
+                currentUserState.username
+              }
+            >
+              <>
+                {commentDeletLoading ? (
+                  <Flex>
+                    <Spinner color="red" size="xs" ml={2} />
+                  </Flex>
+                ) : (
+                  <Icon
+                    ml={2}
+                    as={BsTrash}
+                    fontSize="9pt"
+                    color="red"
+                    cursor="pointer"
+                    onClick={handleDeleteComment}
+                  />
+                )}
+              </>
+            </Flex>
+          </Flex>
+          <Text fontSize="10pt" textColor="white" wordBreak="break-word" mr="2">
+            {commentDataWithCommentDocId.comment}
+          </Text>
         </Flex>
       </Flex>
-    </>
+    </Flex>
   );
 }

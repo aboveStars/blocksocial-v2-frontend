@@ -1,7 +1,7 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
 import MainPageLayout from "@/components/Layout/MainPageLayout";
-import { PostItemData, PostServerData } from "@/components/types/Post";
+import { PostItemData } from "@/components/types/Post";
 import { firestore } from "@/firebase/clientApp";
 import {
   collection,
@@ -11,9 +11,9 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import safeJsonStringify from "safe-json-stringify";
 
 export default function Home() {
   const currentUserState = useRecoilValue(currentUserStateAtom);
@@ -131,6 +131,7 @@ export default function Home() {
 
       for (const postDoc of mainIndexSourcePostsDatasSnapshot) {
         let tempCurrentUserLikedThisPost = false;
+        let tempCurrentUserFollowThisSender = false;
         if (currentUserState.isThereCurrentUser) {
           tempCurrentUserLikedThisPost = (
             await getDoc(
@@ -139,6 +140,17 @@ export default function Home() {
                 `users/${postDoc.data().senderUsername}/posts/${
                   postDoc.id
                 }/likes/${currentUserState.username}`
+              )
+            )
+          ).exists();
+
+          tempCurrentUserFollowThisSender = (
+            await getDoc(
+              doc(
+                firestore,
+                `users/${postDoc.data().senderUsername}/posts/${
+                  postDoc.id
+                }/followers/${currentUserState.username}`
               )
             )
           ).exists();
@@ -157,7 +169,9 @@ export default function Home() {
 
           commentCount: postDoc.data().commentCount,
 
-          nftUrl: postDoc.data().nftUrl,
+          currentUserFollowThisSender : tempCurrentUserFollowThisSender,
+
+          nftStatus: postDoc.data().nftStatus,
           creationTime: postDoc.data().creationTime,
         };
 

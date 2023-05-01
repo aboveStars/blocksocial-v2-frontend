@@ -6,20 +6,18 @@ import {
   FormLabel,
   Icon,
   Input,
-  InputGroup,
-  InputRightAddon,
-  InputRightElement,
+  InputGroup, InputRightElement,
   Spinner,
-  Text,
+  Text
 } from "@chakra-ui/react";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 
 import { useSetRecoilState } from "recoil";
 
 import { firestore } from "@/firebase/clientApp";
 import { doc, getDoc } from "firebase/firestore";
-import { AiFillCheckCircle, AiOutlineCheckCircle } from "react-icons/ai";
+import { AiOutlineCheckCircle } from "react-icons/ai";
 import { BiError, BiErrorCircle } from "react-icons/bi";
 
 import useLoginOperations from "@/hooks/useLoginOperations";

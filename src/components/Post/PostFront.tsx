@@ -17,7 +17,6 @@ import {
   Skeleton,
   SkeletonCircle,
   SkeletonText,
-  Spinner,
   Text,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
@@ -32,22 +31,21 @@ import { BsDot } from "react-icons/bs";
 
 import { firestore } from "@/firebase/clientApp";
 import useFollow from "@/hooks/useFollow";
-import useNFT from "@/hooks/useNFT";
 import usePost from "@/hooks/usePost";
 import usePostDelete from "@/hooks/usePostDelete";
 import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
 import { CgProfile } from "react-icons/cg";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
+import { postsAtViewAtom } from "../atoms/postsAtViewAtom";
 import { OpenPanelName, PostFrontData } from "../types/Post";
 
 type Props = {
   postFrontData: PostFrontData;
   openPanelNameSetter: React.Dispatch<React.SetStateAction<OpenPanelName>>;
-  commentCountSetter: React.Dispatch<React.SetStateAction<number>>;
 };
 
 export default function PostFront({
@@ -63,11 +61,9 @@ export default function PostFront({
 
   const { like } = usePost();
 
-  const [currentUserState, setCurrentUserState] =
-    useRecoilState(currentUserStateAtom);
+  const currentUserState = useRecoilValue(currentUserStateAtom);
 
   // To update post values locally
-  const [ostensiblePostData, setOstensiblePostData] = useState(postFrontData);
 
   const router = useRouter();
 
@@ -76,16 +72,22 @@ export default function PostFront({
   const { follow } = useFollow();
 
   const { postDelete, postDeletionLoading } = usePostDelete();
-  const [isThisPostDeleted, setIsThisPostDeleted] = useState(false);
 
   const imageSkeletonRef = useRef<HTMLDivElement>(null);
 
   const leastDestructiveRef = useRef<HTMLButtonElement>(null);
-  const [showDeleteUserDialog, setShowDeleteUserDialog] = useState(false);
-
-  const { refreshNFT, nftRefreshLoading } = useNFT();
+  const [showDeletePostDialog, setShowDeletePostDialog] = useState(false);
 
   const [followOperationLoading, setFollowOperationLoading] = useState(false);
+
+  const [postsAtView, setPostsAtView] = useRecoilState(postsAtViewAtom);
+
+  const [taggedDescription, setTaggedDescription] = useState<
+    {
+      isTagged: boolean;
+      word: string;
+    }[]
+  >([]);
 
   /**
    * Simply gets postSender's pp and fullname.
@@ -130,6 +132,22 @@ export default function PostFront({
     }
 
     setFollowOperationLoading(true);
+
+    const updatedPostsAtView = postsAtView.map((a) => {
+      if (
+        a.senderUsername === postFrontData.senderUsername &&
+        a.postDocId !== postFrontData.postDocId
+      ) {
+        const updatedPost = { ...a };
+        updatedPost.currentUserFollowThisSender = true;
+        return updatedPost;
+      } else {
+        return a;
+      }
+    });
+
+    setPostsAtView(updatedPostsAtView);
+
     // Follow
     await follow(postFrontData.senderUsername, 1);
 
@@ -141,17 +159,45 @@ export default function PostFront({
     setFollowOperationLoading(false);
   };
 
-  const [likeOperationLoading, setLikeOperationLoading] = useState(false);
-
   useEffect(() => {
     handleGetPostSenderData(postFrontData.senderUsername);
-  }, [currentUserState.username]);
+  }, []);
 
   // Skeleton Height Adjustment
   useEffect(() => {
     if (imageSkeletonRef.current)
       imageSkeletonRef.current.style.height = `${imageSkeletonRef.current?.clientWidth}px`;
   }, []);
+
+  useEffect(() => {
+    const descriptionContainsTagging = postFrontData.description.includes("@");
+    if (!descriptionContainsTagging) return;
+
+    handleTagging();
+  }, []);
+
+  const handleTagging = () => {
+    const desArr = postFrontData.description.split(" ");
+
+    let tempTaggedDescription: {
+      isTagged: boolean;
+      word: string;
+    }[] = [];
+    for (const word of desArr) {
+      if (word.startsWith("@")) {
+        tempTaggedDescription.push({
+          isTagged: true,
+          word: word,
+        });
+      } else {
+        tempTaggedDescription.push({
+          isTagged: false,
+          word: word,
+        });
+      }
+    }
+    setTaggedDescription(tempTaggedDescription);
+  };
 
   const handleLike = async (opCode: number) => {
     if (!currentUserState.username) {
@@ -164,27 +210,35 @@ export default function PostFront({
       return;
     }
 
-    if (likeOperationLoading) return;
+    const updatedPostsAtView = postsAtView.map((a) => {
+      if (a.postDocId === postFrontData.postDocId) {
+        const updatedPost = { ...a };
+        updatedPost.currentUserLikedThisPost = opCode === 1 ? true : false;
+        updatedPost.likeCount = a.likeCount + opCode;
+        return updatedPost;
+      } else {
+        return a;
+      }
+    });
 
-    setLikeOperationLoading(true);
+    setPostsAtView(updatedPostsAtView);
 
-    setOstensiblePostData((prev) => ({
-      ...prev,
-      likeCount: prev.likeCount + opCode,
-      currentUserLikedThisPost: opCode === 1 ? true : false,
-    }));
+    // likeCountValueSetter((prev) => prev + opCode);
 
     await like(
       `users/${postFrontData.senderUsername}/posts/${postFrontData.postDocId}`,
       opCode
     );
+  };
 
-    setLikeOperationLoading(false);
+  const handlePostDelete = async () => {
+    await postDelete(postFrontData.postDocId);
+    setShowDeletePostDialog(false);
   };
 
   return (
     <>
-      <Flex bg="black" direction="column" p={1} hidden={isThisPostDeleted}>
+      <Flex bg="black" direction="column" p={1}>
         <Flex
           id="postHeader"
           align="center"
@@ -217,15 +271,13 @@ export default function PostFront({
                   width="50px"
                   cursor="pointer"
                   onClick={() =>
-                    router.push(`/users/${postFrontData.senderUsername}`)
+                    router.push(`/${postFrontData.senderUsername}`)
                   }
                 />
               )
             }
             cursor="pointer"
-            onClick={() =>
-              router.push(`/users/${postFrontData.senderUsername}`)
-            }
+            onClick={() => router.push(`/${postFrontData.senderUsername}`)}
           />
           <Flex direction="column">
             <Flex align="center">
@@ -234,9 +286,7 @@ export default function PostFront({
                 as="b"
                 fontSize="12pt"
                 cursor="pointer"
-                onClick={() =>
-                  router.push(`/users/${postFrontData.senderUsername}`)
-                }
+                onClick={() => router.push(`/${postFrontData.senderUsername}`)}
               >
                 {postFrontData.senderUsername}
               </Text>
@@ -248,9 +298,7 @@ export default function PostFront({
                 as="i"
                 fontSize="10pt"
                 cursor="pointer"
-                onClick={() =>
-                  router.push(`/users/${postFrontData.senderUsername}`)
-                }
+                onClick={() => router.push(`/${postFrontData.senderUsername}`)}
               >
                 {postSenderInformation.fullname}
               </Text>
@@ -266,7 +314,7 @@ export default function PostFront({
             </Flex>
           </Flex>
 
-          <Flex position="absolute" right="3" id="followButtonOnPost">
+          <Flex position="absolute" right="3" id="follow-nft-delete">
             <Button
               variant="solid"
               colorScheme="blue"
@@ -275,8 +323,9 @@ export default function PostFront({
               hidden={
                 !currentUserState.username ||
                 postSenderInformation.followedByCurrentUser ||
+                postFrontData.currentUserFollowThisSender ||
                 currentUserState.username == postFrontData.senderUsername ||
-                router.asPath.includes("users")
+                router.asPath.includes(`${postSenderInformation.username}`)
               }
               isLoading={followOperationLoading}
             >
@@ -294,25 +343,17 @@ export default function PostFront({
                   <Icon as={AiOutlineMenu} color="white" />
                 </MenuButton>
                 <MenuList>
-                  {postFrontData.nftUrl ? (
-                    !nftRefreshLoading ? (
-                      <MenuItem
-                        onClick={() => refreshNFT(postFrontData.postDocId)}
-                      >
-                        Refresh NFT
-                      </MenuItem>
-                    ) : (
-                      <MenuItem isDisabled={true}>
-                        <Spinner />
-                      </MenuItem>
-                    )
+                  {postFrontData.nftStatus.minted ? (
+                    <MenuItem onClick={() => openPanelNameSetter("nft")}>
+                      Manage NFT
+                    </MenuItem>
                   ) : (
                     <MenuItem onClick={() => openPanelNameSetter("nft")}>
                       Make NFT
                     </MenuItem>
                   )}
 
-                  <MenuItem onClick={() => setShowDeleteUserDialog(true)}>
+                  <MenuItem onClick={() => setShowDeletePostDialog(true)}>
                     Delete
                   </MenuItem>
                 </MenuList>
@@ -320,9 +361,9 @@ export default function PostFront({
             </Flex>
 
             <AlertDialog
-              isOpen={showDeleteUserDialog}
+              isOpen={showDeletePostDialog}
               leastDestructiveRef={leastDestructiveRef}
-              onClose={() => setShowDeleteUserDialog(false)}
+              onClose={() => setShowDeletePostDialog(false)}
               returnFocusOnClose={false}
             >
               <AlertDialogOverlay>
@@ -338,7 +379,7 @@ export default function PostFront({
                   <AlertDialogFooter gap={2}>
                     <Button
                       ref={leastDestructiveRef}
-                      onClick={() => setShowDeleteUserDialog(false)}
+                      onClick={() => setShowDeletePostDialog(false)}
                       variant="solid"
                       size="md"
                       colorScheme="blue"
@@ -349,13 +390,7 @@ export default function PostFront({
                       variant="outline"
                       colorScheme="red"
                       size="md"
-                      onClick={async () => {
-                        await postDelete(
-                          `users/${postFrontData.senderUsername}/posts/${postFrontData.postDocId}`
-                        );
-                        setIsThisPostDeleted(true);
-                        setShowDeleteUserDialog(false);
-                      }}
+                      onClick={handlePostDelete}
                       isLoading={postDeletionLoading}
                       hidden={
                         currentUserState.username !==
@@ -384,15 +419,44 @@ export default function PostFront({
           borderRadius="0px 0px 10px 10px"
           height="auto"
         >
-          <Flex ml={2} mt={2}>
-            <Text fontSize="13pt" fontWeight="medium" textColor="white">
-              {postFrontData.description}
-            </Text>
-          </Flex>
+          <Text
+            p={2}
+            fontSize="13pt"
+            fontWeight="medium"
+            wordBreak="break-word"
+          >
+            {taggedDescription.length > 0 ? (
+              taggedDescription.map((w, i) => {
+                if (w.isTagged) {
+                  return (
+                    <span
+                      key={i}
+                      style={{ color: "#00A2FF", cursor: "pointer" }}
+                      onClick={() => {
+                        router.push(w.word.slice(1, w.word.length + 1));
+                      }}
+                    >
+                      {w.word}{" "}
+                    </span>
+                  );
+                } else {
+                  return (
+                    <span key={i} style={{ color: "white" }}>
+                      {w.word}{" "}
+                    </span>
+                  );
+                }
+              })
+            ) : (
+              <span style={{ color: "white" }}>
+                {postFrontData.description}
+              </span>
+            )}
+          </Text>
           <Flex>
             <Flex gap={3} p={2}>
               <Flex gap="1">
-                {ostensiblePostData.currentUserLikedThisPost ? (
+                {postFrontData.currentUserLikedThisPost ? (
                   <Icon
                     as={AiFillHeart}
                     color="red"
@@ -417,7 +481,7 @@ export default function PostFront({
                     openPanelNameSetter("likes");
                   }}
                 >
-                  {`${ostensiblePostData.likeCount}`}
+                  {`${postFrontData.likeCount}`}
                 </Text>
               </Flex>
 
@@ -433,24 +497,26 @@ export default function PostFront({
               </Flex>
             </Flex>
 
-            <Flex
-              justify="flex-end"
-              align="center"
-              width="100%"
-              mb={2}
-              mr="2"
-              cursor="pointer"
-              onClick={() => {
-                window.open(postFrontData.nftUrl);
-              }}
-              hidden={!!!postFrontData.nftUrl}
-            >
-              <Image
-                alt=""
-                src="https://storage.googleapis.com/opensea-static/Logomark/Logomark-Blue.png"
-                width="30px"
-                height="30px"
-              />
+            <Flex width="100%" position="relative">
+              <Button
+                hidden={!!!postFrontData.nftStatus.minted}
+                position="absolute"
+                right="2.5"
+                bottom="3"
+                colorScheme="pink"
+                size="sm"
+                borderRadius="full"
+                px={4}
+                py={2}
+                fontWeight="bold"
+                _hover={{ bg: "pink.500" }}
+                _active={{ bg: "pink.600" }}
+                onClick={() => {
+                  openPanelNameSetter("nft");
+                }}
+              >
+                NFT
+              </Button>
             </Flex>
           </Flex>
         </Flex>

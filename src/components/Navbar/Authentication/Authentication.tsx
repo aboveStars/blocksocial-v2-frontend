@@ -9,7 +9,7 @@ import {
   Icon,
   Image,
   SkeletonCircle,
-  Spinner
+  Spinner,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 
@@ -81,14 +81,12 @@ export default function Authentication() {
                   height="40px"
                   width="40px"
                   cursor="pointer"
-                  onClick={() =>
-                    router.push(`/users/${currentUserState.username}`)
-                  }
+                  onClick={() => router.push(`/${currentUserState.username}`)}
                 />
               )
             }
             cursor="pointer"
-            onClick={() => router.push(`/users/${currentUserState.username}`)}
+            onClick={() => router.push(`/${currentUserState.username}`)}
           />
         ) : currentUserState.loading ? (
           <Flex align="center">
@@ -150,7 +148,6 @@ export default function Authentication() {
           </>
         )}
       </Flex>
-    
     </>
   );
 }

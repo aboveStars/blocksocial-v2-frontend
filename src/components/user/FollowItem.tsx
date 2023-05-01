@@ -7,6 +7,7 @@ import {
   Icon,
   SkeletonCircle,
   Button,
+  SkeletonText,
 } from "@chakra-ui/react";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
@@ -36,7 +37,7 @@ export default function FollowItem({
   followingsFollowersModalStateSetter,
 }: Props) {
   const [followItemState, setFollowItemState] = useState<FollowItemState>({
-    username: "",
+    username: username,
     fullname: "",
     profilePhoto: "",
     followedByCurrentUser: true,
@@ -52,8 +53,10 @@ export default function FollowItem({
 
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
 
+  const [followOperationLoading, setFollowOperationLoading] = useState(false);
+
   useEffect(() => {
-    getFollowItemInformation();
+    if (username) getFollowItemInformation();
   }, [username]);
 
   const getFollowItemInformation = async () => {
@@ -94,7 +97,7 @@ export default function FollowItem({
     setGettingFollowItemState(false);
   };
 
-  const handleFollowonFollowItem = () => {
+  const handleFollowonFollowItem = async () => {
     if (!currentUserState.isThereCurrentUser) {
       console.log("Login First to Follow");
       setAuthModalState((prev) => ({
@@ -103,18 +106,17 @@ export default function FollowItem({
       }));
       return;
     }
+    setFollowOperationLoading(true);
     // Follow
-    follow(followItemState.username, 1);
-    // Current User Update (locally)
-    setCurrentUserState((prev) => ({
-      ...prev,
-      followingCount: prev.followingCount + 1,
-    }));
+    await follow(followItemState.username, 1);
+
     // update follow status
     setFollowItemState((prev) => ({
       ...prev,
       followedByCurrentUser: true,
     }));
+
+    setFollowOperationLoading(false);
   };
 
   return (
@@ -126,7 +128,7 @@ export default function FollowItem({
             ...prev,
             isOpen: false,
           }));
-          router.push(`/users/${followItemState.username}`);
+          router.push(`/${followItemState.username}`);
         }}
       >
         <Image
@@ -151,10 +153,14 @@ export default function FollowItem({
 
         <Flex justify="center" ml={1} flexDirection="column">
           <Text textColor="white" as="b" fontSize="10pt">
-            {followItemState.username}
+            {username}
           </Text>
           <Text textColor="gray.100" fontSize="9pt" as="i">
-            {followItemState.fullname}
+            {followItemState.fullname ? (
+              followItemState.fullname
+            ) : (
+              <SkeletonText noOfLines={1} mt="1.5" skeletonHeight="2" />
+            )}
           </Text>
         </Flex>
       </Flex>
@@ -170,6 +176,7 @@ export default function FollowItem({
             !!!followItemState.username ||
             followItemState.username === currentUserState.username
           }
+          isLoading={followOperationLoading}
         >
           Follow
         </Button>

@@ -1,6 +1,9 @@
+import AsyncLock from "async-lock";
 import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { NextApiRequest, NextApiResponse } from "next";
-import { auth, firestore, fieldValue } from "../../firebase/adminApp";
+import { auth, fieldValue, firestore } from "../../firebase/adminApp";
+
+const lock = new AsyncLock();
 
 export default async function handler(
   req: NextApiRequest,
@@ -23,7 +26,6 @@ export default async function handler(
   }
 
   let operationFromUsername = "";
-
   try {
     operationFromUsername = await getDisplayName(decodedToken);
   } catch (error) {
@@ -41,41 +43,41 @@ export default async function handler(
     return res.status(422).json({ error: "Invalid prop or props" });
   }
 
-  // check if we already follow or not
-  const doesOperationFromFollowOperationTo = (
-    await firestore
-      .doc(`users/${operationFromUsername}/followings/${operationToUsername}`)
-      .get()
-  ).exists;
-  if (opCode === 1) {
-    if (doesOperationFromFollowOperationTo) {
-      console.error(
-        "Error while follow operation. (Detected already followed.)"
-      );
-      return res.status(422).json({ error: "Invalid prop or props" });
-    }
-  } else {
-    if (!doesOperationFromFollowOperationTo) {
-      console.error(
-        "Error while follow operation. (Detected already not-followed.)"
-      );
-      return res.status(422).json({ error: "Invalid prop or props" });
-    }
-  }
+  await lock.acquire(`followApi-${operationFromUsername}`, async () => {
+    const doesOperationFromFollowOperationTo = (
+      await firestore
+        .doc(`users/${operationFromUsername}/followings/${operationToUsername}`)
+        .get()
+    ).exists;
 
-  try {
-    const props: followOperationInterface = {
-      opCode: opCode,
-      operationFromUsername: operationFromUsername,
-      operationToUsername: operationToUsername,
-    };
-    await Promise.all([handleOperationFrom(props), handleOperationTo(props)]);
-  } catch (error) {
-    console.error("Error while follow operation", error);
-    return res.status(503).json({ error: "Firebase error" });
-  }
-
-  return res.status(200).json({});
+    if (opCode === 1) {
+      if (doesOperationFromFollowOperationTo) {
+        console.error(
+          "Error while follow operation. (Detected already followed.)"
+        );
+        return res.status(422).json({ error: "Invalid prop or props" });
+      }
+    } else if (opCode === -1) {
+      if (!doesOperationFromFollowOperationTo) {
+        console.error(
+          "Error while follow operation. (Detected already not-followed.)"
+        );
+        return res.status(422).json({ error: "Invalid prop or props" });
+      }
+    }
+    try {
+      const props: followOperationInterface = {
+        opCode: opCode,
+        operationFromUsername: operationFromUsername,
+        operationToUsername: operationToUsername,
+      };
+      await Promise.all([handleOperationFrom(props), handleOperationTo(props)]);
+    } catch (error) {
+      console.error("Error while follow operation", error);
+      return res.status(503).json({ error: "Firebase error" });
+    }
+    return res.status(200).json({});
+  });
 }
 
 interface followOperationInterface {

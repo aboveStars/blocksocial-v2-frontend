@@ -175,7 +175,9 @@ export default function PostCreateModal() {
           bg="black"
         >
           <Flex textColor="white" fontSize="17pt" fontWeight="700" gap={2}>
-            <Text>Create Post</Text>
+            <Text>
+              {willBeCroppedPostPhoto ? "Adjust Your Photo" : "Create Post"}
+            </Text>
           </Flex>
 
           <Icon
@@ -194,7 +196,12 @@ export default function PostCreateModal() {
 
         <ModalBody>
           <Stack gap={1}>
-            <Text as="b" fontSize="14pt" textColor="white">
+            <Text
+              as="b"
+              fontSize="14pt"
+              textColor="white"
+              hidden={!!willBeCroppedPostPhoto}
+            >
               Photo
             </Text>
 
@@ -253,6 +260,7 @@ export default function PostCreateModal() {
                   onZoomChange={setZoom}
                   cropSize={{ height: cropSize, width: cropSize }}
                   minZoom={minZoom}
+                  maxZoom={10}
                 />
               </Flex>
             </Flex>
@@ -313,16 +321,21 @@ export default function PostCreateModal() {
                   ref={imageInputRef}
                   type="file"
                   accept="image/*"
-                  hidden
                   onChange={onSelectWillBeCroppedPhoto}
                   isDisabled={postUploadLoading}
+                  hidden
                 />
               </>
             </AspectRatio>
 
-            <Flex direction="column" mt={1} gap="1">
+            <Flex
+              direction="column"
+              mt={1}
+              gap="1"
+              hidden={!!willBeCroppedPostPhoto}
+            >
               <Text as="b" fontSize="14pt" textColor="white">
-                Description
+                {postCreateForm.image ? "Description" : "Message"}
               </Text>
               {postCreateForm.description.length >= 40 ? (
                 <Textarea
@@ -349,7 +362,7 @@ export default function PostCreateModal() {
           </Stack>
         </ModalBody>
 
-        <ModalFooter>
+        <ModalFooter hidden={!!willBeCroppedPostPhoto}>
           <Button
             variant="outline"
             colorScheme="blue"

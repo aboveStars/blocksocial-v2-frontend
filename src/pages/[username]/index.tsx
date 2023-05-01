@@ -163,6 +163,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     followingCount: userDoc.data().followingCount,
     followerCount: userDoc.data().followerCount,
 
+    nftCount: userDoc.data().nftCount,
+
     email: userDoc.data().email,
     uid: userDoc.data().uid,
   };
@@ -209,7 +211,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
       commentCount: postDoc.data().commentCount,
 
-      nftUrl: postDoc.data().nftUrl,
+      currentUserFollowThisSender: false,
+
+      nftStatus: postDoc.data().nftStatus,
       creationTime: postDoc.data().creationTime,
     };
 

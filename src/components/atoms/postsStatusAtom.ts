@@ -5,6 +5,5 @@ export const postsStatusAtom = atom<PostStatus>({
   key: "post-status-atom",
   default: {
     loading: true,
-
   },
 });
