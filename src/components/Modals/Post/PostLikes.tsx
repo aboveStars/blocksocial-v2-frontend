@@ -54,7 +54,7 @@ export default function PostLikes({
     const likesQuery = query(likesCol, orderBy("likeTime", "desc"));
     const likesDocs = (await getDocs(likesQuery)).docs;
     if (likesDocs.length === 0) {
-      console.log("No-Like-Found");
+      setLikeDatas([]);
       return setGettingLikes(false);
     }
 
