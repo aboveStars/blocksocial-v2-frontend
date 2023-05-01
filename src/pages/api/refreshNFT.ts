@@ -92,7 +92,7 @@ export default async function handler(
 
     if (!pd.nftStatus.minted) {
       console.error(
-        "Error while transferring nft.(We are checking if NFT minted)"
+        "Error while refreshing nft.(We are checking if NFT minted)"
       );
       return res.status(422).json({ error: "Invalid prop or props" });
     }

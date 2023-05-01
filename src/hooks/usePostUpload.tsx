@@ -6,6 +6,7 @@ import {
   PostServerData,
 } from "@/components/types/Post";
 import { auth } from "@/firebase/clientApp";
+import bytes from "bytes";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
@@ -29,8 +30,11 @@ const usePostCreate = () => {
     const file = event.target.files[0];
 
     if (!file.type.startsWith("image/")) {
-      console.log("Only Images");
-      return;
+      return console.log("Only Images");
+    }
+
+    if (file.size > 5 * 10 ** 6) {
+      return console.error("This image is too high quality");
     }
 
     const reader = new FileReader();

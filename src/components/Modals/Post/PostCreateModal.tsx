@@ -321,9 +321,9 @@ export default function PostCreateModal() {
                   ref={imageInputRef}
                   type="file"
                   accept="image/*"
-                  hidden
                   onChange={onSelectWillBeCroppedPhoto}
                   isDisabled={postUploadLoading}
+                  hidden
                 />
               </>
             </AspectRatio>

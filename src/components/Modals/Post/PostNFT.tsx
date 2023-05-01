@@ -93,6 +93,8 @@ export default function PostNFT({
 
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
+  const nftTransferAddressInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (
       openPanelNameValue === "nft" &&
@@ -242,6 +244,11 @@ export default function PostNFT({
     }
     const validationStatus = ethers.isAddress(susAddress);
     setNftTransferAddressRight(validationStatus);
+    if (validationStatus) {
+      if (nftTransferAddressInputRef.current) {
+        nftTransferAddressInputRef.current.blur();
+      }
+    }
     if (validationStatus && !susAddress.startsWith("0x")) {
       setNftTransferAddress(`0x${susAddress}`);
       return;
@@ -473,6 +480,7 @@ export default function PostNFT({
                           <InputGroup>
                             <FormControl variant="floating">
                               <Input
+                                ref={nftTransferAddressInputRef}
                                 required
                                 name="nftTransferAddress"
                                 placeholder=" "

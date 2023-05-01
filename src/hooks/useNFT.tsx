@@ -37,36 +37,6 @@ export default function useNFT() {
   ) => {
     setNftCreated(false);
     setCreatingNFTLoading(true);
-    const metadata: NFTMetadata = {
-      name: name,
-      description: description,
-
-      image: image,
-      attributes: [
-        {
-          display_type: "date",
-          trait_type: "Post Creation",
-          value: creationTime / 1000,
-        },
-        {
-          display_type: "date",
-          trait_type: "NFT Creation",
-          value: Date.now() / 1000,
-        },
-        {
-          trait_type: "Likes",
-          value: likeCount,
-        },
-        {
-          trait_type: "Comments",
-          value: commentCount,
-        },
-        {
-          trait_type: "SENDER",
-          value: senderUsername,
-        },
-      ],
-    };
 
     let idToken = "";
     try {
@@ -89,7 +59,8 @@ export default function useNFT() {
         },
         body: JSON.stringify({
           postDocId: postDocId,
-          metadata: metadata,
+          name: name,
+          description: description,
         }),
       });
     } catch (error) {
@@ -108,67 +79,10 @@ export default function useNFT() {
       );
     }
 
-    const metadataLink = (await response.json()).metadataLink;
-
-    let txReceipt: TransactionReceipt | null = null;
-
-    const nftMintTx = await blockSocialSmartContract.mint(metadataLink);
-
-    txReceipt = await nftMintTx.wait(1);
-
-    if (!txReceipt) {
-      return console.error("txReceipt is null", txReceipt);
-    }
-    const tokenId = parseInt(txReceipt.logs[1].topics[2], 16);
-
-    const openSeaLinkCreated = `https://testnets.opensea.io/assets/mumbai/${mumbaiContractAddress}/${tokenId}`;
-
-    try {
-      await updateDoc(doc(firestore, `users/${senderUsername}`), {
-        nftCount: increment(1),
-      });
-
-      await updateDoc(
-        doc(firestore, `users/${senderUsername}/posts/${postDocId}`),
-        {
-          nftStatus: {
-            minted: true,
-            metadataLink: metadataLink,
-            mintTime: Date.now(),
-            title: name,
-            description: description,
-            tokenId: tokenId,
-            contractAddress: mumbaiContractAddress,
-            openseaUrl: openSeaLinkCreated,
-            transferred: false,
-            transferredAddress: "",
-          },
-        }
-      );
-    } catch (error) {
-      setCreatingNFTLoading(false);
-      return console.error(
-        "Error while creating nft. (We were upadating docs at firestore.",
-        error
-      );
-    }
-
     setCreatingNFTLoading(false);
     setNftCreated(true);
 
-    const nftMintResult: PostItemData["nftStatus"] = {
-      minted: true,
-      metadataLink: metadataLink,
-      mintTime: Date.now(),
-
-      tokenId: tokenId,
-      contractAddress: mumbaiContractAddress,
-      openseaUrl: openSeaLinkCreated,
-      transferred: false,
-      transferredAddress: "",
-    };
-
-    return nftMintResult;
+    return await response.json();
   };
 
   /**

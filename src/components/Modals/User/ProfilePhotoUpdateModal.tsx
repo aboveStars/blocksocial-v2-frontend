@@ -166,6 +166,7 @@ export default function ProfilePhotoUpdateModal({
                   cropShape="round"
                   cropSize={{ height: cropAreaHeight, width: cropAreaHeight }}
                   minZoom={minZoom}
+                  maxZoom={10}
                 />
               </Flex>
             </Flex>

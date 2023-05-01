@@ -80,7 +80,7 @@ export default async function handler(
       }
     }
 
-    const newPostData = {
+    const newPostData: PostServerData = {
       senderUsername: operationFromUsername,
       description: description,
       image: postImagePublicURL,
@@ -91,6 +91,8 @@ export default async function handler(
         mintTime: -1,
         metadataLink: "",
         tokenId: -1,
+        name: "",
+        description: "",
         contractAddress: "",
         openseaUrl: "",
         transferred: false,
