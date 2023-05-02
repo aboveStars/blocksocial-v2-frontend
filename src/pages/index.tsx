@@ -6,12 +6,14 @@ import { firestore } from "@/firebase/clientApp";
 import {
   collection,
   doc,
+  DocumentData,
+  DocumentReference,
   getDoc,
   getDocs,
   orderBy,
   query,
+  QueryDocumentSnapshot,
 } from "firebase/firestore";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -76,122 +78,143 @@ export default function Home() {
   };
 
   const handleMainPage = async () => {
-    setPostStatus({
-      loading: true,
-    });
+    setPostStatus({ loading: true });
 
-    // get current user followings
-
-    let currentUserFollowings: string[] = [];
+    let followings: string[] = [];
+    let currentUserUsername: string = "";
     if (currentUserState.isThereCurrentUser) {
-      const followingsDocsSnapshot = await getDocs(
-        collection(firestore, `users/${currentUserState.username}/followings`)
-      );
-      for (const doc of followingsDocsSnapshot.docs) {
-        currentUserFollowings.push(doc.id);
+      currentUserUsername = currentUserState.username;
+      try {
+        const currentUserFollowingsDocs = (
+          await getDocs(
+            collection(
+              firestore,
+              `users/${currentUserState.username}/followings`
+            )
+          )
+        ).docs;
+
+        for (const followingDoc of currentUserFollowingsDocs) {
+          followings.push(followingDoc.id);
+        }
+      } catch (error) {
+        console.error("Error while getting current user followings", error);
       }
     }
 
-    const celebrities = await getCelebrities();
+    let celebrities: string[] = [];
+    try {
+      const celebritiesServer = (
+        await getDoc(doc(firestore, `popular/celebrities`))
+      ).data()?.people;
 
-    if (currentUserFollowings.length === 0 && celebrities.length === 0) {
-      console.log("Poor index");
-      return;
+      for (const celebrity of celebritiesServer) {
+        celebrities.push(celebrity);
+      }
+    } catch (error) {
+      console.error("Error while getting celebrities", error);
     }
 
-    const mainIndexSource = Array.from(
-      new Set(currentUserFollowings.concat(celebrities))
+    // merge all sources
+    const postsSources: string[] = Array.from(
+      new Set(followings.concat(celebrities).concat(currentUserUsername))
     );
 
-    // Filter to celebrities don't see themselves
-    let finalIndexSource = mainIndexSource;
-    if (currentUserState.isThereCurrentUser) {
-      const mainIndexSourceAddedCurrentUser = mainIndexSource.concat(
-        currentUserState.username
+    // get posts from all sources
+    let getPostsFromOneSourcePromises: Promise<PostItemData[]>[] = [];
+    for (const source of postsSources) {
+      getPostsFromOneSourcePromises.push(
+        getPostsFromOneSource(source, currentUserState.username)
       );
-      finalIndexSource = Array.from(new Set(mainIndexSourceAddedCurrentUser));
     }
 
-    let postsDatas: PostItemData[] = [];
+    const postsArraysFromAllSources = await Promise.all(
+      getPostsFromOneSourcePromises
+    );
 
-    for (const username of finalIndexSource) {
-      const mainIndexSourcePostDatasCollection = collection(
-        firestore,
-        `users/${username}/posts`
-      );
-      const mainIndexSourcePostDatasQuery = query(
-        mainIndexSourcePostDatasCollection,
-        orderBy("creationTime", "desc")
-      );
-      const mainIndexSourcePostsDatasSnapshot = (
-        await getDocs(mainIndexSourcePostDatasQuery)
-      ).docs;
-
-      const mainIndexSourcePostsDatas: PostItemData[] = [];
-
-      for (const postDoc of mainIndexSourcePostsDatasSnapshot) {
-        let tempCurrentUserLikedThisPost = false;
-        let tempCurrentUserFollowThisSender = false;
-        if (currentUserState.isThereCurrentUser) {
-          tempCurrentUserLikedThisPost = (
-            await getDoc(
-              doc(
-                firestore,
-                `users/${postDoc.data().senderUsername}/posts/${
-                  postDoc.id
-                }/likes/${currentUserState.username}`
-              )
-            )
-          ).exists();
-
-          tempCurrentUserFollowThisSender = (
-            await getDoc(
-              doc(
-                firestore,
-                `users/${postDoc.data().senderUsername}/posts/${
-                  postDoc.id
-                }/followers/${currentUserState.username}`
-              )
-            )
-          ).exists();
-        }
-
-        const postDataObject: PostItemData = {
-          senderUsername: postDoc.data().senderUsername,
-
-          description: postDoc.data().description,
-          image: postDoc.data().image,
-
-          likeCount: postDoc.data().likeCount,
-          currentUserLikedThisPost: tempCurrentUserLikedThisPost,
-
-          postDocId: postDoc.id,
-
-          commentCount: postDoc.data().commentCount,
-
-          currentUserFollowThisSender : tempCurrentUserFollowThisSender,
-
-          nftStatus: postDoc.data().nftStatus,
-          creationTime: postDoc.data().creationTime,
-        };
-
-        mainIndexSourcePostsDatas.push(postDataObject);
+    const posts: PostItemData[] = [];
+    for (const postsArray of postsArraysFromAllSources) {
+      for (const post of postsArray) {
+        posts.push(post);
       }
-      postsDatas.push(...mainIndexSourcePostsDatas);
     }
 
-    // shuffle posts
-    const finalPostDatas = organizePosts(postsDatas);
+    const orderedPosts = organizePosts(posts);
 
-    // Update state varible
-    setPostDatasInServer(finalPostDatas);
-
-    setPostStatus({
-      loading: false,
-    });
+    setPostDatasInServer(orderedPosts);
+    setPostStatus({ loading: false });
   };
 
   return (
     postsDatasInServer && <MainPageLayout postItemsDatas={postsDatasInServer} />
   );
 }
+
+const getPostsFromOneSource = async (
+  source: string,
+  currentUserUsername: string
+) => {
+  try {
+    const postsDocs = (
+      await getDocs(collection(firestore, `users/${source}/posts`))
+    ).docs;
+
+    let posts: PostItemData[] = [];
+    let createPostItemDataPromises: Promise<PostItemData>[] = [];
+    for (const postDoc of postsDocs) {
+      createPostItemDataPromises.push(
+        createPostItemData(
+          source,
+          postDoc,
+          currentUserUsername
+        ) as Promise<PostItemData>
+      );
+    }
+
+    const postItemDatas = await Promise.all(createPostItemDataPromises);
+
+    for (const postItemData of postItemDatas) {
+      posts.push(postItemData);
+    }
+
+    return posts;
+  } catch (error) {
+    console.error("Error while getting posts from one source", error);
+    return [];
+  }
+};
+
+const createPostItemData = async (
+  source: string,
+  postDoc: QueryDocumentSnapshot<DocumentData>,
+  currentUserUsername: string
+) => {
+  try {
+    let likeStatus: boolean = false;
+    if (currentUserUsername) {
+      likeStatus = (
+        await getDoc(
+          doc(
+            firestore,
+            `users/${source}/posts/${postDoc.id}/likes/${currentUserUsername}`
+          )
+        )
+      ).exists();
+    }
+    const postItemData: PostItemData = {
+      commentCount: postDoc.data().commentCount,
+      creationTime: postDoc.data().creationTime,
+      currentUserFollowThisSender: true,
+      currentUserLikedThisPost: likeStatus,
+      description: postDoc.data().description,
+      image: postDoc.data().image,
+      likeCount: postDoc.data().likeCount,
+      nftStatus: postDoc.data().nftStatus,
+      postDocId: postDoc.id,
+      senderUsername: postDoc.data().senderUsername,
+    };
+    return postItemData;
+  } catch (error) {
+    console.error("Error while creating post item data.", error);
+  }
+};

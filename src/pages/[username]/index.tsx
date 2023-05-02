@@ -39,25 +39,22 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
       return;
     }
     let reviewedPostDatasTemp: PostItemData[] = [];
-    for (const post of postItemDatas) {
-      let tempCurrentUserLikedThisPost = false;
 
-      tempCurrentUserLikedThisPost = (
-        await getDoc(
-          doc(
-            firestore,
-            `users/${post.senderUsername}/posts/${post.postDocId}/likes/${currentUserState.username}`
-          )
-        )
-      ).exists();
-
-      const reviewedPostData: PostItemData = {
-        ...post,
-        currentUserLikedThisPost: tempCurrentUserLikedThisPost,
-      };
-
-      reviewedPostDatasTemp.push(reviewedPostData);
+    let reviewForLikePromises: Promise<PostItemData>[] = [];
+    for (const postItemData of postItemDatas) {
+      reviewForLikePromises.push(
+        reviewForLike(postItemData, currentUserState.username)
+      );
     }
+
+    const reviewedPostItemDatasResult = await Promise.all(
+      reviewForLikePromises
+    );
+
+    for (const reviewedPostItemData of reviewedPostItemDatasResult) {
+      reviewedPostDatasTemp.push(reviewedPostItemData);
+    }
+
     setReviewedPostDatas(reviewedPostDatasTemp);
     setPostStatus({
       loading: false,
@@ -110,6 +107,29 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
     />
   );
 }
+
+const reviewForLike = async (
+  post: PostItemData,
+  currentUserUsername: string
+) => {
+  let tempCurrentUserLikedThisPost = false;
+
+  tempCurrentUserLikedThisPost = (
+    await getDoc(
+      doc(
+        firestore,
+        `users/${post.senderUsername}/posts/${post.postDocId}/likes/${currentUserUsername}`
+      )
+    )
+  ).exists();
+
+  const reviewedPostData: PostItemData = {
+    ...post,
+    currentUserLikedThisPost: tempCurrentUserLikedThisPost,
+  };
+
+  return reviewedPostData;
+};
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const cron = context.req.headers.cron as string;
@@ -211,7 +231,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
       commentCount: postDoc.data().commentCount,
 
-      currentUserFollowThisSender: false,
+      currentUserFollowThisSender: true,
 
       nftStatus: postDoc.data().nftStatus,
       creationTime: postDoc.data().creationTime,
