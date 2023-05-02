@@ -127,6 +127,56 @@ export default function useNFT() {
     setNftRefreshLoading(false);
   };
 
+  /**
+   * 
+   * @param postDocId 
+   * @param nftTransferAddress 
+   * @returns Transfer status as boolean
+   */
+  const transferNft = async (
+    postDocId: string,
+    nftTransferAddress: string
+  ): Promise<boolean> => {
+    let idToken = "";
+    try {
+      idToken = (await auth.currentUser?.getIdToken()) as string;
+    } catch (error) {
+      console.error(
+        "Error while transferring NFT. Couln't be got idToken",
+        error
+      );
+      return false;
+    }
+
+    let response: Response;
+    try {
+      response = await fetch("/api/transferNFT", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          postDocId: postDocId,
+          transferAddress: nftTransferAddress,
+        }),
+      });
+    } catch (error) {
+      console.error("Error while fetching 'refreshNFT' API", error);
+      return false;
+    }
+
+    if (!response.ok) {
+      console.error(
+        "Error while transferring from 'transferNFT' API",
+        await response.json()
+      );
+      return false;
+    }
+
+    return true;
+  };
+
   return {
     mintNft,
     creatingNFTLoading,
@@ -134,5 +184,6 @@ export default function useNFT() {
     setNftCreated,
     refreshNFT,
     nftRefreshLoading,
+    transferNft,
   };
 }

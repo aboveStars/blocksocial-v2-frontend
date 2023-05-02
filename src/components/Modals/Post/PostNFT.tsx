@@ -19,6 +19,7 @@ import {
   ModalOverlay,
   Spinner,
   Text,
+  Textarea,
 } from "@chakra-ui/react";
 import React, { SetStateAction, useEffect, useRef, useState } from "react";
 import {
@@ -59,8 +60,14 @@ export default function PostNFT({
   openPanelNameValueSetter,
   postInformation,
 }: Props) {
-  const { mintNft, creatingNFTLoading, refreshNFT, nftCreated, setNftCreated } =
-    useNFT();
+  const {
+    mintNft,
+    creatingNFTLoading,
+    refreshNFT,
+    nftCreated,
+    setNftCreated,
+    transferNft,
+  } = useNFT();
 
   const [nftTitle, setNftTitle] = useState("");
   const [nftDescription, setNftDescription] = useState(
@@ -92,6 +99,30 @@ export default function PostNFT({
 
   const setPostsAtView = useSetRecoilState(postsAtViewAtom);
 
+  const bigInputRef = useRef<HTMLTextAreaElement>(null);
+  const smallInputRef = useRef<HTMLInputElement>(null);
+  const [focusedTextInput, setFocusedInput] = useState<
+    "bigInput" | "smallInput"
+  >("smallInput");
+
+  useEffect(() => {
+    if (nftDescription.length >= 40 && focusedTextInput !== "bigInput") {
+      if (bigInputRef.current) {
+        setFocusedInput("bigInput");
+        bigInputRef.current.focus();
+        bigInputRef.current.selectionStart = bigInputRef.current.selectionEnd =
+          nftDescription.length;
+      }
+    } else {
+      if (smallInputRef.current && focusedTextInput !== "smallInput") {
+        setFocusedInput("smallInput");
+        smallInputRef.current.focus();
+        smallInputRef.current.selectionStart =
+          smallInputRef.current.selectionEnd = nftDescription.length;
+      }
+    }
+  }, [nftDescription]);
+
   useEffect(() => {
     if (
       openPanelNameValue === "nft" &&
@@ -104,7 +135,7 @@ export default function PostNFT({
   const handleSendNFT = async () => {
     const nftMintResult = await mintNft(
       nftTitle,
-      postInformation.description,
+      nftDescription,
       postInformation.postDocId
     );
 
@@ -186,41 +217,13 @@ export default function PostNFT({
 
     setNftTransferLoading(true);
 
-    let idToken = "";
-    try {
-      idToken = (await auth.currentUser?.getIdToken()) as string;
-    } catch (error) {
-      setNftTransferLoading(false);
-      return console.error(
-        "Error while transferring NFT. Couln't be got idToken",
-        error
-      );
-    }
+    const transferResult = await transferNft(
+      postInformation.postDocId,
+      nftTransferAddress
+    );
 
-    let response: Response;
-    try {
-      response = await fetch("/api/transferNFT", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-          postDocId: postInformation.postDocId,
-          transferAddress: nftTransferAddress,
-        }),
-      });
-    } catch (error) {
-      setNftTransferLoading(false);
-      return console.error("Error while fetching 'refreshNFT' API", error);
-    }
-
-    if (!response.ok) {
-      setNftTransferLoading(false);
-      return console.error(
-        "Error while transferring from 'transferNFT' API",
-        await response.json()
-      );
+    if (!transferResult) {
+      return setNftTransferLoading(false);
     }
 
     setPostsAtView((prev) => {
@@ -332,13 +335,19 @@ export default function PostNFT({
 
                     <Flex
                       id="nft-data"
-                      gap={0.5}
+                      gap={2}
                       overflow="scroll"
                       direction="column"
                     >
                       <Flex id="nft-title-data" align="center" gap={1}>
                         <Icon as={RxText} fontSize="13pt" color="white" />
-                        <Text color="gray.300" fontSize="13pt">
+                        <Text
+                          color="gray.300"
+                          fontSize="13pt"
+                          maxHeight="100px"
+                          wordBreak="break-word"
+                          overflowY="auto"
+                        >
                           {nftMetadaData?.name}
                         </Text>
                       </Flex>
@@ -348,10 +357,18 @@ export default function PostNFT({
                           fontSize="13pt"
                           color="white"
                         />
-                        <Text color="gray.300" fontSize="13pt">
+
+                        <Text
+                          color="gray.300"
+                          fontSize="12pt"
+                          maxHeight="100px"
+                          wordBreak="break-word"
+                          overflowY="auto"
+                        >
                           {nftMetadaData?.description}
                         </Text>
                       </Flex>
+
                       <Flex id="nft-like-data" align="center" gap={1}>
                         <Icon as={AiFillHeart} fontSize="13pt" color="white" />
                         <Text color="gray.300" fontSize="13pt">
@@ -727,23 +744,46 @@ export default function PostNFT({
               </FormControl>
               <Image alt="" src={postInformation.image} />
               <FormControl variant="floating">
-                <Input
-                  required
-                  name="title"
-                  placeholder=" "
-                  mb={2}
-                  value={nftDescription}
-                  onChange={(event) => {
-                    setNftDescription(event.target.value);
-                  }}
-                  _hover={{
-                    border: "1px solid",
-                    borderColor: "blue.500",
-                  }}
-                  bg="black"
-                  textColor="white"
-                  isDisabled={creatingNFTLoading || nftCreated}
-                />
+                {nftDescription.length >= 40 ? (
+                  <Textarea
+                    ref={bigInputRef}
+                    required
+                    name="title"
+                    placeholder=" "
+                    mb={2}
+                    _hover={{
+                      border: "1px solid",
+                      borderColor: "blue.500",
+                    }}
+                    bg="black"
+                    textColor="white"
+                    value={nftDescription}
+                    onChange={(event) => {
+                      setNftDescription(event.target.value);
+                    }}
+                    isDisabled={creatingNFTLoading || nftCreated}
+                  />
+                ) : (
+                  <Input
+                    ref={smallInputRef}
+                    required
+                    name="description"
+                    placeholder=" "
+                    mb={2}
+                    _hover={{
+                      border: "1px solid",
+                      borderColor: "blue.500",
+                    }}
+                    bg="black"
+                    textColor="white"
+                    value={nftDescription}
+                    onChange={(event) => {
+                      setNftDescription(event.target.value);
+                    }}
+                    isDisabled={creatingNFTLoading || nftCreated}
+                  />
+                )}
+
                 <FormLabel
                   textColor="gray.500"
                   fontSize="12pt"
