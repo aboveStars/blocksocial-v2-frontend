@@ -1,9 +1,17 @@
 import { atom } from "recoil";
 
-type NotificationModalState = boolean;
-const defaultState = false;
+type NotificationState = {
+  notificationPanelOpen: boolean;
+  allNotificationsRead: boolean;
+  loading: boolean;
+};
+const defaultState: NotificationState = {
+  allNotificationsRead: false,
+  notificationPanelOpen: false,
+  loading: true,
+};
 
-export const notificationModalStateAtom = atom<NotificationModalState>({
+export const notificationStateAtom = atom<NotificationState>({
   key: "notificationModalKey",
   default: defaultState,
 });

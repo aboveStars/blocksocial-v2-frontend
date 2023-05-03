@@ -53,6 +53,11 @@ export default async function handler(
         cron: cron,
       },
     }),
+    fetch("https:/blocksocial.vercel.app/api/seenNotification", {
+      headers: {
+        cron: cron,
+      },
+    }),
     fetch("https:/blocksocial.vercel.app/api/signup", {
       headers: {
         cron: cron,

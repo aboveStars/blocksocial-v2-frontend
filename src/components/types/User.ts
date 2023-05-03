@@ -65,4 +65,5 @@ export interface INotificationServerData {
   seen: boolean;
   sender: string;
   cause: "like" | "follow" | "comment";
+  commentDocPath?: string;
 }

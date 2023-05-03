@@ -115,13 +115,15 @@ export default async function handler(
           await firestore.doc(postDocPath).get()
         ).data()?.senderUsername;
 
-        (
+        const likeNotificationDoc = (
           await firestore
             .collection(`users/${postSenderUsername}/notifications`)
             .where("cause", "==", "like")
             .where("sender", "==", operationFromUsername)
             .get()
-        ).docs[0].ref.delete();
+        ).docs[0];
+
+        if (likeNotificationDoc) await likeNotificationDoc.ref.delete();
       }
     } catch (error) {
       console.error(

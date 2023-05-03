@@ -127,7 +127,11 @@ export default function Header({ userInformation }: Props) {
       setGettingFollowStatus(false);
       setIsCurrentUserPage((prev) => false);
     }
-  }, [userInformation, currentUserState.isThereCurrentUser]);
+  }, [
+    userInformation,
+    currentUserState.isThereCurrentUser,
+    currentUserState.loading,
+  ]);
 
   useEffect(() => {
     const poorStatus: boolean = !(

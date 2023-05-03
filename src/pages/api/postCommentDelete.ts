@@ -67,6 +67,29 @@ export default async function handler(
       console.error(error);
       return res.status(503).json({ error: "Firebase error" });
     }
+
+    // send notification
+    try {
+      const postSenderUsername = (await firestore.doc(postDocPath).get()).data()
+        ?.senderUsername;
+
+      const notificationDoc = (
+        await firestore
+          .collection(`users/${postSenderUsername}/notifications`)
+          .where("cause", "==", "comment")
+          .where("sender", "==", operationFromUsername)
+          .where("commentDocPath", "==", commentDocPath)
+          .get()
+      ).docs[0];
+      if (notificationDoc) await notificationDoc.ref.delete();
+    } catch (error) {
+      console.error(
+        "Error while sending comment. (We were sending notification)",
+        error
+      );
+      return res.status(503).json({ error: "Firebase error" });
+    }
+
     return res.status(200).json({});
   });
 }

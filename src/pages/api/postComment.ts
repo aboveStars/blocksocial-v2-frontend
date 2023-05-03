@@ -7,6 +7,7 @@ import { auth, fieldValue, firestore } from "../../firebase/adminApp";
 
 import { v4 as uuidv4 } from "uuid";
 import AsyncLock from "async-lock";
+import { INotificationServerData } from "@/components/types/User";
 
 const lock = new AsyncLock();
 
@@ -71,6 +72,31 @@ export default async function handler(
       console.error("Error while commenting:", error);
       return res.status(503).json({ error: "Firebase error" });
     }
+
+    // send notification
+    try {
+      const postSenderUsername = (await firestore.doc(postDocPath).get()).data()
+        ?.senderUsername;
+      const newcommentNotificationObject: INotificationServerData = {
+        cause: "comment",
+        notificationTime: Date.now(),
+        seen: false,
+        sender: operationFromUsername,
+        commentDocPath : newCommentDocPath
+      };
+      await firestore
+        .collection(`users/${postSenderUsername}/notifications`)
+        .add({
+          ...newcommentNotificationObject,
+        });
+    } catch (error) {
+      console.error(
+        "Error while sending comment. (We were sending notification)",
+        error
+      );
+      return res.status(503).json({ error: "Firebase error" });
+    }
+
     return res.status(200).json({ newCommentDocPath: newCommentDocPath });
   });
 }

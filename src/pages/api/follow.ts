@@ -1,3 +1,4 @@
+import { INotificationServerData } from "@/components/types/User";
 import AsyncLock from "async-lock";
 import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -76,6 +77,38 @@ export default async function handler(
       console.error("Error while follow operation", error);
       return res.status(503).json({ error: "Firebase error" });
     }
+
+    try {
+      if (opCode === 1) {
+        const newFollowNotificationObject: INotificationServerData = {
+          cause: "follow",
+          notificationTime: Date.now(),
+          seen: false,
+          sender: operationFromUsername,
+        };
+
+        await firestore
+          .collection(`users/${operationToUsername}/notifications`)
+          .add({ ...newFollowNotificationObject });
+      } else {
+        const followNotificationDoc = (
+          await firestore
+            .collection(`users/${operationToUsername}/notifications`)
+            .where("cause", "==", "follow")
+            .where("sender", "==", operationFromUsername)
+            .get()
+        ).docs[0];
+
+        if (followNotificationDoc) await followNotificationDoc.ref.delete();
+      }
+    } catch (error) {
+      console.error(
+        "Error while follow. (We were sending notification)",
+        error
+      );
+      return res.status(503).json({ error: "Firebase error" });
+    }
+
     return res.status(200).json({});
   });
 }

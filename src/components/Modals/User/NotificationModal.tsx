@@ -1,7 +1,8 @@
-import { notificationModalStateAtom } from "@/components/atoms/notificationModalAtom";
+import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { notificationStateAtom } from "@/components/atoms/notificationModalAtom";
 import NotificationItem from "@/components/Items/User/NotificationItem";
 import { INotificationServerData } from "@/components/types/User";
-import { firestore } from "@/firebase/clientApp";
+import { auth, firestore } from "@/firebase/clientApp";
 import {
   Flex,
   Icon,
@@ -11,18 +12,15 @@ import {
   ModalOverlay,
   Spinner,
   Stack,
-  Text,
 } from "@chakra-ui/react";
-import { collection, getDocs } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
-type Props = {};
-
-export default function NotificationModal({}: Props) {
-  const [notificationModalState, setNotificationModalState] = useRecoilState(
-    notificationModalStateAtom
+export default function NotificationModal() {
+  const [notificationState, setNotificationState] = useRecoilState(
+    notificationStateAtom
   );
 
   const [notificationData, setNotificationData] = useState<
@@ -31,16 +29,32 @@ export default function NotificationModal({}: Props) {
 
   const [notificationsLoading, setNotificationsLoading] = useState(true);
 
+  const currentUserState = useRecoilValue(currentUserStateAtom);
+
   useEffect(() => {
-    if (!notificationModalState) return;
-    handleNotificationData();
-  }, [notificationModalState]);
+    if (currentUserState.username) handleNotificationData();
+  }, [notificationState.notificationPanelOpen, currentUserState.username]);
 
   const handleNotificationData = async () => {
+    if (!currentUserState.isThereCurrentUser) {
+      return;
+    }
+
+    console.log("Notifications are loading....");
     setNotificationsLoading(true);
+    setNotificationState((prev) => ({ ...prev, loading: true }));
     const notificationDocs = (
-      await getDocs(collection(firestore, `users/yunuskorkmaz/notifications`))
+      await getDocs(
+        query(
+          collection(
+            firestore,
+            `users/${currentUserState.username}/notifications`
+          ),
+          orderBy("notificationTime", "desc")
+        )
+      )
     ).docs;
+    let unSeenNotificationsDocsIds: string[] = [];
     let tempNotifications: INotificationServerData[] = [];
     for (const notificationDoc of notificationDocs) {
       const newNotificationObject: INotificationServerData = {
@@ -50,11 +64,65 @@ export default function NotificationModal({}: Props) {
         cause: notificationDoc.data().cause,
       };
       tempNotifications.push(newNotificationObject);
+
+      if (!notificationDoc.data()?.seen)
+        unSeenNotificationsDocsIds.push(notificationDoc.id);
     }
 
     setNotificationData(tempNotifications);
 
     console.log(tempNotifications);
+
+    if (unSeenNotificationsDocsIds.length > 0) {
+      if (!notificationState.notificationPanelOpen) {
+        console.log("There is unseen messages...");
+        return setNotificationState((prev) => ({
+          ...prev,
+          allNotificationsRead: false,
+          loading: false,
+        }));
+      }
+
+      // I put making loading false here too becasue api is fucking slow so I don't want users to wait so long...
+      setNotificationsLoading(false);
+
+      setNotificationState((prev) => {
+        return { ...prev, allNotificationsRead: true, loading: false };
+      });
+
+      let idToken = "";
+      try {
+        idToken = (await auth.currentUser?.getIdToken()) as string;
+      } catch (error) {
+        return console.error("Error while getting 'idToken'", error);
+      }
+
+      let response: Response;
+      try {
+        response = await fetch("/api/seenNotification", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({
+            unSeenNotificationsDocsIds: unSeenNotificationsDocsIds,
+          }),
+        });
+      } catch (error) {
+        return console.error("Error while 'fetching' to 'follow' API");
+      }
+
+      if (!response.ok) {
+        return console.error("Error from 'follow' API:", await response.json());
+      }
+    } else {
+      setNotificationState((prev) => ({
+        ...prev,
+        allNotificationsRead: true,
+        loading: false,
+      }));
+    }
 
     setNotificationsLoading(false);
   };
@@ -67,8 +135,13 @@ export default function NotificationModal({}: Props) {
         md: "md",
         lg: "md",
       }}
-      isOpen={notificationModalState}
-      onClose={() => setNotificationModalState(false)}
+      isOpen={notificationState.notificationPanelOpen}
+      onClose={() =>
+        setNotificationState((prev) => ({
+          ...prev,
+          notificationPanelOpen: false,
+        }))
+      }
       autoFocus={false}
     >
       <ModalOverlay backdropFilter="auto" backdropBlur="8px" />
@@ -98,7 +171,10 @@ export default function NotificationModal({}: Props) {
             fontSize="15pt"
             cursor="pointer"
             onClick={() => {
-              setNotificationModalState(false);
+              setNotificationState((prev) => ({
+                ...prev,
+                notificationPanelOpen: false,
+              }));
             }}
           />
         </Flex>
