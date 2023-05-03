@@ -1,3 +1,4 @@
+import { INotificationServerData } from "@/components/types/User";
 import AsyncLock from "async-lock";
 import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -91,6 +92,45 @@ export default async function handler(
       );
       return res.status(503).json({ error: "Firebase error" });
     }
+
+    // send notification
+    try {
+      if (opCode === 1) {
+        const newLikeNotificationObject: INotificationServerData = {
+          seen: false,
+          notificationTime: Date.now(),
+          sender: operationFromUsername,
+          cause: "like",
+        };
+
+        const postSenderUsername = (
+          await firestore.doc(postDocPath).get()
+        ).data()?.senderUsername;
+
+        await firestore
+          .collection(`users/${postSenderUsername}/notifications`)
+          .add({ ...newLikeNotificationObject });
+      } else {
+        const postSenderUsername = (
+          await firestore.doc(postDocPath).get()
+        ).data()?.senderUsername;
+
+        (
+          await firestore
+            .collection(`users/${postSenderUsername}/notifications`)
+            .where("cause", "==", "like")
+            .where("sender", "==", operationFromUsername)
+            .get()
+        ).docs[0].ref.delete();
+      }
+    } catch (error) {
+      console.error(
+        "Error while like. (We were sending or deleting notification)",
+        error
+      );
+      return res.status(503).json({ error: "Firebase error" });
+    }
+
     return res.status(200).json({});
   });
 }

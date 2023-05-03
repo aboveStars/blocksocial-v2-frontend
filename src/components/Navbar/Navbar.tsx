@@ -1,6 +1,7 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Authentication from "./Authentication/Authentication";
+import NotificationButton from "./SearchBar/NotificationButton";
 import PostCreateButton from "./SearchBar/PostCreateButton";
 
 import SearchBar from "./SearchBar/SearchBar";
@@ -53,6 +54,7 @@ export default function Navbar() {
 
         <Box>
           <Flex align="center" gap={2}>
+            <NotificationButton />
             <PostCreateButton />
             <Authentication />
           </Flex>
@@ -95,6 +97,7 @@ export default function Navbar() {
           <SearchBar />
         </Flex>
         <Flex justify="flex-end" width="100%" align="center" gap={3}>
+          <NotificationButton />
           <PostCreateButton />
           <Authentication />
         </Flex>

@@ -59,3 +59,10 @@ export const defaultCurrentUserState: CurrentUser = {
   email: "",
   uid: "",
 };
+
+export interface INotificationServerData {
+  notificationTime: number;
+  seen: boolean;
+  sender: string;
+  cause: "like" | "follow" | "comment";
+}

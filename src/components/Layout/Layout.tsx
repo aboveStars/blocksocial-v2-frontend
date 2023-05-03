@@ -3,6 +3,7 @@ import { ReactNode, useEffect, useState } from "react";
 import Footer from "../Footer/Footer";
 import AuthenticationModal from "../Modals/AuthenticationModal/AuthenticationModal";
 import PostCreateModal from "../Modals/Post/PostCreateModal";
+import NotificationModal from "../Modals/User/NotificationModal";
 import Navbar from "../Navbar/Navbar";
 import SystemStatus from "../system-status/SystemStatus";
 
@@ -17,8 +18,6 @@ export default function Layout({ children }: Props) {
   useEffect(() => {
     setLoading(false);
   }, []);
-
-  
 
   useEffect(() => {
     setInnerHeight(`${window.innerHeight}px`);
@@ -36,6 +35,7 @@ export default function Layout({ children }: Props) {
           <Flex justifyContent="center">{children}</Flex>
           <PostCreateModal />
           <AuthenticationModal />
+          <NotificationModal />
           <Footer />
           <SystemStatus />
         </Box>
