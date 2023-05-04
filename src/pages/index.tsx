@@ -7,11 +7,8 @@ import {
   collection,
   doc,
   DocumentData,
-  DocumentReference,
   getDoc,
   getDocs,
-  orderBy,
-  query,
   QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
@@ -24,17 +21,6 @@ export default function Home() {
   );
 
   const setPostStatus = useSetRecoilState(postsStatusAtom);
-
-  /**
-   * To make people index colorful, getting famous usernames from database
-   */
-  const getCelebrities = async () => {
-    const cDocRef = doc(firestore, `popular/celebrities`);
-    const cDoc = await getDoc(cDocRef);
-
-    if (cDoc.exists()) return cDoc.data().people;
-    else return "";
-  };
 
   useEffect(() => {
     if (currentUserState.loading) return;
