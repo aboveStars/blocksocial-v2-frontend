@@ -70,12 +70,7 @@ const useLoginOperations = () => {
     // check if user has display name if not, update auth object
 
     const displayName = user.displayName;
-    let username: string = "";
-    if (!displayName) {
-      username = await handleDisplayNameUpdate();
-    } else {
-      username = displayName;
-    }
+    let username = displayName as string;
 
     const userDoc = await getDoc(doc(firestore, `users/${username}`));
 
@@ -128,48 +123,6 @@ const useLoginOperations = () => {
     }));
 
     setLoginLoading((prev) => false);
-  };
-
-  const handleDisplayNameUpdate = async () => {
-    console.log("We are updating user");
-
-    let idToken = "";
-    try {
-      idToken = (await auth.currentUser?.getIdToken()) as string;
-    } catch (error) {
-      console.error("Error while getting 'idToken'", error);
-      return;
-    }
-
-    let response: Response;
-
-    try {
-      response = await fetch("/api/update", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-          idToken: idToken,
-        }),
-      });
-    } catch (error) {
-      return console.error("Error while fetching to 'update' API", error);
-    }
-
-    if (!response.ok) {
-      return console.error(
-        "Error on update from 'update' API",
-        await response.json()
-      );
-    }
-
-    const { createdDisplayName } = await response.json();
-
-    console.log("User updated:", createdDisplayName);
-
-    return createdDisplayName;
   };
 
   useEffect(() => {

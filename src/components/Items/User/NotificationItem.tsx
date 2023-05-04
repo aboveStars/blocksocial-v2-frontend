@@ -130,7 +130,10 @@ export default function NotificationItem({
         </Flex>
 
         <Flex id="date" color="gray.300" fontSize="8pt" align="center">
-          {formatDistanceToNow(notificationItemData.notificationTime)}
+          {formatDistanceToNow(notificationItemData.notificationTime).replace(
+            "about ",
+            ""
+          )}
         </Flex>
       </Flex>
 
