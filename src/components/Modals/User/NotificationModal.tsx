@@ -40,7 +40,6 @@ export default function NotificationModal() {
       return;
     }
 
-    console.log("Notifications are loading....");
     setNotificationsLoading(true);
     setNotificationState((prev) => ({ ...prev, loading: true }));
     const notificationDocs = (
@@ -70,8 +69,6 @@ export default function NotificationModal() {
     }
 
     setNotificationData(tempNotifications);
-
-    console.log(tempNotifications);
 
     if (unSeenNotificationsDocsIds.length > 0) {
       if (!notificationState.notificationPanelOpen) {

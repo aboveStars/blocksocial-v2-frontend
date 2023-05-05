@@ -73,12 +73,46 @@ export default async function handler(
       return res.status(503).json({ error: "Firebase error" });
     }
 
+    const likeTimestamp = Date.now();
+
+    try {
+      if (opCode === 1) {
+        await firestore
+          .doc(`users/${operationFromUsername}/activities/likes`)
+          .update({
+            likesDatas: fieldValue.arrayUnion({
+              likeTime: likeTimestamp,
+              likedPostDocPath: postDocPath,
+            }),
+          });
+      } else {
+        const likeTime = (
+          await firestore
+            .doc(postDocPath)
+            .collection("likes")
+            .doc(operationFromUsername)
+            .get()
+        ).data()?.likeTime;
+        await firestore
+          .doc(`users/${operationFromUsername}/activities/likes`)
+          .update({
+            likesDatas: fieldValue.arrayRemove({
+              likeTime: likeTime,
+              likedPostDocPath: postDocPath,
+            }),
+          });
+      }
+    } catch (error) {
+      console.error("Error while updating activities of user", error);
+      return res.status(503).json({ error: "Firebase error" });
+    }
+
     try {
       if (opCode === 1) {
         await firestore
           .doc(`${postDocPath}/likes/${operationFromUsername}`)
           .set({
-            likeTime: Date.now(),
+            likeTime: likeTimestamp,
           });
       } else {
         await firestore
@@ -98,7 +132,7 @@ export default async function handler(
       if (opCode === 1) {
         const newLikeNotificationObject: INotificationServerData = {
           seen: false,
-          notificationTime: Date.now(),
+          notificationTime: likeTimestamp,
           sender: operationFromUsername,
           cause: "like",
         };
