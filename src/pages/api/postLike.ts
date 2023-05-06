@@ -77,14 +77,31 @@ export default async function handler(
 
     try {
       if (opCode === 1) {
-        await firestore
-          .doc(`users/${operationFromUsername}/activities/likes`)
-          .update({
-            likesDatas: fieldValue.arrayUnion({
-              likeTime: likeTimestamp,
-              likedPostDocPath: postDocPath,
-            }),
-          });
+        if (
+          (
+            await firestore
+              .doc(`users/${operationFromUsername}/activities/likes`)
+              .get()
+          ).exists
+        ) {
+          await firestore
+            .doc(`users/${operationFromUsername}/activities/likes`)
+            .update({
+              likesDatas: fieldValue.arrayUnion({
+                likeTime: likeTimestamp,
+                likedPostDocPath: postDocPath,
+              }),
+            });
+        } else {
+          await firestore
+            .doc(`users/${operationFromUsername}/activities/likes`)
+            .set({
+              likesDatas: fieldValue.arrayUnion({
+                likeTime: likeTimestamp,
+                likedPostDocPath: postDocPath,
+              }),
+            });
+        }
       } else {
         const likeTime = (
           await firestore

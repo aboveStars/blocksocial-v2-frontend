@@ -1,13 +1,11 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
 import MainPageLayout from "@/components/Layout/MainPageLayout";
-import { PostItemData } from "@/components/types/Post";
+import { LikeDatasArrayType, PostItemData } from "@/components/types/Post";
 import { firestore } from "@/firebase/clientApp";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-
-type LikeDatasArrayType = { likeTime: number; likedPostDocPath: string }[];
 
 export default function Home() {
   const currentUserState = useRecoilValue(currentUserStateAtom);
@@ -70,23 +68,25 @@ export default function Home() {
     if (currentUserState.isThereCurrentUser) {
       currentUserUsername = currentUserState.username;
       try {
-        const [res1, res2, res3] = await Promise.all([
-          getDocs(
-            collection(
-              firestore,
-              `users/${currentUserState.username}/followings`
-            )
-          ),
-          getDoc(
-            doc(firestore, `users/${currentUserUsername}/activities/likes`)
-          ),
-          getDoc(doc(firestore, `popular/celebrities`)),
-        ]);
+        const [followingsSnaphot, activitiesSnapshot, celebritiesSnapshot] =
+          await Promise.all([
+            getDocs(
+              collection(
+                firestore,
+                `users/${currentUserState.username}/followings`
+              )
+            ),
+            getDoc(
+              doc(firestore, `users/${currentUserUsername}/activities/likes`)
+            ),
+            getDoc(doc(firestore, `popular/celebrities`)),
+          ]);
 
-        const currentUserFollowingsDocs = res1.docs;
-        currentUserLikesDatas = res2.data()?.likesDatas;
+        const currentUserFollowingsDocs = followingsSnaphot.docs;
+        if (activitiesSnapshot.exists())
+          currentUserLikesDatas = activitiesSnapshot.data()?.likesDatas;
 
-        for (const celebrity of res3.data()?.people) {
+        for (const celebrity of celebritiesSnapshot.data()?.people) {
           celebrities.push(celebrity);
         }
 
@@ -97,12 +97,16 @@ export default function Home() {
         console.error("Error while getting current user followings", error);
       }
     } else {
-      const celebritiesServer = (
-        await getDoc(doc(firestore, "popular/celebrities"))
-      ).data()?.people;
+      try {
+        const celebritiesServer = (
+          await getDoc(doc(firestore, "popular/celebrities"))
+        ).data()?.people;
 
-      for (const celebrity of celebritiesServer) {
-        celebrities.push(celebrity);
+        for (const celebrity of celebritiesServer) {
+          celebrities.push(celebrity);
+        }
+      } catch (error) {
+        console.error("Error while getting popular names", error);
       }
     }
 
@@ -114,7 +118,7 @@ export default function Home() {
     // get posts from all sources
     let getPostsFromOneSourcePromises: Promise<PostItemData[]>[] = [];
 
-    for (const source of postsSources) {
+    for (const source of postsSources.filter((a) => a)) {
       getPostsFromOneSourcePromises.push(
         getPostsFromOneSource(source, currentUserLikesDatas)
       );

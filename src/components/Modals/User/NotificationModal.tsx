@@ -14,6 +14,7 @@ import {
   Stack,
 } from "@chakra-ui/react";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 import { useRecoilState, useRecoilValue } from "recoil";
@@ -31,9 +32,15 @@ export default function NotificationModal() {
 
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
+  const router = useRouter();
+
   useEffect(() => {
     if (currentUserState.username) handleNotificationData();
-  }, [notificationState.notificationPanelOpen, currentUserState.username]);
+  }, [
+    notificationState.notificationPanelOpen,
+    currentUserState.username,
+    router.asPath,
+  ]);
 
   const handleNotificationData = async () => {
     if (!currentUserState.isThereCurrentUser) {

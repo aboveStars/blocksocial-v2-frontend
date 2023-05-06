@@ -88,6 +88,8 @@ export type PostFrontData = {
   creationTime: number;
 };
 
+export type LikeDatasArrayType = { likeTime: number; likedPostDocPath: string }[];
+
 export type CommentData = {
   commentSenderUsername: string;
   comment: string;

@@ -2,7 +2,7 @@ import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
 import UserPageLayout from "@/components/Layout/UserPageLayout";
 
-import { PostItemData } from "@/components/types/Post";
+import { LikeDatasArrayType, PostItemData } from "@/components/types/Post";
 import { UserInServer } from "@/components/types/User";
 
 import { firestore } from "@/firebase/clientApp";
@@ -38,24 +38,34 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
     if (!currentUserState.isThereCurrentUser) {
       return;
     }
-    let reviewedPostDatasTemp: PostItemData[] = [];
 
-    let reviewForLikePromises: Promise<PostItemData>[] = [];
-    for (const postItemData of postItemDatas) {
-      reviewForLikePromises.push(
-        reviewForLike(postItemData, currentUserState.username)
-      );
-    }
-
-    const reviewedPostItemDatasResult = await Promise.all(
-      reviewForLikePromises
+    const currentUserLikesSnapshot = await getDoc(
+      doc(firestore, `users/${currentUserState.username}/activities/likes`)
     );
 
-    for (const reviewedPostItemData of reviewedPostItemDatasResult) {
-      reviewedPostDatasTemp.push(reviewedPostItemData);
+    let currentUserLikesDatas: LikeDatasArrayType = [];
+    if (currentUserLikesSnapshot.exists()) {
+      currentUserLikesDatas = currentUserLikesSnapshot.data().likesDatas;
     }
 
-    setReviewedPostDatas(reviewedPostDatasTemp);
+    if (currentUserLikesDatas) {
+      let reviewedPostDatasTemp: PostItemData[] = [];
+      for (const postItemData of postItemDatas) {
+        const postDocPath = `users/${postItemData.senderUsername}/posts/${postItemData.postDocId}`;
+        const likeStatus: boolean =
+          currentUserLikesDatas.find(
+            (a) => a.likedPostDocPath === postDocPath
+          ) !== undefined;
+        const likeStatusAddedPostItemData: PostItemData = {
+          ...postItemData,
+          currentUserLikedThisPost: likeStatus,
+        };
+        reviewedPostDatasTemp.push(likeStatusAddedPostItemData);
+      }
+      setReviewedPostDatas(reviewedPostDatasTemp);
+    } else {
+      setReviewedPostDatas(postItemDatas);
+    }
     setPostStatus({
       loading: false,
     });
@@ -107,29 +117,6 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
     />
   );
 }
-
-const reviewForLike = async (
-  post: PostItemData,
-  currentUserUsername: string
-) => {
-  let tempCurrentUserLikedThisPost = false;
-
-  tempCurrentUserLikedThisPost = (
-    await getDoc(
-      doc(
-        firestore,
-        `users/${post.senderUsername}/posts/${post.postDocId}/likes/${currentUserUsername}`
-      )
-    )
-  ).exists();
-
-  const reviewedPostData: PostItemData = {
-    ...post,
-    currentUserLikedThisPost: tempCurrentUserLikedThisPost,
-  };
-
-  return reviewedPostData;
-};
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const cron = context.req.headers.cron as string;

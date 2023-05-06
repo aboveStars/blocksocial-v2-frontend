@@ -7,8 +7,6 @@ const usePost = () => {
    * @param opCode like : 1, deLike : -1
    */
   const like = async (postDocPath: string, opCode: number) => {
-    console.log("Like Operation Started");
-
     let idToken = "";
     try {
       idToken = (await auth.currentUser?.getIdToken()) as string;
@@ -39,7 +37,6 @@ const usePost = () => {
         await response.json()
       );
     }
-    console.log("Like operation successfull");
   };
   return {
     like,

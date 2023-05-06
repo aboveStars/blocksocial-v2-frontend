@@ -67,8 +67,6 @@ const useLoginOperations = () => {
    * @returns
    */
   const onLogin = async (user: User) => {
-    // check if user has display name if not, update auth object
-
     const displayName = user.displayName;
     let username = displayName as string;
 
@@ -95,8 +93,7 @@ const useLoginOperations = () => {
       console.log(
         "Error while getting user document, \n At sign-up it is right."
       );
-      setLoginLoading((prev) => false);
-
+      setLoginLoading(false);
       return;
     }
 
@@ -115,7 +112,7 @@ const useLoginOperations = () => {
     };
 
     // State Updates
-    setCurrentUserState((prev) => currentUserDataTemp);
+    setCurrentUserState(currentUserDataTemp);
 
     setAuthModalState((prev) => ({
       ...prev,

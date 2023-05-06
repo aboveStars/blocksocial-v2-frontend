@@ -1,5 +1,10 @@
-import { Box, Center, Flex, Image, useStatStyles } from "@chakra-ui/react";
+import { auth } from "@/firebase/clientApp";
+import useLoginOperations from "@/hooks/useLoginOperations";
+import { Box, Center, Flex, Image } from "@chakra-ui/react";
 import { ReactNode, useEffect, useState } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { useRecoilState } from "recoil";
+import { currentUserStateAtom } from "../atoms/currentUserAtom";
 import Footer from "../Footer/Footer";
 import AuthenticationModal from "../Modals/AuthenticationModal/AuthenticationModal";
 import PostCreateModal from "../Modals/Post/PostCreateModal";
@@ -12,23 +17,40 @@ type Props = {
 };
 
 export default function Layout({ children }: Props) {
-  const [loading, setLoading] = useState(true);
+  const [currentUserState, setCurrentUserState] =
+    useRecoilState(currentUserStateAtom);
   const [innerHeight, setInnerHeight] = useState("95vh");
 
-  useEffect(() => {
-    setLoading(false);
-  }, []);
+  const [user, loading, error] = useAuthState(auth);
+
+  const { onLogin } = useLoginOperations();
 
   useEffect(() => {
     setInnerHeight(`${window.innerHeight}px`);
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      onLogin(user);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user)
+      setCurrentUserState((prev) => ({
+        ...prev,
+        loading: loading,
+      }));
+  }, [loading]);
+
   return (
     <>
-      {loading ? (
-        <Center height={innerHeight}>
-          <Image src="/bsicon.ico" align="center" width="90px" />
-        </Center>
+      {currentUserState.loading ? (
+        <>
+          <Center height={innerHeight}>
+            <Image src="/bsicon.ico" align="center" width="90px" />
+          </Center>
+        </>
       ) : (
         <Box>
           <Navbar />
