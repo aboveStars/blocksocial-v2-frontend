@@ -27,7 +27,7 @@ import {
   AiOutlineHeart,
   AiOutlineMenu,
 } from "react-icons/ai";
-import { BsDot } from "react-icons/bs";
+import { BsDot, BsImage } from "react-icons/bs";
 
 import { firestore } from "@/firebase/clientApp";
 import useFollow from "@/hooks/useFollow";
@@ -408,7 +408,15 @@ export default function PostFront({
 
         {postFrontData.image && (
           <AspectRatio ratio={1} width="100%">
-            <Image alt="" src={postFrontData.image} fallback={<Skeleton />} />
+            <Image
+              alt=""
+              src={postFrontData.image}
+              fallback={
+                <Flex bg="gray.700">
+                  <Icon as={BsImage} fontSize="8xl" color="white" />
+                </Flex>
+              }
+            />
           </AspectRatio>
         )}
 

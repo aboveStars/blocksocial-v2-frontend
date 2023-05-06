@@ -30,7 +30,9 @@ export default function PostSkeleton() {
       </Flex>
 
       <AspectRatio ratio={1} width="100%">
-        <Skeleton />
+        <Flex bg="gray.700">
+          <Icon as={BsImage} fontSize="8xl" color="white" />
+        </Flex>
       </AspectRatio>
 
       <Flex id="footer-skeleton" direction="column" width="100%">
