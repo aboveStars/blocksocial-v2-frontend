@@ -28,7 +28,7 @@ const useLoginOperations = () => {
    * @param password
    */
   const directLogin = async (emailOrUsername: string, password: string) => {
-    setLoginLoading((prev) => true);
+    setLoginLoading(true);
 
     let email: string = "";
 
@@ -57,7 +57,7 @@ const useLoginOperations = () => {
     const userCred = await signInWithEmailAndPassword(email, password);
     if (!userCred) {
       console.log("Error while login");
-      setLoginLoading((prev) => false);
+      setLoginLoading(false);
     } else await onLogin(userCred.user);
   };
 
@@ -119,7 +119,7 @@ const useLoginOperations = () => {
       open: false,
     }));
 
-    setLoginLoading((prev) => false);
+    setLoginLoading(false);
   };
 
   useEffect(() => {
