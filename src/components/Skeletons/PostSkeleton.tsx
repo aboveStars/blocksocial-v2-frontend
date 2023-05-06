@@ -1,13 +1,9 @@
 import {
   AspectRatio,
   Flex,
-  Icon,
-  Skeleton,
-  SkeletonCircle,
-  SkeletonText,
-  Text,
+  Icon, SkeletonCircle,
+  SkeletonText
 } from "@chakra-ui/react";
-import React, { useEffect, useRef } from "react";
 import { BsImage } from "react-icons/bs";
 
 import { AiOutlineComment, AiOutlineHeart } from "react-icons/ai";
