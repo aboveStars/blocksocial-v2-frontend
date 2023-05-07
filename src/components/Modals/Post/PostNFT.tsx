@@ -19,7 +19,7 @@ import {
   ModalOverlay,
   Spinner,
   Text,
-  Textarea,
+  Textarea
 } from "@chakra-ui/react";
 import React, { SetStateAction, useEffect, useRef, useState } from "react";
 import {
@@ -27,19 +27,19 @@ import {
   AiOutlineCheckCircle,
   AiOutlineClose,
   AiOutlineComment,
-  AiOutlineNumber,
+  AiOutlineNumber
 } from "react-icons/ai";
 
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
+import { postsAtViewAtom } from "@/components/atoms/postsAtViewAtom";
 import { mumbaiContractAddress } from "@/ethers/ContractAddresses";
-import { auth } from "@/firebase/clientApp";
 import { format } from "date-fns";
 import { ethers } from "ethers";
 import { BiError } from "react-icons/bi";
 import {
   BsArrowRight,
   BsFillCalendarHeartFill,
-  BsFillCalendarPlusFill,
+  BsFillCalendarPlusFill
 } from "react-icons/bs";
 import { FaRegUserCircle } from "react-icons/fa";
 import { FiExternalLink } from "react-icons/fi";
@@ -47,7 +47,6 @@ import { GrTextAlignFull } from "react-icons/gr";
 import { MdContentCopy } from "react-icons/md";
 import { RxText } from "react-icons/rx";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { postsAtViewAtom } from "@/components/atoms/postsAtViewAtom";
 
 type Props = {
   openPanelNameValue: OpenPanelName;
