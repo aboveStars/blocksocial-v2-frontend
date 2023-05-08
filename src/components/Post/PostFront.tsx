@@ -428,7 +428,8 @@ export default function PostFront({
           height="auto"
         >
           <Text
-            p={2}
+            px={2}
+            pt="1"
             fontSize="13pt"
             fontWeight="medium"
             wordBreak="break-word"
@@ -510,7 +511,7 @@ export default function PostFront({
                 hidden={!!!postFrontData.nftStatus.minted}
                 position="absolute"
                 right="2.5"
-                bottom="3"
+                bottom="2"
                 colorScheme="pink"
                 size="sm"
                 borderRadius="full"
