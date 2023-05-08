@@ -49,7 +49,12 @@ export default async function handler(
       return res.status(422).json({ error: "Invalid Email" });
     }
     const fullnameRegex = /^[\p{L}_ ]{3,20}$/u;
-    if (!fullnameRegex.test(fullname)) {
+    const consecutiveSpaceRegex = /\s\s/;
+    if (
+      !fullnameRegex.test(fullname) ||
+      consecutiveSpaceRegex.test(fullname) ||
+      fullname[fullname.length - 1] === " "
+    ) {
       return res.status(422).json({ error: "Invalid Fullname" });
     }
     const usernameRegex = /^[a-z0-9]{3,20}$/;
@@ -77,7 +82,7 @@ export default async function handler(
     if (!passwordRegex.test(password)) {
       return res.status(400).json({ error: "Invalid Password" });
     }
-    let newUserData;
+    let newUserData: UserInServer;
     try {
       const { uid } = await auth.createUser({
         email: email,

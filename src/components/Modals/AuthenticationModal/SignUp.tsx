@@ -6,9 +6,10 @@ import {
   FormLabel,
   Icon,
   Input,
-  InputGroup, InputRightElement,
+  InputGroup,
+  InputRightElement,
   Spinner,
-  Text
+  Text,
 } from "@chakra-ui/react";
 
 import React, { useRef, useState } from "react";
@@ -103,7 +104,13 @@ export default function SignUp() {
       return;
     }
     const fullnameRegex = /^[\p{L}_ ]{3,20}$/u;
-    if (!fullnameRegex.test(signUpForm.fullname)) {
+
+    const consecutiveSpaceRegex = /\s\s/;
+    if (
+      !fullnameRegex.test(signUpForm.fullname) ||
+      consecutiveSpaceRegex.test(signUpForm.fullname) ||
+      signUpForm.fullname[signUpForm.fullname.length - 1] === " "
+    ) {
       setFullnameRight(false);
       setSignUpLoading(false);
       setError("Fullname is invalid");
@@ -223,8 +230,12 @@ export default function SignUp() {
 
       if (!zeroFlag) {
         const fullnameRegex = /^[\p{L}_ ]{3,20}$/u;
-
-        if (!fullnameRegex.test(event.target.value)) {
+        const consecutiveSpaceRegex = /\s\s/;
+        if (
+          !fullnameRegex.test(event.target.value) ||
+          consecutiveSpaceRegex.test(event.target.value) ||
+          event.target.value[event.target.value.length - 1] === " "
+        ) {
           setFullnameRight(false);
         } else {
           setFullnameRight(true);

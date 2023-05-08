@@ -8,9 +8,13 @@ import {
   Button,
   Circle,
   Flex,
+  FormControl,
+  FormLabel,
   Icon,
   Image,
   Input,
+  InputGroup,
+  InputRightElement,
   Menu,
   MenuButton,
   MenuItem,
@@ -24,7 +28,7 @@ import { currentUserStateAtom } from "../atoms/currentUserAtom";
 
 import useProfilePhoto from "@/hooks/useProfilePhoto";
 
-import { BiPencil } from "react-icons/bi";
+import { BiError, BiPencil } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
 
 import useFollow from "@/hooks/useFollow";
@@ -38,7 +42,10 @@ import ProfilePhotoUpdateModal from "../Modals/User/ProfilePhotoUpdateModal";
 import { auth, firestore } from "@/firebase/clientApp";
 import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
+import { AiFillEdit } from "react-icons/ai";
 import { headerAtViewAtom } from "../atoms/headerAtViewAtom";
+
+import {} from "react-icons/bi";
 
 type Props = {
   userInformation: UserInServer;
@@ -109,6 +116,13 @@ export default function Header({ userInformation }: Props) {
 
   const [headerAtView, setHeaderAtView] = useRecoilState(headerAtViewAtom);
 
+  const [fullnameModifying, setFullnameModifying] = useState(false);
+  const [fullnameRight, setFullnameRight] = useState(true);
+  const [changedFullname, setChangedFullname] = useState(
+    userInformation.fullname
+  );
+  const [fullnameUpdateLoading, setFullnameUpdateLoading] = useState(false);
+
   useEffect(() => {
     // after updating photo, we are using raw base64 selected photo as pp until refresh.
     setSelectedProfilePhoto("");
@@ -140,6 +154,11 @@ export default function Header({ userInformation }: Props) {
 
     setPoorProfilePhoto(poorStatus);
   }, [headerAtView.profilePhoto]);
+
+  useEffect(() => {
+    if (!willBeCroppedProfilePhoto) return;
+    setProiflePhotoUpdateModalOpen(true);
+  }, [willBeCroppedProfilePhoto]);
 
   /**
    * Checks if we follow this user.
@@ -200,10 +219,85 @@ export default function Header({ userInformation }: Props) {
     setSignOutLoading(false);
   };
 
-  useEffect(() => {
-    if (!willBeCroppedProfilePhoto) return;
-    setProiflePhotoUpdateModalOpen(true);
-  }, [willBeCroppedProfilePhoto]);
+  const handleFullnameTextChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const susFullname = event.target.value;
+
+    const fullnameRegex = /^[\p{L}_ ]{3,20}$/u;
+    const consecutiveSpaceRegex = /\s\s/;
+    if (
+      !fullnameRegex.test(susFullname) ||
+      consecutiveSpaceRegex.test(susFullname) ||
+      susFullname[susFullname.length - 1] === " "
+    ) {
+      setFullnameRight(false);
+    } else {
+      setFullnameRight(true);
+    }
+    setChangedFullname(susFullname);
+  };
+
+  const handleUpdateFullname = async () => {
+    setFullnameUpdateLoading(true);
+    const fullnameToUpdate = changedFullname;
+
+    const fullnameRegex = /^[\p{L}_ ]{3,20}$/u;
+    const consecutiveSpaceRegex = /\s\s/;
+    if (
+      !fullnameRegex.test(fullnameToUpdate) ||
+      consecutiveSpaceRegex.test(fullnameToUpdate) ||
+      fullnameToUpdate[fullnameToUpdate.length - 1] === " " ||
+      fullnameToUpdate === headerAtView.fullname
+    ) {
+      setFullnameUpdateLoading(false);
+      return setFullnameRight(false);
+    }
+
+    let idToken = "";
+    try {
+      idToken = (await auth.currentUser?.getIdToken()) as string;
+    } catch (error) {
+      console.error("Error while getting 'idToken'", error);
+      setFullnameUpdateLoading(false);
+      return;
+    }
+
+    let response: Response;
+    try {
+      response = await fetch("/api/fullnameUpdate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          newRequestedUsername: fullnameToUpdate,
+        }),
+      });
+    } catch (error) {
+      setFullnameUpdateLoading(false);
+      return console.error(
+        "Error while updating fullname. (We were fetching to API...)",
+        error
+      );
+    }
+
+    if (!response.ok) {
+      setFullnameUpdateLoading(false);
+      return console.error(
+        "Error while updating fullname. (from api)",
+        await response.json()
+      );
+    }
+
+    // update states
+    setHeaderAtView((prev) => ({ ...prev, fullname: fullnameToUpdate }));
+
+    // reset states
+    setFullnameUpdateLoading(false);
+    setFullnameModifying(false);
+  };
 
   return (
     <>
@@ -396,9 +490,116 @@ export default function Header({ userInformation }: Props) {
           <Text as="b" fontSize="14pt" textColor="white">
             {userInformation.username}
           </Text>
-          <Text as="i" fontSize="12pt" textColor="gray.500">
-            {userInformation.fullname}
-          </Text>
+          {!isCurrentUserPage ? (
+            <Text as="i" fontSize="12pt" textColor="gray.500">
+              {userInformation.fullname}
+            </Text>
+          ) : (
+            <Flex
+              id="fullname-currentuser"
+              align="center"
+              gap={1}
+              mt={fullnameModifying ? "2" : "unset"}
+              maxWidth="200px"
+              justify="center"
+            >
+              {!fullnameModifying ? (
+                <>
+                  <Text as="i" fontSize="12pt" textColor="gray.500">
+                    {headerAtView.fullname}
+                  </Text>
+                  <Icon
+                    as={AiFillEdit}
+                    color="gray.500"
+                    cursor="pointer"
+                    onClick={() => {
+                      setFullnameModifying(true);
+                    }}
+                  />
+                </>
+              ) : (
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    handleUpdateFullname();
+                  }}
+                >
+                  <Flex
+                    direction="column"
+                    justify="center"
+                    align="center"
+                    gap="2"
+                  >
+                    <InputGroup>
+                      <FormControl variant="floating">
+                        <Input
+                          required
+                          name="fullname"
+                          type="text"
+                          autoComplete="new-password"
+                          value={changedFullname}
+                          pr={!fullnameRight ? "9" : "2"}
+                          onChange={handleFullnameTextChange}
+                          _hover={{
+                            border: "1px solid",
+                            borderColor: "blue.500",
+                          }}
+                          borderColor={fullnameRight ? "gray.200" : "red"}
+                          textColor="white"
+                          bg="black"
+                          spellCheck={false}
+                          isRequired
+                          placeholder=" "
+                        />
+                        <FormLabel
+                          bg="rgba(0,0,0)"
+                          textColor="gray.500"
+                          fontSize="12pt"
+                          my={2}
+                        >
+                          Fullname
+                        </FormLabel>
+                      </FormControl>
+
+                      <InputRightElement>
+                        {!fullnameRight && (
+                          <Icon as={BiError} fontSize="20px" color="red" />
+                        )}
+                      </InputRightElement>
+                    </InputGroup>
+                    <Flex gap="1">
+                      <Button
+                        size="xs"
+                        variant="solid"
+                        colorScheme="blue"
+                        isDisabled={
+                          !fullnameRight ||
+                          changedFullname === headerAtView.fullname
+                        }
+                        type="submit"
+                        isLoading={fullnameUpdateLoading}
+                      >
+                        Update
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          // reset process
+                          setFullnameModifying(false);
+                          setChangedFullname(headerAtView.fullname);
+                          setFullnameRight(true);
+                        }}
+                        size="xs"
+                        variant="outline"
+                        colorScheme="blue"
+                      >
+                        Cancel
+                      </Button>
+                    </Flex>
+                  </Flex>
+                </form>
+              )}
+            </Flex>
+          )}
         </Flex>
 
         <Flex align="center" gap={3} mt={2}>

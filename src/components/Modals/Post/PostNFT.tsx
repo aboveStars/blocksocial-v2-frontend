@@ -19,7 +19,7 @@ import {
   ModalOverlay,
   Spinner,
   Text,
-  Textarea
+  Textarea,
 } from "@chakra-ui/react";
 import React, { SetStateAction, useEffect, useRef, useState } from "react";
 import {
@@ -27,7 +27,7 @@ import {
   AiOutlineCheckCircle,
   AiOutlineClose,
   AiOutlineComment,
-  AiOutlineNumber
+  AiOutlineNumber,
 } from "react-icons/ai";
 
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
@@ -39,7 +39,7 @@ import { BiError } from "react-icons/bi";
 import {
   BsArrowRight,
   BsFillCalendarHeartFill,
-  BsFillCalendarPlusFill
+  BsFillCalendarPlusFill,
 } from "react-icons/bs";
 import { FaRegUserCircle } from "react-icons/fa";
 import { FiExternalLink } from "react-icons/fi";
@@ -453,15 +453,13 @@ export default function PostNFT({
                         </Button>
                       </Flex>
                     ) : (
-                      <>
-                        <Text color="white" fontSize="9pt">
-                          {postInformation.senderUsername ===
-                          currentUserState.username
-                            ? "Your"
-                            : "This"}{" "}
-                          NFT is up to date.
-                        </Text>
-                      </>
+                      <Text color="white" fontSize="9pt">
+                        {postInformation.senderUsername ===
+                        currentUserState.username
+                          ? "Your"
+                          : "This"}{" "}
+                        NFT is up to date.
+                      </Text>
                     )}
                   </Flex>
                   <Flex id="nft-transfer-area" direction="column">
