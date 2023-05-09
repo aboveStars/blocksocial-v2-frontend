@@ -147,7 +147,7 @@ export default function Home() {
       <Head>
         <meta property="og:title" content="BlockSocial" />
         <meta property="og:description" content="Next-G Social Media" />
-        <meta property="og:image" content="/bsicon.ico" />
+        <meta property="og:image" content="https://blocksocial.vercel.app/bsicon.ico" />
         <meta property="og:url" content="blocksocial.vercel.app" />
       </Head>
       {postsDatasInServer && (
