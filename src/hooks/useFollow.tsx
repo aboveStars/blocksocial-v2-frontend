@@ -1,9 +1,8 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { headerAtViewAtom } from "@/components/atoms/headerAtViewAtom";
-import { postsAtViewAtom } from "@/components/atoms/postsAtViewAtom";
 import { auth } from "@/firebase/clientApp";
 import { useRouter } from "next/router";
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 export default function useFollow() {
   const currentUserState = useRecoilValue(currentUserStateAtom);

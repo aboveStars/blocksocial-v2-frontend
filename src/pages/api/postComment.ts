@@ -2,12 +2,12 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 import { CommentData } from "@/components/types/Post";
 
-import { DecodedIdToken } from "firebase-admin/lib/auth/token-verifier";
-import { auth, fieldValue, firestore } from "../../firebase/adminApp";
+import { fieldValue, firestore } from "../../firebase/adminApp";
 
-import { v4 as uuidv4 } from "uuid";
-import AsyncLock from "async-lock";
+import getDisplayName from "@/apiUtils";
 import { INotificationServerData } from "@/components/types/User";
+import AsyncLock from "async-lock";
+import { v4 as uuidv4 } from "uuid";
 
 const lock = new AsyncLock();
 
@@ -23,22 +23,9 @@ export default async function handler(
     return res.status(200).json({ status: "Request by Server-Warmer" });
   }
 
-  let decodedToken: DecodedIdToken;
-  try {
-    decodedToken = await verifyToken(authorization as string);
-  } catch (error) {
-    console.error("Error while verifying token", error);
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  let operationFromUsername = "";
-
-  try {
-    operationFromUsername = await getDisplayName(decodedToken);
-  } catch (error) {
-    console.error("Error while getting display name", error);
-    return res.status(401).json({ error: "Unautorized" });
-  }
+  const operationFromUsername = await getDisplayName(authorization as string);
+  if (!operationFromUsername)
+    return res.status(401).json({ error: "unauthorized" });
 
   if (req.method !== "POST") return res.status(405).json("Method not allowed");
 
@@ -82,7 +69,7 @@ export default async function handler(
         notificationTime: Date.now(),
         seen: false,
         sender: operationFromUsername,
-        commentDocPath : newCommentDocPath
+        commentDocPath: newCommentDocPath,
       };
       await firestore
         .collection(`users/${postSenderUsername}/notifications`)
@@ -99,25 +86,6 @@ export default async function handler(
 
     return res.status(200).json({ newCommentDocPath: newCommentDocPath });
   });
-}
-
-/**
- * @param authorization
- * @returns
- */
-async function verifyToken(authorization: string) {
-  const idToken = authorization.split("Bearer ")[1];
-  const decodedToken = await auth.verifyIdToken(idToken);
-  return decodedToken;
-}
-
-/**
- * @param decodedToken
- */
-async function getDisplayName(decodedToken: DecodedIdToken) {
-  const uid = decodedToken.uid;
-  const displayName = (await auth.getUser(uid)).displayName;
-  return displayName as string;
 }
 
 async function sendComment(
