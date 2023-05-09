@@ -28,11 +28,11 @@ export default function PageHead({
       </title>
       <link rel="icon" href="/bsicon.ico" />
 
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
-      <meta property="og:type" content={type} />
-      <meta property="og:url" content={url} />
-      <meta property="og:image" content={image} />
+      <meta property="og:title" content={title} key="title" />
+      <meta property="og:description" content={description} key="desc" />
+      <meta property="og:type" content={type} key="type" />
+      <meta property="og:url" content={url} key="url" />
+      <meta property="og:image" content={image} key="image" />
     </Head>
   );
 }

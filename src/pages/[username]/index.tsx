@@ -14,11 +14,9 @@ import {
   getDoc,
   getDocs,
   orderBy,
-  query,
+  query
 } from "firebase/firestore";
 import { GetServerSidePropsContext } from "next";
-import Head from "next/head";
-import { useRouter } from "next/router";
 
 import { useEffect, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
@@ -35,8 +33,6 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
   const [reviewedPostDatas, setReviewedPostDatas] = useState(postItemDatas);
-
-  const router = useRouter();
 
   const handleLikeStatus = async () => {
     // Sometimes useEffect is not controlling.
