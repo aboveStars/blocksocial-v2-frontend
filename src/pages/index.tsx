@@ -1,6 +1,7 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
 import MainPageLayout from "@/components/Layout/MainPageLayout";
+import PageHead from "@/components/Layout/PageHead";
 import { LikeDatasArrayType, PostItemData } from "@/components/types/Post";
 import { firestore } from "@/firebase/clientApp";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
@@ -147,21 +148,13 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <title>
-          {router.asPath === "/"
-            ? "BlockSocial"
-            : `${router.asPath.split("/")[1]} - BlockSocial`}
-        </title>
-        <link rel="icon" href="/bsicon.ico" />
-        <meta property="og:title" content="BlockSocial" />
-        <meta property="og:description" content="Next-G Social Media" />
-        <meta
-          property="og:image"
-          content="https://blocksocial.vercel.app/bsicon.ico"
-        />
-        <meta property="og:url" content="https://blocksocial.vercel.app/" />
-      </Head>
+      <PageHead
+        title="BlockSocial"
+        description="Create NFTs from your posts and much more!"
+        url="https://blocksocial.vercel.app/"
+        image="https://blocksocial.vercel.app/bsicon.ico"
+        type="website"
+      />
       {postsDatasInServer && (
         <MainPageLayout postItemsDatas={postsDatasInServer} />
       )}

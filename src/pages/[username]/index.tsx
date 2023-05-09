@@ -1,5 +1,6 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
+import PageHead from "@/components/Layout/PageHead";
 import UserPageLayout from "@/components/Layout/UserPageLayout";
 
 import { LikeDatasArrayType, PostItemData } from "@/components/types/Post";
@@ -116,31 +117,17 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
 
   return (
     <>
-      <Head>
-        <title>
-          {router.asPath === "/"
-            ? "BlockSocial"
-            : `${router.asPath.split("/")[1]} - BlockSocial`}
-        </title>
-        <link rel="icon" href="/bsicon.ico" />
-        <meta
-          property="og:title"
-          content={`${userInformation.username}'s BlockSocial`}
-        />
-        <meta property="og:description" content="Next-G Social Media" />
-        <meta
-          property="og:image"
-          content={
-            userInformation.profilePhoto
-              ? userInformation.profilePhoto
-              : "/bsicon.ico"
-          }
-        />
-        <meta
-          property="og:url"
-          content={`https://blocksocial.vercel.app/${userInformation.username}`}
-        />
-      </Head>
+      <PageHead
+        title={`${userInformation.username}'s BlockSocial`}
+        description={`${userInformation.followerCount} followers, ${userInformation.nftCount} NFT's`}
+        url={`https://blocksocial.vercel.app/${userInformation.username}`}
+        image={
+          userInformation.profilePhoto
+            ? userInformation.profilePhoto
+            : "https://blocksocial.vercel.app/bsicon.ico"
+        }
+        type="website"
+      />
       <UserPageLayout
         userInformation={userInformation}
         postItemsDatas={reviewedPostDatas}
