@@ -114,10 +114,6 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
 
   return (
     <>
-      <UserPageLayout
-        userInformation={userInformation}
-        postItemsDatas={reviewedPostDatas}
-      />
       <Head>
         <meta
           property="og:title"
@@ -134,9 +130,13 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
         />
         <meta
           property="og:url"
-          content={`blocksocial.vercel.app/${userInformation.username}`}
+          content={`https://blocksocial.vercel.app/${userInformation.username}`}
         />
       </Head>
+      <UserPageLayout
+        userInformation={userInformation}
+        postItemsDatas={reviewedPostDatas}
+      />
     </>
   );
 }
