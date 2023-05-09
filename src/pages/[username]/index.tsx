@@ -1,6 +1,5 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
-import PageHead from "@/components/Layout/PageHead";
 import UserPageLayout from "@/components/Layout/UserPageLayout";
 
 import { LikeDatasArrayType, PostItemData } from "@/components/types/Post";
@@ -14,7 +13,7 @@ import {
   getDoc,
   getDocs,
   orderBy,
-  query
+  query,
 } from "firebase/firestore";
 import { GetServerSidePropsContext } from "next";
 
@@ -113,17 +112,6 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
 
   return (
     <>
-      <PageHead
-        title={`${userInformation.username}'s BlockSocial`}
-        description={`${userInformation.followerCount} followers, ${userInformation.nftCount} NFT's`}
-        url={`https://blocksocial.vercel.app/${userInformation.username}`}
-        image={
-          userInformation.profilePhoto
-            ? userInformation.profilePhoto
-            : "https://blocksocial.vercel.app/bsicon.ico"
-        }
-        type="website"
-      />
       <UserPageLayout
         userInformation={userInformation}
         postItemsDatas={reviewedPostDatas}
@@ -247,6 +235,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     props: {
       userInformation: userInformation,
       postItemDatas: postItemDatas,
+      title: `${userInformation.username}'s BlockSocial`,
+      description: `${userInformation.followerCount} followers, ${userInformation.nftCount} NFT's`,
+      type: "website",
+      url: `https://blocksocial.vercel.app/${userInformation.username}`,
+      image: userInformation.profilePhoto,
     },
   };
 }

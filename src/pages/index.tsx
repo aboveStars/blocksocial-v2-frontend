@@ -1,10 +1,10 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
 import MainPageLayout from "@/components/Layout/MainPageLayout";
-import PageHead from "@/components/Layout/PageHead";
 import { LikeDatasArrayType, PostItemData } from "@/components/types/Post";
 import { firestore } from "@/firebase/clientApp";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { GetServerSidePropsContext } from "next";
 import { useEffect, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -144,13 +144,6 @@ export default function Home() {
 
   return (
     <>
-      <PageHead
-        title="BlockSocial"
-        description="Create NFTs from your posts and much more!"
-        url="https://blocksocial.vercel.app/"
-        image="https://blocksocial.vercel.app/bsicon.ico"
-        type="website"
-      />
       {postsDatasInServer && (
         <MainPageLayout postItemsDatas={postsDatasInServer} />
       )}
@@ -198,3 +191,15 @@ const getPostsFromOneSource = async (
     return [];
   }
 };
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  return {
+    props: {
+      title: "BlockSocial",
+      description: "Create NFTs from your posts and much more!",
+      type: "website",
+      url: "https://blocksocial.vercel.app",
+      image: "https://blocksocial.vercel.app/bsicon.ico",
+    },
+  };
+}
