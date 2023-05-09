@@ -35,6 +35,8 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
 
   const [reviewedPostDatas, setReviewedPostDatas] = useState(postItemDatas);
 
+  const router = useRouter();
+
   const handleLikeStatus = async () => {
     // Sometimes useEffect is not controlling.
     if (!currentUserState.isThereCurrentUser) {
@@ -115,6 +117,12 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
   return (
     <>
       <Head>
+        <title>
+          {router.asPath === "/"
+            ? "BlockSocial"
+            : `${router.asPath.split("/")[1]} - BlockSocial`}
+        </title>
+        <link rel="icon" href="/bsicon.ico" />
         <meta
           property="og:title"
           content={`${userInformation.username}'s BlockSocial`}

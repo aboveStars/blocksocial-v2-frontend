@@ -5,6 +5,7 @@ import { LikeDatasArrayType, PostItemData } from "@/components/types/Post";
 import { firestore } from "@/firebase/clientApp";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -15,6 +16,8 @@ export default function Home() {
   );
 
   const setPostStatus = useSetRecoilState(postsStatusAtom);
+
+  const router = useRouter();
 
   useEffect(() => {
     if (currentUserState.loading) return;
@@ -145,6 +148,12 @@ export default function Home() {
   return (
     <>
       <Head>
+        <title>
+          {router.asPath === "/"
+            ? "BlockSocial"
+            : `${router.asPath.split("/")[1]} - BlockSocial`}
+        </title>
+        <link rel="icon" href="/bsicon.ico" />
         <meta property="og:title" content="BlockSocial" />
         <meta property="og:description" content="Next-G Social Media" />
         <meta
