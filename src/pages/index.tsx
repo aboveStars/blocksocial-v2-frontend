@@ -4,6 +4,7 @@ import MainPageLayout from "@/components/Layout/MainPageLayout";
 import { LikeDatasArrayType, PostItemData } from "@/components/types/Post";
 import { firestore } from "@/firebase/clientApp";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import Head from "next/head";
 import { useEffect, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -142,7 +143,17 @@ export default function Home() {
   };
 
   return (
-    postsDatasInServer && <MainPageLayout postItemsDatas={postsDatasInServer} />
+    <>
+      <Head>
+        <meta property="og:title" content="BlockSocial" />
+        <meta property="og:description" content="Next-G Social Media" />
+        <meta property="og:image" content="/bsicon.ico" />
+        <meta property="og:url" content="blocksocial.vercel.app" />
+      </Head>
+      {postsDatasInServer && (
+        <MainPageLayout postItemsDatas={postsDatasInServer} />
+      )}
+    </>
   );
 }
 

@@ -16,6 +16,7 @@ import {
   query,
 } from "firebase/firestore";
 import { GetServerSidePropsContext } from "next";
+import Head from "next/head";
 
 import { useEffect, useState } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
@@ -111,10 +112,18 @@ export default function UserPage({ userInformation, postItemDatas }: Props) {
   }
 
   return (
-    <UserPageLayout
-      userInformation={userInformation}
-      postItemsDatas={reviewedPostDatas}
-    />
+    <>
+      <UserPageLayout
+        userInformation={userInformation}
+        postItemsDatas={reviewedPostDatas}
+      />
+      <Head>
+        <meta property="og:title" content="BlockSocial" />
+        <meta property="og:description" content="Next-G Social Media" />
+        <meta property="og:image" content="/bsicon.ico" />
+        <meta property="og:url" content="blocksocial.vercel.app" />
+      </Head>
+    </>
   );
 }
 
