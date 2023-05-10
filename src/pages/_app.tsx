@@ -10,25 +10,30 @@ import NextNProgress from "nextjs-progressbar";
 import { RecoilRoot } from "recoil";
 
 export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+
+  if (router.asPath !== "/" && router.asPath !== "") {
+  }
+
   // Last settings for links preview...
-  const fetchedPagePreviewData: IPagePreviewData = pageProps.pagePreviewData;
-  const title: string = fetchedPagePreviewData.title
+  // "undefined" for error pages (400 and 500). They don't have any metatags. (At least I don't set meta-tags for them)
+  const fetchedPagePreviewData: IPagePreviewData | undefined =
+    pageProps.pagePreviewData;
+  const title: string = fetchedPagePreviewData?.title
     ? fetchedPagePreviewData.title
     : "BlockSocial";
-  const description: string = fetchedPagePreviewData.description
+  const description: string = fetchedPagePreviewData?.description
     ? fetchedPagePreviewData.description
     : "Create NFT's from your posts and much more!";
-  const type: string = fetchedPagePreviewData.type
+  const type: string = fetchedPagePreviewData?.type
     ? fetchedPagePreviewData.type
     : "website";
-  const url: string = fetchedPagePreviewData.url
+  const url: string = fetchedPagePreviewData?.url
     ? fetchedPagePreviewData.url
     : "https://blocksocial.vercel.app";
-  const image: string = fetchedPagePreviewData.image
+  const image: string = fetchedPagePreviewData?.image
     ? fetchedPagePreviewData.image
     : "https://blocksocial.vercel.app/bsicon.jpg";
-
-  const router = useRouter();
 
   return (
     <>
