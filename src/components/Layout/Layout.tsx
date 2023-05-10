@@ -48,7 +48,7 @@ export default function Layout({ children }: Props) {
       {currentUserState.loading ? (
         <>
           <Center height={innerHeight}>
-            <Image src="/bsicon.ico" align="center" width="90px" />
+            <Image src="/bsicon.jpg" align="center" width="90px" />
           </Center>
         </>
       ) : (

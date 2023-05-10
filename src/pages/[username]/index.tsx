@@ -3,7 +3,7 @@ import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
 import UserPageLayout from "@/components/Layout/UserPageLayout";
 
 import { LikeDatasArrayType, PostItemData } from "@/components/types/Post";
-import { UserInServer } from "@/components/types/User";
+import { IPagePreviewData, UserInServer } from "@/components/types/User";
 
 import { firestore } from "@/firebase/clientApp";
 import { Flex, Text } from "@chakra-ui/react";
@@ -231,15 +231,19 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   postItemDatas = tempPostDatas;
 
+  const pagePreviewData: IPagePreviewData = {
+    title: `${userInformation.username}'s BlockSocial`,
+    description: `${userInformation.followerCount} followers, ${userInformation.nftCount} NFT's`,
+    type: "website",
+    url: `https://blocksocial.vercel.app/${userInformation.username}`,
+    image: userInformation.profilePhoto,
+  };
+
   return {
     props: {
       userInformation: userInformation,
       postItemDatas: postItemDatas,
-      title: `${userInformation.username}'s BlockSocial`,
-      description: `${userInformation.followerCount} followers, ${userInformation.nftCount} NFT's`,
-      type: "website",
-      url: `https://blocksocial.vercel.app/${userInformation.username}`,
-      image: userInformation.profilePhoto,
+      pagePreviewData: pagePreviewData,
     },
   };
 }

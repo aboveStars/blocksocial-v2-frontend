@@ -67,3 +67,14 @@ export interface INotificationServerData {
   cause: "like" | "follow" | "comment";
   commentDocPath?: string;
 }
+
+/**
+ * Interface for link previews in social medias.
+ */
+export interface IPagePreviewData {
+  title: string;
+  description: string;
+  type: string;
+  url: string;
+  image: string;
+}

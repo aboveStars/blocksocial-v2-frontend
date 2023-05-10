@@ -2,6 +2,7 @@ import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
 import MainPageLayout from "@/components/Layout/MainPageLayout";
 import { LikeDatasArrayType, PostItemData } from "@/components/types/Post";
+import { IPagePreviewData } from "@/components/types/User";
 import { firestore } from "@/firebase/clientApp";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { GetServerSidePropsContext } from "next";
@@ -193,13 +194,17 @@ const getPostsFromOneSource = async (
 };
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const pagePreviewData: IPagePreviewData = {
+    title: "BlockSocial",
+    description: "Create NFTs from your posts and much more!",
+    type: "website",
+    url: "https://blocksocial.vercel.app",
+    image: "https://blocksocial.vercel.app/bsicon.jpg",
+  };
+
   return {
     props: {
-      title: "BlockSocial",
-      description: "Create NFTs from your posts and much more!",
-      type: "website",
-      url: "https://blocksocial.vercel.app",
-      image: "https://blocksocial.vercel.app/bsicon.ico",
+      pagePreviewData: pagePreviewData,
     },
   };
 }
