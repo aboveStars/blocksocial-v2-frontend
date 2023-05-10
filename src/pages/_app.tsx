@@ -45,6 +45,11 @@ export default function App({ Component, pageProps }: AppProps) {
         </title>
         <link rel="icon" href="/bsicon.jpg" />
 
+        <meta
+          property="description"
+          content="BlockSocial is a social media platform that allows users to truly own and control their data while utilizing blockchain technology"
+        />
+
         <meta property="og:title" content={title} key="title" />
         <meta property="og:description" content={description} key="desc" />
         <meta property="og:type" content={type} key="type" />
