@@ -12,9 +12,6 @@ import { RecoilRoot } from "recoil";
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
-  if (router.asPath !== "/" && router.asPath !== "") {
-  }
-
   // Last settings for links preview...
   // "undefined" for error pages (400 and 500). They don't have any metatags. (At least I don't set meta-tags for them)
   const fetchedPagePreviewData: IPagePreviewData | undefined =
