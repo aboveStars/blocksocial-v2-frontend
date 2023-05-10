@@ -1,10 +1,9 @@
 import { auth } from "./firebase/adminApp";
 
 /**
- * To get displayname of user from its auth object.
- * This function both checks if user is real and gets displayname.
+ * To get displayname of user from its auth object if request source is real.
  * @param authorization
- * @returns Dispaly name if succees, otherwise an empty string
+ * @returns displayName if succees, otherwise an empty string.
  */
 export default async function getDisplayName(authorization: string) {
   let decodedToken;

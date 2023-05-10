@@ -4,9 +4,13 @@ import { useState } from "react";
 export default function useCommentDelete() {
   const [commentDeletionLoading, setCommentDeletionLoading] = useState(false);
 
+  /**
+   * @param userCommentDocPath
+   * @returns true if operation is successfull, otherwise false
+   */
   const commentDelete = async (userCommentDocPath: string) => {
     if (!userCommentDocPath) {
-      return;
+      return false;
     }
     setCommentDeletionLoading(true);
 
@@ -22,7 +26,7 @@ export default function useCommentDelete() {
         "Error while comment deleting. Couln't be got idToken",
         error
       );
-      return;
+      return false;
     }
 
     let response: Response;
@@ -40,7 +44,7 @@ export default function useCommentDelete() {
       });
     } catch (error) {
       console.error("Error while fetching 'postCommentDelete' API", error);
-      return;
+      return false;
     }
 
     if (!response.ok) {
@@ -48,9 +52,10 @@ export default function useCommentDelete() {
         "Error while deleting comment from postCommentDelete API",
         await response.json()
       );
-      return;
+      return false;
     }
     setCommentDeletionLoading(false);
+    return true;
   };
   return {
     commentDelete,

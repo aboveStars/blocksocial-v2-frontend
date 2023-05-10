@@ -1,17 +1,18 @@
 import { auth } from "@/firebase/clientApp";
 
-const usePost = () => {
+const usePostLike = () => {
   /**
-   * Both for "like" and "deLike(removeLike)"
-   * @param postId postId of post
-   * @param opCode like : 1, deLike : -1
+   * @param postDocPath
+   * @param opCode "1" for like "-1" for like-remove
+   * @returns true if operation is successfull, otherwise false.
    */
   const like = async (postDocPath: string, opCode: number) => {
     let idToken = "";
     try {
       idToken = (await auth.currentUser?.getIdToken()) as string;
     } catch (error) {
-      return console.error("Error while liking. Couln't be got idToken", error);
+      console.error("Error while liking. Couln't be got idToken", error);
+      return false;
     }
 
     let response;
@@ -28,18 +29,22 @@ const usePost = () => {
         }),
       });
     } catch (error) {
-      return console.error("Error while fetching to 'postLike' API", error);
+      console.error("Error while fetching to 'postLike' API", error);
+      return false;
     }
 
     if (!response.ok) {
-      return console.error(
+      console.error(
         "Error while liking from 'likePost' API",
         await response.json()
       );
+      return false;
     }
+
+    return true;
   };
   return {
     like,
   };
 };
-export default usePost;
+export default usePostLike;

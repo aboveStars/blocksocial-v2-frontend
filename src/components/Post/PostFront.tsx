@@ -14,7 +14,6 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  Skeleton,
   SkeletonCircle,
   SkeletonText,
   Text,
@@ -31,8 +30,8 @@ import { BsDot, BsImage } from "react-icons/bs";
 
 import { firestore } from "@/firebase/clientApp";
 import useFollow from "@/hooks/useFollow";
-import usePost from "@/hooks/usePost";
 import usePostDelete from "@/hooks/usePostDelete";
+
 import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
@@ -42,6 +41,8 @@ import { authModalStateAtom } from "../atoms/authModalAtom";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
 import { postsAtViewAtom } from "../atoms/postsAtViewAtom";
 import { OpenPanelName, PostFrontData } from "../types/Post";
+import usePostLike from "@/hooks/usePostLike";
+import { fakeWaiting } from "../utils/FakeWaiting";
 
 type Props = {
   postFrontData: PostFrontData;
@@ -59,7 +60,7 @@ export default function PostFront({
     followedByCurrentUser: true,
   });
 
-  const { like } = usePost();
+  const { like } = usePostLike();
 
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
@@ -72,8 +73,6 @@ export default function PostFront({
   const { follow } = useFollow();
 
   const { postDelete, postDeletionLoading } = usePostDelete();
-
-  const imageSkeletonRef = useRef<HTMLDivElement>(null);
 
   const leastDestructiveRef = useRef<HTMLButtonElement>(null);
   const [showDeletePostDialog, setShowDeletePostDialog] = useState(false);
@@ -88,6 +87,42 @@ export default function PostFront({
       word: string;
     }[]
   >([]);
+
+  const [showFollowButtonOnPost, setShowFollowButtonOnPost] = useState(false);
+
+  useEffect(() => {
+    handleGetPostSenderData(postFrontData.senderUsername);
+  }, [currentUserState.username]);
+
+  useEffect(() => {
+    const descriptionContainsTagging = postFrontData.description.includes("@");
+    if (!descriptionContainsTagging) return;
+
+    handleTagging();
+  }, []);
+
+  useEffect(() => {
+    if (!currentUserState.isThereCurrentUser)
+      return setShowFollowButtonOnPost(false);
+
+    if (postFrontData.senderUsername === currentUserState.username) {
+      return setShowFollowButtonOnPost(false);
+    }
+
+    if (router.asPath.includes(postFrontData.senderUsername))
+      return setShowFollowButtonOnPost(false);
+
+    if (postSenderInformation.followedByCurrentUser) {
+      return setShowFollowButtonOnPost(false);
+    }
+
+    if (postFrontData.currentUserFollowThisSender)
+      return setShowFollowButtonOnPost(false);
+
+    console.log("We don't follow ", postFrontData.senderUsername);
+
+    return setShowFollowButtonOnPost(true);
+  }, [currentUserState, postFrontData, router.asPath, postSenderInformation]);
 
   /**
    * Simply gets postSender's pp and fullname.
@@ -149,7 +184,21 @@ export default function PostFront({
     setPostsAtView(updatedPostsAtView);
 
     // Follow
-    await follow(postFrontData.senderUsername, 1);
+    const operationResult = await follow(postFrontData.senderUsername, 1);
+
+    if (!operationResult) {
+      const updatedPostsAtView = postsAtView.map((a) => {
+        if (a.senderUsername === postFrontData.senderUsername) {
+          const updatedPost = { ...a };
+          updatedPost.currentUserFollowThisSender = false;
+          return updatedPost;
+        } else {
+          return a;
+        }
+      });
+      setPostsAtView(updatedPostsAtView);
+      return setFollowOperationLoading(false);
+    }
 
     setPostSenderInformation((prev) => ({
       ...prev,
@@ -158,23 +207,6 @@ export default function PostFront({
 
     setFollowOperationLoading(false);
   };
-
-  useEffect(() => {
-    handleGetPostSenderData(postFrontData.senderUsername);
-  }, []);
-
-  // Skeleton Height Adjustment
-  useEffect(() => {
-    if (imageSkeletonRef.current)
-      imageSkeletonRef.current.style.height = `${imageSkeletonRef.current?.clientWidth}px`;
-  }, []);
-
-  useEffect(() => {
-    const descriptionContainsTagging = postFrontData.description.includes("@");
-    if (!descriptionContainsTagging) return;
-
-    handleTagging();
-  }, []);
 
   const handleTagging = () => {
     const desArr = postFrontData.description.split(" ");
@@ -210,6 +242,9 @@ export default function PostFront({
       return;
     }
 
+    const likeCountBeforeOperations = postFrontData.likeCount;
+    const likeStatusBeforeOperation = postFrontData.currentUserLikedThisPost;
+
     const updatedPostsAtView = postsAtView.map((a) => {
       if (a.postDocId === postFrontData.postDocId) {
         const updatedPost = { ...a };
@@ -220,316 +255,316 @@ export default function PostFront({
         return a;
       }
     });
-
     setPostsAtView(updatedPostsAtView);
 
-    // likeCountValueSetter((prev) => prev + opCode);
-
-    await like(
+    const operationResult = await like(
       `users/${postFrontData.senderUsername}/posts/${postFrontData.postDocId}`,
       opCode
     );
+
+    if (!operationResult) {
+      const updatedPostsAtView = postsAtView.map((a) => {
+        if (a.postDocId === postFrontData.postDocId) {
+          const updatedPost = { ...a };
+          updatedPost.currentUserLikedThisPost = likeStatusBeforeOperation;
+          updatedPost.likeCount = likeCountBeforeOperations;
+          return updatedPost;
+        } else {
+          return a;
+        }
+      });
+      setPostsAtView(updatedPostsAtView);
+      return;
+    }
   };
 
   const handlePostDelete = async () => {
-    await postDelete(postFrontData.postDocId);
+    const operationResult = await postDelete(postFrontData.postDocId);
+    if (!operationResult) {
+      return;
+    }
     setShowDeletePostDialog(false);
   };
 
   return (
-    <>
-      <Flex bg="black" direction="column" p={1}>
-        <Flex
-          id="postHeader"
-          align="center"
-          position="relative"
-          gap={1}
-          height="58px"
-          p={1}
-          bg="gray.900"
-          borderRadius="10px 10px 0px 0px"
-        >
+    <Flex bg="black" direction="column" p={1}>
+      <Flex
+        id="postHeader"
+        align="center"
+        position="relative"
+        gap={1}
+        height="58px"
+        p={1}
+        bg="gray.900"
+        borderRadius="10px 10px 0px 0px"
+      >
+        <Image
+          alt=""
+          src={postSenderInformation.profilePhoto}
+          width="50px"
+          height="50px"
+          rounded="full"
+          fallback={
+            postSenderInformation.profilePhoto ? (
+              <SkeletonCircle
+                width="50px"
+                height="50px"
+                startColor="gray.100"
+                endColor="gray.800"
+              />
+            ) : (
+              <Icon
+                as={CgProfile}
+                color="white"
+                height="50px"
+                width="50px"
+                cursor="pointer"
+                onClick={() => router.push(`/${postFrontData.senderUsername}`)}
+              />
+            )
+          }
+          cursor="pointer"
+          onClick={() => router.push(`/${postFrontData.senderUsername}`)}
+        />
+        <Flex direction="column">
+          <Flex align="center">
+            <Text
+              textColor="white"
+              as="b"
+              fontSize="12pt"
+              cursor="pointer"
+              onClick={() => router.push(`/${postFrontData.senderUsername}`)}
+            >
+              {postFrontData.senderUsername}
+            </Text>
+          </Flex>
+
+          <Flex align="center" gap={1}>
+            <Text
+              textColor="gray.100"
+              as="i"
+              fontSize="10pt"
+              cursor="pointer"
+              onClick={() => router.push(`/${postFrontData.senderUsername}`)}
+            >
+              {postSenderInformation.fullname}
+            </Text>
+            {!postSenderInformation.fullname && (
+              <SkeletonText noOfLines={1} width="50px" />
+            )}
+
+            <Icon as={BsDot} color="white" fontSize="13px" />
+
+            <Text as="i" fontSize="9pt" textColor="gray.500">
+              {moment(new Date(postFrontData.creationTime)).fromNow()}
+            </Text>
+          </Flex>
+        </Flex>
+
+        <Flex position="absolute" right="3" id="follow-nft-delete">
+          <Button
+            variant="solid"
+            colorScheme="blue"
+            size="sm"
+            onClick={handleFollowOnPost}
+            hidden={!showFollowButtonOnPost}
+            isLoading={followOperationLoading}
+          >
+            Follow
+          </Button>
+
+          <Flex
+            hidden={currentUserState.username !== postFrontData.senderUsername}
+            width="100%"
+          >
+            <Menu computePositionOnMount>
+              <MenuButton>
+                <Icon as={AiOutlineMenu} color="white" />
+              </MenuButton>
+              <MenuList>
+                {postFrontData.nftStatus.minted ? (
+                  <MenuItem onClick={() => openPanelNameSetter("nft")}>
+                    Manage NFT
+                  </MenuItem>
+                ) : (
+                  <MenuItem onClick={() => openPanelNameSetter("nft")}>
+                    Make NFT
+                  </MenuItem>
+                )}
+
+                <MenuItem onClick={() => setShowDeletePostDialog(true)}>
+                  Delete
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Flex>
+
+          <AlertDialog
+            isOpen={showDeletePostDialog}
+            leastDestructiveRef={leastDestructiveRef}
+            onClose={() => setShowDeletePostDialog(false)}
+            returnFocusOnClose={false}
+          >
+            <AlertDialogOverlay>
+              <AlertDialogContent>
+                <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                  Delete Post
+                </AlertDialogHeader>
+
+                <AlertDialogBody>
+                  Are you sure? You can&apos;t undo this action afterwards.
+                </AlertDialogBody>
+
+                <AlertDialogFooter gap={2}>
+                  <Button
+                    ref={leastDestructiveRef}
+                    onClick={() => setShowDeletePostDialog(false)}
+                    variant="solid"
+                    size="md"
+                    colorScheme="blue"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="outline"
+                    colorScheme="red"
+                    size="md"
+                    onClick={handlePostDelete}
+                    isLoading={postDeletionLoading}
+                    hidden={
+                      currentUserState.username !== postFrontData.senderUsername
+                    }
+                  >
+                    Delete
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialogOverlay>
+          </AlertDialog>
+        </Flex>
+      </Flex>
+
+      {postFrontData.image && (
+        <AspectRatio ratio={1} width="100%">
           <Image
             alt=""
-            src={postSenderInformation.profilePhoto}
-            width="50px"
-            height="50px"
-            rounded="full"
+            src={postFrontData.image}
             fallback={
-              postSenderInformation.profilePhoto ? (
-                <SkeletonCircle
-                  width="50px"
-                  height="50px"
-                  startColor="gray.100"
-                  endColor="gray.800"
+              <Flex bg="gray.700">
+                <Icon as={BsImage} fontSize="8xl" color="white" />
+              </Flex>
+            }
+          />
+        </AspectRatio>
+      )}
+
+      <Flex
+        id="post-footer"
+        direction="column"
+        bg="gray.900"
+        borderRadius="0px 0px 10px 10px"
+        height="auto"
+      >
+        <Text
+          px={2}
+          pt="1"
+          fontSize="13pt"
+          fontWeight="medium"
+          wordBreak="break-word"
+        >
+          {taggedDescription.length > 0 ? (
+            taggedDescription.map((w, i) => {
+              if (w.isTagged) {
+                return (
+                  <span
+                    key={i}
+                    style={{ color: "#00A2FF", cursor: "pointer" }}
+                    onClick={() => {
+                      router.push(w.word.slice(1, w.word.length + 1));
+                    }}
+                  >
+                    {w.word}{" "}
+                  </span>
+                );
+              } else {
+                return (
+                  <span key={i} style={{ color: "white" }}>
+                    {w.word}{" "}
+                  </span>
+                );
+              }
+            })
+          ) : (
+            <span style={{ color: "white" }}>{postFrontData.description}</span>
+          )}
+        </Text>
+        <Flex>
+          <Flex gap={3} p={2}>
+            <Flex gap="1">
+              {postFrontData.currentUserLikedThisPost ? (
+                <Icon
+                  as={AiFillHeart}
+                  color="red"
+                  fontSize="25px"
+                  cursor="pointer"
+                  onClick={() => handleLike(-1)}
                 />
               ) : (
                 <Icon
-                  as={CgProfile}
+                  as={AiOutlineHeart}
                   color="white"
-                  height="50px"
-                  width="50px"
+                  fontSize="25px"
                   cursor="pointer"
-                  onClick={() =>
-                    router.push(`/${postFrontData.senderUsername}`)
-                  }
+                  onClick={() => handleLike(1)}
                 />
-              )
-            }
-            cursor="pointer"
-            onClick={() => router.push(`/${postFrontData.senderUsername}`)}
-          />
-          <Flex direction="column">
-            <Flex align="center">
-              <Text
-                textColor="white"
-                as="b"
-                fontSize="12pt"
-                cursor="pointer"
-                onClick={() => router.push(`/${postFrontData.senderUsername}`)}
-              >
-                {postFrontData.senderUsername}
-              </Text>
-            </Flex>
-
-            <Flex align="center" gap={1}>
-              <Text
-                textColor="gray.100"
-                as="i"
-                fontSize="10pt"
-                cursor="pointer"
-                onClick={() => router.push(`/${postFrontData.senderUsername}`)}
-              >
-                {postSenderInformation.fullname}
-              </Text>
-              {!postSenderInformation.fullname && (
-                <SkeletonText noOfLines={1} width="50px" />
               )}
 
-              <Icon as={BsDot} color="white" fontSize="13px" />
-
-              <Text as="i" fontSize="9pt" textColor="gray.500">
-                {moment(new Date(postFrontData.creationTime)).fromNow()}
-              </Text>
-            </Flex>
-          </Flex>
-
-          <Flex position="absolute" right="3" id="follow-nft-delete">
-            <Button
-              variant="solid"
-              colorScheme="blue"
-              size="sm"
-              onClick={handleFollowOnPost}
-              hidden={
-                !currentUserState.username ||
-                postSenderInformation.followedByCurrentUser ||
-                postFrontData.currentUserFollowThisSender ||
-                currentUserState.username == postFrontData.senderUsername ||
-                router.asPath.includes(`${postSenderInformation.username}`)
-              }
-              isLoading={followOperationLoading}
-            >
-              Follow
-            </Button>
-
-            <Flex
-              hidden={
-                currentUserState.username !== postFrontData.senderUsername
-              }
-              width="100%"
-            >
-              <Menu computePositionOnMount>
-                <MenuButton>
-                  <Icon as={AiOutlineMenu} color="white" />
-                </MenuButton>
-                <MenuList>
-                  {postFrontData.nftStatus.minted ? (
-                    <MenuItem onClick={() => openPanelNameSetter("nft")}>
-                      Manage NFT
-                    </MenuItem>
-                  ) : (
-                    <MenuItem onClick={() => openPanelNameSetter("nft")}>
-                      Make NFT
-                    </MenuItem>
-                  )}
-
-                  <MenuItem onClick={() => setShowDeletePostDialog(true)}>
-                    Delete
-                  </MenuItem>
-                </MenuList>
-              </Menu>
-            </Flex>
-
-            <AlertDialog
-              isOpen={showDeletePostDialog}
-              leastDestructiveRef={leastDestructiveRef}
-              onClose={() => setShowDeletePostDialog(false)}
-              returnFocusOnClose={false}
-            >
-              <AlertDialogOverlay>
-                <AlertDialogContent>
-                  <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                    Delete Post
-                  </AlertDialogHeader>
-
-                  <AlertDialogBody>
-                    Are you sure? You can&apos;t undo this action afterwards.
-                  </AlertDialogBody>
-
-                  <AlertDialogFooter gap={2}>
-                    <Button
-                      ref={leastDestructiveRef}
-                      onClick={() => setShowDeletePostDialog(false)}
-                      variant="solid"
-                      size="md"
-                      colorScheme="blue"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="outline"
-                      colorScheme="red"
-                      size="md"
-                      onClick={handlePostDelete}
-                      isLoading={postDeletionLoading}
-                      hidden={
-                        currentUserState.username !==
-                        postFrontData.senderUsername
-                      }
-                    >
-                      Delete
-                    </Button>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialogOverlay>
-            </AlertDialog>
-          </Flex>
-        </Flex>
-
-        {postFrontData.image && (
-          <AspectRatio ratio={1} width="100%">
-            <Image
-              alt=""
-              src={postFrontData.image}
-              fallback={
-                <Flex bg="gray.700">
-                  <Icon as={BsImage} fontSize="8xl" color="white" />
-                </Flex>
-              }
-            />
-          </AspectRatio>
-        )}
-
-        <Flex
-          id="post-footer"
-          direction="column"
-          bg="gray.900"
-          borderRadius="0px 0px 10px 10px"
-          height="auto"
-        >
-          <Text
-            px={2}
-            pt="1"
-            fontSize="13pt"
-            fontWeight="medium"
-            wordBreak="break-word"
-          >
-            {taggedDescription.length > 0 ? (
-              taggedDescription.map((w, i) => {
-                if (w.isTagged) {
-                  return (
-                    <span
-                      key={i}
-                      style={{ color: "#00A2FF", cursor: "pointer" }}
-                      onClick={() => {
-                        router.push(w.word.slice(1, w.word.length + 1));
-                      }}
-                    >
-                      {w.word}{" "}
-                    </span>
-                  );
-                } else {
-                  return (
-                    <span key={i} style={{ color: "white" }}>
-                      {w.word}{" "}
-                    </span>
-                  );
-                }
-              })
-            ) : (
-              <span style={{ color: "white" }}>
-                {postFrontData.description}
-              </span>
-            )}
-          </Text>
-          <Flex>
-            <Flex gap={3} p={2}>
-              <Flex gap="1">
-                {postFrontData.currentUserLikedThisPost ? (
-                  <Icon
-                    as={AiFillHeart}
-                    color="red"
-                    fontSize="25px"
-                    cursor="pointer"
-                    onClick={() => handleLike(-1)}
-                  />
-                ) : (
-                  <Icon
-                    as={AiOutlineHeart}
-                    color="white"
-                    fontSize="25px"
-                    cursor="pointer"
-                    onClick={() => handleLike(1)}
-                  />
-                )}
-
-                <Text
-                  textColor="white"
-                  cursor="pointer"
-                  onClick={() => {
-                    openPanelNameSetter("likes");
-                  }}
-                >
-                  {`${postFrontData.likeCount}`}
-                </Text>
-              </Flex>
-
-              <Flex
-                gap="1"
+              <Text
+                textColor="white"
                 cursor="pointer"
                 onClick={() => {
-                  openPanelNameSetter("comments");
+                  openPanelNameSetter("likes");
                 }}
               >
-                <Icon as={AiOutlineComment} color="white" fontSize="25px" />
-                <Text textColor="white">{postFrontData.commentCount}</Text>
-              </Flex>
+                {`${postFrontData.likeCount}`}
+              </Text>
             </Flex>
 
-            <Flex width="100%" position="relative">
-              <Button
-                hidden={!!!postFrontData.nftStatus.minted}
-                position="absolute"
-                right="2.5"
-                bottom="2"
-                colorScheme="pink"
-                size="sm"
-                borderRadius="full"
-                px={4}
-                py={2}
-                fontWeight="bold"
-                _hover={{ bg: "pink.500" }}
-                _active={{ bg: "pink.600" }}
-                onClick={() => {
-                  openPanelNameSetter("nft");
-                }}
-              >
-                NFT
-              </Button>
+            <Flex
+              gap="1"
+              cursor="pointer"
+              onClick={() => {
+                openPanelNameSetter("comments");
+              }}
+            >
+              <Icon as={AiOutlineComment} color="white" fontSize="25px" />
+              <Text textColor="white">{postFrontData.commentCount}</Text>
             </Flex>
+          </Flex>
+
+          <Flex width="100%" position="relative">
+            <Button
+              hidden={!!!postFrontData.nftStatus.minted}
+              position="absolute"
+              right="2.5"
+              bottom="2"
+              colorScheme="pink"
+              size="sm"
+              borderRadius="full"
+              px={4}
+              py={2}
+              fontWeight="bold"
+              _hover={{ bg: "pink.500" }}
+              _active={{ bg: "pink.600" }}
+              onClick={() => {
+                openPanelNameSetter("nft");
+              }}
+            >
+              NFT
+            </Button>
           </Flex>
         </Flex>
       </Flex>
-    </>
+    </Flex>
   );
 }

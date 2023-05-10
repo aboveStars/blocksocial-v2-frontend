@@ -48,24 +48,8 @@ export default function ProfilePhotoUpdateModal({
   const [minZoom, setMinZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
-  const onCropComplete = useCallback(
-    (croppedArea: any, croppedAreaPixels: any) => {
-      setCroppedAreaPixels(croppedAreaPixels);
-    },
-    []
-  );
-
   const cropAreaRef = useRef<HTMLDivElement>(null);
   const [cropAreaHeight, setCropAreaHeight] = useState(400);
-
-  const handleResetStates = () => {
-    profilePhotoUpdateModalOpenSetter(false);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
-    willBeCroppedProfilePhotoSetter("");
-    if (inputRef.current) inputRef.current.value = "";
-  };
 
   useEffect(() => {
     if (cropAreaRef.current)
@@ -88,6 +72,35 @@ export default function ProfilePhotoUpdateModal({
     };
     img.src = willBeCroppedProfilePhoto;
   }, [willBeCroppedProfilePhoto]);
+
+  const onCropComplete = useCallback(
+    (croppedArea: any, croppedAreaPixels: any) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
+
+  const handleResetStates = () => {
+    profilePhotoUpdateModalOpenSetter(false);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
+    willBeCroppedProfilePhotoSetter("");
+    if (inputRef.current) inputRef.current.value = "";
+  };
+
+  const handleTryNewImage = async () => {
+    // Get cropped image
+    const croppedImage = await getCroppedImg(
+      willBeCroppedProfilePhoto,
+      croppedAreaPixels
+    );
+    // update states
+    selectedProfilePhotoSetter(croppedImage as string);
+    modifyingSetter(true);
+    // reset states
+    handleResetStates();
+  };
 
   return (
     <Modal
@@ -120,18 +133,7 @@ export default function ProfilePhotoUpdateModal({
                   size="sm"
                   variant="solid"
                   colorScheme="blue"
-                  onClick={async () => {
-                    // Get cropped image
-                    const croppedImage = await getCroppedImg(
-                      willBeCroppedProfilePhoto,
-                      croppedAreaPixels
-                    );
-                    // update states
-                    selectedProfilePhotoSetter(croppedImage as string);
-                    modifyingSetter(true);
-                    // reset states
-                    handleResetStates();
-                  }}
+                  onClick={handleTryNewImage}
                 >
                   Try
                 </Button>

@@ -173,7 +173,7 @@ const getPostsFromOneSource = async (
       const postItemData: PostItemData = {
         commentCount: postDoc.data().commentCount,
         creationTime: postDoc.data().creationTime,
-        currentUserFollowThisSender: true,
+        currentUserFollowThisSender: false,
         currentUserLikedThisPost: likeStatus,
 
         description: postDoc.data().description,

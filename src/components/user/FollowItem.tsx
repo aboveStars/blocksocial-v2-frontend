@@ -108,7 +108,11 @@ export default function FollowItem({
     }
     setFollowOperationLoading(true);
     // Follow
-    await follow(followItemState.username, 1);
+    const operationResult = await follow(followItemState.username, 1);
+
+    if (!operationResult) {
+      return setFollowOperationLoading(false);
+    }
 
     // update follow status
     setFollowItemState((prev) => ({
@@ -173,7 +177,7 @@ export default function FollowItem({
           onClick={handleFollowonFollowItem}
           hidden={
             followItemState.followedByCurrentUser ||
-            !!!followItemState.username ||
+            !followItemState.username ||
             followItemState.username === currentUserState.username
           }
           isLoading={followOperationLoading}

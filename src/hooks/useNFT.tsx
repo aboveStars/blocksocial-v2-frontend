@@ -3,7 +3,7 @@ import { headerAtViewAtom } from "@/components/atoms/headerAtViewAtom";
 import { auth } from "@/firebase/clientApp";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 export default function useNFT() {
   const [creatingNFTLoading, setCreatingNFTLoading] = useState(false);
@@ -12,7 +12,7 @@ export default function useNFT() {
 
   const [nftRefreshLoading, setNftRefreshLoading] = useState(false);
 
-  const [headerAtView, setHeaderAtView] = useRecoilState(headerAtViewAtom);
+  const setHeaderAtView = useSetRecoilState(headerAtViewAtom);
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
   const router = useRouter();
@@ -21,7 +21,7 @@ export default function useNFT() {
    * @param name
    * @param description
    * @param postDocId
-   * @returns
+   * @returns NFT data of newly minted NFT if operation successfull, otherwise false.
    */
   const mintNft = async (
     name: string,
@@ -36,10 +36,8 @@ export default function useNFT() {
       idToken = (await auth.currentUser?.getIdToken()) as string;
     } catch (error) {
       setCreatingNFTLoading(false);
-      return console.error(
-        "Error while post deleting. Couln't be got idToken",
-        error
-      );
+      console.error("Error while post deleting. Couln't be got idToken", error);
+      return false;
     }
 
     let response;
@@ -58,18 +56,20 @@ export default function useNFT() {
       });
     } catch (error) {
       setCreatingNFTLoading(false);
-      return console.error(
+      console.error(
         "Error while uploading nft. (We were fetching to 'uploadNFT API'",
         error
       );
+      return false;
     }
 
     if (!response.ok) {
       setCreatingNFTLoading(false);
-      return console.error(
+      console.error(
         "Error while uploading nft. Error came from 'uploadNFT' API:",
         await response.json()
       );
+      return false;
     }
 
     setCreatingNFTLoading(false);
@@ -84,6 +84,7 @@ export default function useNFT() {
 
   /**
    * @param postDocId
+   * @returns true if operation successfull, otherwise false.
    */
   const refreshNFT = async (postDocId: string) => {
     setNftRefreshLoading(true);
@@ -93,10 +94,8 @@ export default function useNFT() {
       idToken = (await auth.currentUser?.getIdToken()) as string;
     } catch (error) {
       setNftRefreshLoading(false);
-      return console.error(
-        "Error while post deleting. Couln't be got idToken",
-        error
-      );
+      console.error("Error while post deleting. Couln't be got idToken", error);
+      return false;
     }
 
     let response: Response;
@@ -113,25 +112,28 @@ export default function useNFT() {
       });
     } catch (error) {
       setNftRefreshLoading(false);
-      return console.error("Error while fetching 'refreshNFT' API", error);
+      console.error("Error while fetching 'refreshNFT' API", error);
+      return false;
     }
 
     if (!response.ok) {
       setNftRefreshLoading(false);
-      return console.error(
+      console.error(
         "Error while refreshingNFT from 'resfreshNFT' API",
         await response.json()
       );
+      return false;
     }
 
     setNftRefreshLoading(false);
+
+    return true;
   };
 
   /**
-   * 
-   * @param postDocId 
-   * @param nftTransferAddress 
-   * @returns Transfer status as boolean
+   * @param postDocId
+   * @param nftTransferAddress
+   * @returns true if operation is successfull, otherwise false.s
    */
   const transferNft = async (
     postDocId: string,

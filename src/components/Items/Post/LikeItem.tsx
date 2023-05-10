@@ -1,3 +1,4 @@
+import { postsAtViewAtom } from "@/components/atoms/postsAtViewAtom";
 import { firestore } from "@/firebase/clientApp";
 import useFollow from "@/hooks/useFollow";
 import {
@@ -45,6 +46,8 @@ export default function LikeItem({
 
   const [followOperationLoading, setFollowOperationLoading] = useState(false);
 
+  const [postsAtView, setPostsAtView] = useRecoilState(postsAtViewAtom);
+
   useEffect(() => {
     getLikerData();
   }, [likerUsername]);
@@ -52,17 +55,41 @@ export default function LikeItem({
   const handleFollowOnLikeItem = async () => {
     if (!currentUserState.isThereCurrentUser) {
       console.log("Login First to Follow");
-      setAuthModalState((prev) => ({
+      return setAuthModalState((prev) => ({
         ...prev,
         open: true,
       }));
-      return;
     }
 
     setFollowOperationLoading(true);
 
+    const updatedPostsAtView = postsAtView.map((a) => {
+      if (a.senderUsername === likerUsername) {
+        const updatedPost = { ...a };
+        updatedPost.currentUserFollowThisSender = true;
+        return updatedPost;
+      } else {
+        return a;
+      }
+    });
+    setPostsAtView(updatedPostsAtView);
+
     // Follow
-    await follow(likerUsername, 1);
+    const operationResult = await follow(likerUsername, 1);
+
+    if (!operationResult) {
+      const updatedPostsAtView = postsAtView.map((a) => {
+        if (a.senderUsername === likerUsername) {
+          const updatedPost = { ...a };
+          updatedPost.currentUserFollowThisSender = false;
+          return updatedPost;
+        } else {
+          return a;
+        }
+      });
+      setPostsAtView(updatedPostsAtView);
+      return setFollowOperationLoading(false);
+    }
 
     // update follow status
     setLikerUserInformation((prev) => ({

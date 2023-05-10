@@ -15,6 +15,11 @@ export default function usePostDelete() {
   const router = useRouter();
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
+  /**
+   *
+   * @param postDocId
+   * @returns true if operation is successfull, otherwise false.
+   */
   const postDelete = async (postDocId: string) => {
     setPostDeletionLoading(true);
 
@@ -22,10 +27,9 @@ export default function usePostDelete() {
     try {
       idToken = (await auth.currentUser?.getIdToken()) as string;
     } catch (error) {
-      return console.error(
-        "Error while post deleting. Couln't be got idToken",
-        error
-      );
+      console.error("Error while post deleting. Couln't be got idToken", error);
+      setPostDeletionLoading(false);
+      return false;
     }
 
     let response: Response;
@@ -39,14 +43,18 @@ export default function usePostDelete() {
         body: JSON.stringify({ postDocId: postDocId }),
       });
     } catch (error) {
-      return console.error("Error while fecthing to 'postDelete API'", error);
+      setPostDeletionLoading(false);
+      console.error("Error while fecthing to 'postDelete API'", error);
+      return false;
     }
 
     if (!response.ok) {
-      return console.error(
+      console.error(
         "Error while deleting post from 'postDelete' API",
         await response.json()
       );
+      setPostDeletionLoading(false);
+      return false;
     }
     if (
       router.asPath.includes(currentUserState.username) &&
@@ -57,6 +65,7 @@ export default function usePostDelete() {
     setPostsAtView((prev) => prev.filter((x) => x.postDocId !== postDocId));
 
     setPostDeletionLoading(false);
+    return true;
   };
   return {
     postDelete,

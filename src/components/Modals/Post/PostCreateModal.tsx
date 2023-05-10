@@ -100,7 +100,11 @@ export default function PostCreateModal() {
     if (!postCreateForm.description && !postCreateForm.image) {
       return console.log("You Can not create empty post, aborting");
     }
-    await sendPost(postCreateForm);
+    const operationResult = await sendPost(postCreateForm);
+
+    if (!operationResult) {
+      return;
+    }
 
     handleResetCrop();
 
@@ -110,8 +114,6 @@ export default function PostCreateModal() {
     }));
 
     setPostCreateForm({ description: "", image: "" });
-
-    console.log("Succesfully Uploaded Post");
   };
 
   const handleResetCrop = () => {

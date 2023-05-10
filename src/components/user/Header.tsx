@@ -81,6 +81,8 @@ export default function Header({ userInformation }: Props) {
     setSelectedProfilePhoto,
     setWillBeCroppedProfilePhoto,
     profilePhotoError,
+    profilePhotoDelete,
+    profilePhotoDeleteLoading,
   } = useProfilePhoto();
 
   const [poorProfilePhoto, setPoorProfilePhoto] = useState(false);
@@ -105,8 +107,6 @@ export default function Header({ userInformation }: Props) {
   const [profilephotoDeleteDialogOpen, setProfilePhotoDeleteDialogOpen] =
     useState(false);
   const leastDestructiveRef = useRef<HTMLButtonElement>(null);
-
-  const { profilePhotoDelete, profilePhotoDeleteLoading } = useProfilePhoto();
 
   const [currentUserFollowThisMan, setCurrentUserFollowThisMan] =
     useState(false);
@@ -192,13 +192,19 @@ export default function Header({ userInformation }: Props) {
     }
     setFollowOperationLoading(true);
     // Follow operation
-    await follow(userInformation.username, opCode);
+    const operationResult = await follow(userInformation.username, opCode);
+
+    if (!operationResult) {
+      return setFollowOperationLoading(false);
+    }
 
     setCurrentUserFollowThisMan(opCode === 1 ? true : false);
     setFollowOperationLoading(false);
   };
 
   const handleSignOut = async () => {
+    if (!currentUserState.isThereCurrentUser) return;
+
     setSignOutLoading(true);
 
     // Firebase sign-out
@@ -239,6 +245,8 @@ export default function Header({ userInformation }: Props) {
   };
 
   const handleUpdateFullname = async () => {
+    if (!currentUserState.isThereCurrentUser) return;
+
     setFullnameUpdateLoading(true);
     const fullnameToUpdate = changedFullname;
 
@@ -297,6 +305,35 @@ export default function Header({ userInformation }: Props) {
     // reset states
     setFullnameUpdateLoading(false);
     setFullnameModifying(false);
+  };
+
+  const handleProfilePhotoDelete = async () => {
+    const operationResult = await profilePhotoDelete();
+
+    if (!operationResult) {
+      return;
+    }
+
+    setHeaderAtView((prev) => ({
+      ...prev,
+      profilePhoto: "",
+    }));
+    setProfilePhotoDeleteDialogOpen(false);
+  };
+
+  const handleProfilePhotoUpload = async () => {
+    const operationResult = await profilePhotoUpload();
+    if (!operationResult) {
+      return;
+    }
+
+    setHeaderAtView((prev) => ({
+      ...prev,
+      profilePhoto: selectedProfilePhoto,
+    }));
+    setModifying(false);
+    setSelectedProfilePhoto("");
+    if (inputRef.current) inputRef.current.value = "";
   };
 
   return (
@@ -359,14 +396,7 @@ export default function Header({ userInformation }: Props) {
                 variant="outline"
                 colorScheme="red"
                 size="md"
-                onClick={async () => {
-                  await profilePhotoDelete();
-                  setHeaderAtView((prev) => ({
-                    ...prev,
-                    profilePhoto: "",
-                  }));
-                  setProfilePhotoDeleteDialogOpen(false);
-                }}
+                onClick={handleProfilePhotoDelete}
                 isLoading={profilePhotoDeleteLoading}
               >
                 Delete Profile Photo
@@ -456,16 +486,7 @@ export default function Header({ userInformation }: Props) {
               variant="solid"
               colorScheme="blue"
               size="sm"
-              onClick={async () => {
-                await profilePhotoUpload();
-                setHeaderAtView((prev) => ({
-                  ...prev,
-                  profilePhoto: selectedProfilePhoto,
-                }));
-                setModifying(false);
-                setSelectedProfilePhoto("");
-                if (inputRef.current) inputRef.current.value = "";
-              }}
+              onClick={handleProfilePhotoUpload}
               isLoading={profilePhotoUploadLoading}
             >
               Save

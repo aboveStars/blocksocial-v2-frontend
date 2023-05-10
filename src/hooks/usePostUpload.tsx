@@ -6,10 +6,9 @@ import {
   PostServerData,
 } from "@/components/types/Post";
 import { auth } from "@/firebase/clientApp";
-import bytes from "bytes";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 const usePostCreate = () => {
   const [willBeCroppedPostPhoto, setWillBeCroppedPostPhoto] = useState("");
@@ -18,7 +17,7 @@ const usePostCreate = () => {
 
   const router = useRouter();
 
-  const [postsAtView, setPostsAtView] = useRecoilState(postsAtViewAtom);
+  const setPostsAtView = useSetRecoilState(postsAtViewAtom);
 
   const onSelectWillBeCroppedPhoto = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -46,14 +45,14 @@ const usePostCreate = () => {
   };
 
   /**
-   *
    * @param postCreateForm
-   * @returns
+   * @returns true if operation is successfull, otherwise false.
    */
   const sendPost = async (postCreateForm: PostCreateForm) => {
     // This is my third control but, I don't trust states really :/
     if (!postCreateForm.description && !postCreateForm.image) {
-      return console.log("You Can not create empty post, aborting");
+      console.log("You Can not create empty post, aborting");
+      return false;
     }
     setPostUploadUpdating(true);
 
@@ -61,10 +60,9 @@ const usePostCreate = () => {
     try {
       idToken = (await auth.currentUser?.getIdToken()) as string;
     } catch (error) {
-      return console.error(
-        "Error while post deleting. Couln't be got idToken",
-        error
-      );
+      console.error("Error while post deleting. Couln't be got idToken", error);
+      setPostUploadUpdating(false);
+      return false;
     }
 
     const description = postCreateForm.description;
@@ -81,14 +79,18 @@ const usePostCreate = () => {
         body: JSON.stringify({ description, image }),
       });
     } catch (error) {
-      return console.error("Error while fetching to 'postUpload' API", error);
+      console.error("Error while fetching to 'postUpload' API", error);
+      setPostUploadUpdating(false);
+      return false;
     }
 
     if (!response.ok) {
-      return console.error(
+      console.error(
         "Error while postUpload from 'postUpload' API",
         await response.json()
       );
+      setPostUploadUpdating(false);
+      return false;
     }
 
     const result = await response.json();
@@ -113,6 +115,7 @@ const usePostCreate = () => {
       setPostsAtView((prev) => [newPostData, ...prev]);
     }
     setPostUploadUpdating(false);
+    return true;
   };
 
   return {

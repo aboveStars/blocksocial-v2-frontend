@@ -131,7 +131,7 @@ export default function PostNFT({
     }
   }, [openPanelNameValue, postInformation.nftStatus.minted]);
 
-  const handleSendNFT = async () => {
+  const handleMintNFT = async () => {
     const nftMintResult = await mintNft(
       nftTitle,
       nftDescription,
@@ -201,7 +201,11 @@ export default function PostNFT({
 
   const handleRefreshNFT = async () => {
     setRefreshNFTLoading(true);
-    await refreshNFT(postInformation.postDocId);
+    const operationResult = await refreshNFT(postInformation.postDocId);
+
+    if (!operationResult) {
+      return setRefreshNFTLoading(false);
+    }
     setRefreshNFTLoading(false);
     getNFTData();
   };
@@ -216,12 +220,12 @@ export default function PostNFT({
 
     setNftTransferLoading(true);
 
-    const transferResult = await transferNft(
+    const operationResult = await transferNft(
       postInformation.postDocId,
       nftTransferAddress
     );
 
-    if (!transferResult) {
+    if (!operationResult) {
       return setNftTransferLoading(false);
     }
 
@@ -841,9 +845,7 @@ export default function PostNFT({
             <Button
               variant="solid"
               colorScheme="blue"
-              onClick={() => {
-                handleSendNFT();
-              }}
+              onClick={handleMintNFT}
               isLoading={creatingNFTLoading}
             >
               Create!

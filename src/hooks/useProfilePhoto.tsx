@@ -1,15 +1,15 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { auth } from "@/firebase/clientApp";
 import React, { useState } from "react";
-import { useRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 
 export default function useProfilePhoto() {
   const [selectedProfilePhoto, setSelectedProfilePhoto] = useState("");
-  const [, setCurrentUserState] = useRecoilState(currentUserStateAtom);
+  const setCurrentUserState = useSetRecoilState(currentUserStateAtom);
 
   const [profilePhotoUploadLoading, setProfilePhotoUploadLoading] =
     useState(false);
-  // Both deleteing and uplaoding
+
   const [profilePhotoError, setProfilePhotoError] = useState("");
 
   const [willBeCroppedProfilePhoto, setWillBeCroppedProfilePhoto] =
@@ -39,7 +39,7 @@ export default function useProfilePhoto() {
   };
 
   /**
-   * Profile Photo Uploading to Database
+   * @returns true if operation successfull, otherwise false.
    */
   const profilePhotoUpload = async () => {
     setProfilePhotoError("");
@@ -49,10 +49,12 @@ export default function useProfilePhoto() {
     try {
       idToken = (await auth.currentUser?.getIdToken()) as string;
     } catch (error) {
-      return console.error(
+      console.error(
         "Error while profilePhotoUploading. Couln't be got idToken",
         error
       );
+      setProfilePhotoUploadLoading(false);
+      return false;
     }
 
     let response: Response;
@@ -69,29 +71,34 @@ export default function useProfilePhoto() {
         }),
       });
     } catch (error) {
-      return console.error(
-        "Error while fetching 'profilePhotoChange' API",
-        error
-      );
+      console.error("Error while fetching 'profilePhotoChange' API", error);
+      setProfilePhotoUploadLoading(false);
+      return false;
     }
 
     if (!response.ok) {
-      return console.error(
+      console.error(
         "Error while profilePhotoUpload from 'profilePhotoChange' API",
         await response.json()
       );
+      setProfilePhotoUploadLoading(false);
+      return false;
     }
 
     const { newProfilePhotoURL } = await response.json();
-
     setCurrentUserState((prev) => ({
       ...prev,
       profilePhoto: newProfilePhotoURL,
     }));
 
     setProfilePhotoUploadLoading(false);
+
+    return true;
   };
 
+  /**
+   * @returns true if operation is successfull, otherwise false.
+   */
   const profilePhotoDelete = async () => {
     setProfilePhotoError("");
     setProfilePhotoDeleteLoading(true);
@@ -100,10 +107,12 @@ export default function useProfilePhoto() {
     try {
       idToken = (await auth.currentUser?.getIdToken()) as string;
     } catch (error) {
-      return console.error(
+      console.error(
         "Error while profilePhotoUploading. Couln't be got idToken",
         error
       );
+      setProfilePhotoDeleteLoading(false);
+      return false;
     }
 
     let response: Response;
@@ -116,17 +125,18 @@ export default function useProfilePhoto() {
         },
       });
     } catch (error) {
-      return console.error(
-        "Error while fecthing to 'profilePhotoChange' API",
-        error
-      );
+      console.error("Error while fecthing to 'profilePhotoChange' API", error);
+      setProfilePhotoDeleteLoading(false);
+      return false;
     }
 
     if (!response.ok) {
-      return console.error(
+      console.error(
         "Error while deleting post from 'profilePhotoChange' API",
         await response.json()
       );
+      setProfilePhotoDeleteLoading(false);
+      return false;
     }
 
     // State Updates
@@ -135,6 +145,8 @@ export default function useProfilePhoto() {
       ...prev,
       profilePhoto: "",
     }));
+
+    return true;
   };
 
   /**

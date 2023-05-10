@@ -11,22 +11,24 @@ export default function useFollow() {
   const router = useRouter();
 
   /**
-   * @param username username to operate
-   * @param opCode  1 for follow, -1 for unFollow
+   *
+   * @param operateToUserName Who will we follow or unfollow
+   * @param opCode For follow operations use "1" otherwise (unfollow) use "-1"
+   * @returns if there is a success true otherwise false.
    */
   const follow = async (operateToUserName: string, opCode: number) => {
     if (!currentUserState.isThereCurrentUser) {
-      return;
+      return false;
     }
     if (operateToUserName == currentUserState.username) {
-      return;
+      return false;
     }
     let idToken = "";
     try {
       idToken = (await auth.currentUser?.getIdToken()) as string;
     } catch (error) {
       console.error("Error while getting 'idToken'", error);
-      return;
+      return false;
     }
 
     let response: Response;
@@ -44,18 +46,17 @@ export default function useFollow() {
       });
     } catch (error) {
       console.error("Error while 'fetching' to 'follow' API");
-      return;
+      return false;
     }
 
     if (!response.ok) {
       console.error("Error from 'follow' API:", await response.json());
-      return;
+      return false;
     }
 
     // update "header" locally
     // 1-) If we are in our page => we can just "follow" people so we should just update our "following" count
     // 2-) If we are in someone else page => we can follow that user or one of it follows or followers so we just need update its "follower count" (If we are in that user page.)
-
     if (router.asPath.includes(currentUserState.username)) {
       setHeaderAtView((prev) => ({
         ...prev,
@@ -67,6 +68,8 @@ export default function useFollow() {
         followerCount: prev.followerCount + opCode,
       }));
     }
+
+    return true;
   };
 
   return { follow };

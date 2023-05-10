@@ -64,8 +64,17 @@ export default function CommentItem({
   };
 
   const handleDeleteComment = async () => {
+    if (!currentUserState.isThereCurrentUser) return;
+
     setCommentDeleteLoading(true);
-    await commentDelete(commentDataWithCommentDocId.commentDocPath);
+    const operationResult = await commentDelete(
+      commentDataWithCommentDocId.commentDocPath
+    );
+
+    if (!operationResult) {
+      return setCommentDeleteLoading(false);
+    }
+
     commentsDatasWithCommentDocPathSetter((prev) =>
       prev.filter(
         (a) => a.commentDocPath !== commentDataWithCommentDocId.commentDocPath

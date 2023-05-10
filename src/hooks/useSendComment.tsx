@@ -6,6 +6,7 @@ export default function useSendComment() {
    * No need to pass sender, it is currentUser.
    * @param postDocPath
    * @param comment
+   * @returns comment doc-id of newly created comment if there is a success, otherwise an empty string
    */
   const sendComment = async (
     postDocPath: string,
