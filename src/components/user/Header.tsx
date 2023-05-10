@@ -582,7 +582,7 @@ export default function Header({ userInformation }: Props) {
                         </FormLabel>
                       </FormControl>
 
-                      <InputRightElement>
+                      <InputRightElement pointerEvents={"none"}>
                         {!fullnameRight && (
                           <Icon as={BiError} fontSize="20px" color="red" />
                         )}

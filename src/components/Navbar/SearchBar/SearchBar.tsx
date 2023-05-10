@@ -111,7 +111,9 @@ export default function SearchBar({}: Props) {
               }
             }}
           />
-          <InputRightElement>
+          <InputRightElement
+            pointerEvents={inputRef.current?.value ? "unset" : "none"}
+          >
             <Spinner size="sm" ml={1.5} color="gray" hidden={!searchLoading} />
             {!searchLoading && searchListOpen && (
               <Icon

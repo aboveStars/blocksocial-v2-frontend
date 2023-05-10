@@ -306,7 +306,9 @@ export default function SignUp() {
                 Email
               </FormLabel>
             </FormControl>
-            <InputRightElement>
+            <InputRightElement
+              pointerEvents={signUpForm.email ? "unset" : "none"}
+            >
               {!emailRight && <Icon as={BiError} fontSize="20px" color="red" />}
             </InputRightElement>
           </InputGroup>
@@ -339,7 +341,9 @@ export default function SignUp() {
               </FormLabel>
             </FormControl>
 
-            <InputRightElement>
+            <InputRightElement
+              pointerEvents={signUpForm.fullname ? "unset" : "none"}
+            >
               {!fullnameRight && (
                 <Icon as={BiError} fontSize="20px" color="red" />
               )}
@@ -376,7 +380,9 @@ export default function SignUp() {
                 Username
               </FormLabel>
             </FormControl>
-            <InputRightElement>
+            <InputRightElement
+              pointerEvents={signUpForm.username ? "unset" : "none"}
+            >
               {userNameTakenStateLoading ? (
                 <Spinner size="sm" />
               ) : userNameTakenState || !userNameRight ? (
@@ -420,7 +426,9 @@ export default function SignUp() {
                 Password
               </FormLabel>
             </FormControl>
-            <InputRightElement>
+            <InputRightElement
+              pointerEvents={signUpForm.password ? "unset" : "none"}
+            >
               <Flex hidden={signUpForm.password.length === 0}>
                 <Icon
                   as={passwordStrong ? AiOutlineCheckCircle : BiError}
