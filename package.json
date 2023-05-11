@@ -19,6 +19,7 @@
     "@vercel/analytics": "^0.1.11",
     "async-lock": "^1.4.0",
     "bytes": "^3.1.2",
+    "crypto-js": "^4.1.1",
     "date-fns": "^2.29.3",
     "eslint": "8.36.0",
     "eslint-config-next": "13.2.4",
@@ -43,6 +44,7 @@
   "devDependencies": {
     "@types/async-lock": "^1.4.0",
     "@types/bytes": "^3.1.1",
+    "@types/crypto-js": "^4.1.1",
     "@types/react-google-recaptcha": "^2.1.5",
     "@types/safe-json-stringify": "^1.1.2",
     "@types/uuid": "^9.0.1"

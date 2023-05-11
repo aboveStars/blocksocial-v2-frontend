@@ -88,15 +88,17 @@ export default function Home() {
         if (activitiesSnapshot.exists())
           currentUserLikesDatas = activitiesSnapshot.data()?.likesDatas;
 
-        for (const celebrity of celebritiesSnapshot.data()?.people) {
-          celebrities.push(celebrity);
-        }
+        if (celebritiesSnapshot.data())
+          for (const celebrity of celebritiesSnapshot.data()?.people) {
+            celebrities.push(celebrity);
+          }
 
-        for (const followingDoc of currentUserFollowingsDocs) {
-          followings.push(followingDoc.id);
-        }
+        if (currentUserFollowingsDocs)
+          for (const followingDoc of currentUserFollowingsDocs) {
+            followings.push(followingDoc.id);
+          }
       } catch (error) {
-        console.error("Error while getting current user followings", error);
+        console.error("Error while getting sources", error);
       }
     } else {
       try {
