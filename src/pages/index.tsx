@@ -104,9 +104,10 @@ export default function Home() {
           await getDoc(doc(firestore, "popular/celebrities"))
         ).data()?.people;
 
-        for (const celebrity of celebritiesServer) {
-          celebrities.push(celebrity);
-        }
+        if (celebritiesServer)
+          for (const celebrity of celebritiesServer) {
+            celebrities.push(celebrity);
+          }
       } catch (error) {
         console.error("Error while getting popular names", error);
       }
