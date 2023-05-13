@@ -1,5 +1,8 @@
-import { auth } from "@/firebase/clientApp";
+import ProviderCardItem from "@/components/Items/User/ProviderCardItem";
+import { IProviderCard } from "@/components/types/User";
+import { auth, firestore } from "@/firebase/clientApp";
 import {
+  Button,
   Flex,
   Icon,
   Modal,
@@ -7,7 +10,10 @@ import {
   ModalContent,
   ModalOverlay,
   Spinner,
+  Stack,
+  Text,
 } from "@chakra-ui/react";
+import { collection, getDocs } from "firebase/firestore";
 import React, { SetStateAction, useEffect, useState } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 
@@ -23,11 +29,16 @@ export default function DataOwnershipModal({
   const [gettingCurrentDataLoading, setGettingCurrentDataLoading] =
     useState(true);
 
+  const [activeProviders, setActiveProviders] = useState<IProviderCard[]>([]);
+  const [selectedProvider, setSelectedProvider] = useState("");
+
   useEffect(() => {
-    if (dataOwnerShipModalShowValue) handleGetCurrentData();
+    if (dataOwnerShipModalShowValue) handleGetActiveProviders();
   }, [dataOwnerShipModalShowValue]);
 
   const handleGetCurrentData = async () => {
+    return setGettingCurrentDataLoading(false);
+
     setGettingCurrentDataLoading(true);
     let idToken = "";
     try {
@@ -62,6 +73,35 @@ export default function DataOwnershipModal({
     const result = await respone.json();
     console.log(result);
 
+    setGettingCurrentDataLoading(false);
+  };
+
+  const handleGetActiveProviders = async () => {
+    setGettingCurrentDataLoading(true);
+
+    let providersDocs;
+    try {
+      providersDocs = (await getDocs(collection(firestore, "providers"))).docs;
+    } catch (error) {
+      console.error("Error while getting providers docs.", error);
+      return setGettingCurrentDataLoading(false);
+    }
+
+    let tempActiveProviders: IProviderCard[] = [];
+
+    for (const proivderDoc of providersDocs) {
+      const providerObject: IProviderCard = {
+        name: proivderDoc.data().name,
+        currency: proivderDoc.data().currency,
+        deal: proivderDoc.data().deal,
+        description: proivderDoc.data().description,
+        image: proivderDoc.data().image,
+      };
+
+      tempActiveProviders.push(providerObject);
+    }
+
+    setActiveProviders(tempActiveProviders);
     setGettingCurrentDataLoading(false);
   };
 
@@ -113,6 +153,42 @@ export default function DataOwnershipModal({
         <ModalBody>
           <Flex hidden={!gettingCurrentDataLoading}>
             <Spinner size="sm" color="white" />
+          </Flex>
+
+          <Flex
+            hidden={gettingCurrentDataLoading}
+            gap="5"
+            direction="column"
+            align="center"
+          >
+            <Flex id="provider-selection" direction="column" gap="2">
+              <Text textColor="white" fontSize="13pt" fontWeight="700" gap={2}>
+                Choose Provider
+              </Text>
+              <Stack>
+                {activeProviders.map((ap, i) => (
+                  <ProviderCardItem
+                    description={ap.description}
+                    image={ap.image}
+                    name={ap.name}
+                    offer={`${ap.deal} ${ap.currency}`}
+                    selectedProviderValue={selectedProvider}
+                    setSelectedProviderValue={setSelectedProvider}
+                    key={i}
+                  />
+                ))}
+              </Stack>
+            </Flex>
+
+            {selectedProvider ? (
+              <Button variant="outline" colorScheme="blue" rounded="full">
+                Continue with {selectedProvider}
+              </Button>
+            ) : (
+              <Text color="white" fontWeight="700" fontSize="10pt">
+                Please choose a provider to proceed.
+              </Text>
+            )}
           </Flex>
         </ModalBody>
       </ModalContent>

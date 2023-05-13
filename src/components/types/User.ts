@@ -78,3 +78,30 @@ export interface IPagePreviewData {
   url: string;
   image: string;
 }
+
+export interface ICurrentProviderSettings {
+  apiEndpoint: string;
+  currency: string;
+  deal: number;
+  name: string;
+  since: number;
+  until: number;
+  image: string;
+}
+
+export interface IProviderSettings {
+  apiEndpoint: string;
+  currency: string;
+  deal: number;
+  name: string;
+  description: string;
+  image: string;
+}
+
+export interface IProviderCard {
+  currency: string;
+  deal: number;
+  name: string;
+  description: string;
+  image: string;
+}
