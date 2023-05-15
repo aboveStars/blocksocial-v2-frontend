@@ -4,7 +4,6 @@ import { auth, firestore } from "@/firebase/clientApp";
 import {
   Button,
   Flex,
-  Icon,
   Modal,
   ModalBody,
   ModalContent,
@@ -14,67 +13,28 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { collection, getDocs } from "firebase/firestore";
-import React, { SetStateAction, useEffect, useState } from "react";
-import { AiOutlineClose } from "react-icons/ai";
+import { useEffect, useState } from "react";
+import { useRecoilState } from "recoil";
 
-type Props = {
-  dataOwnerShipModalShowValue: boolean;
-  dataOwnerShipModalShowValueSetter: React.Dispatch<SetStateAction<boolean>>;
-};
+import { providerModalStateAtom } from "../../../atoms/providerModalAtom";
 
-export default function DataOwnershipModal({
-  dataOwnerShipModalShowValue,
-  dataOwnerShipModalShowValueSetter,
-}: Props) {
+export default function ChooseProviderModal() {
   const [gettingCurrentDataLoading, setGettingCurrentDataLoading] =
     useState(true);
 
   const [activeProviders, setActiveProviders] = useState<IProviderCard[]>([]);
-  const [selectedProvider, setSelectedProvider] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState("BlockSocial");
+
+  const [providerModalState, setProvideModalState] = useRecoilState(
+    providerModalStateAtom
+  );
+
+  const [chooseProviderLoading, setChooseProviderLoading] = useState(false);
 
   useEffect(() => {
-    if (dataOwnerShipModalShowValue) handleGetActiveProviders();
-  }, [dataOwnerShipModalShowValue]);
-
-  const handleGetCurrentData = async () => {
-    return setGettingCurrentDataLoading(false);
-
-    setGettingCurrentDataLoading(true);
-    let idToken = "";
-    try {
-      idToken = (await auth.currentUser?.getIdToken()) as string;
-    } catch (error) {
-      console.error("Error while getting 'idToken'", error);
-      setGettingCurrentDataLoading(false);
-      return false;
-    }
-    let respone;
-    try {
-      respone = await fetch("/api/encryptData", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${idToken}`,
-        },
-      });
-    } catch (error) {
-      setGettingCurrentDataLoading(false);
-      return console.error("Error while fetching to encryptData API", error);
-    }
-
-    if (!respone.ok) {
-      setGettingCurrentDataLoading(false);
-      return console.error(
-        "Error while selling data from api",
-        await respone.json()
-      );
-    }
-
-    const result = await respone.json();
-    console.log(result);
-
-    setGettingCurrentDataLoading(false);
-  };
+    if (providerModalState.open && providerModalState.view === "chooseProvider")
+      handleGetActiveProviders();
+  }, [providerModalState.open]);
 
   const handleGetActiveProviders = async () => {
     setGettingCurrentDataLoading(true);
@@ -105,6 +65,43 @@ export default function DataOwnershipModal({
     setGettingCurrentDataLoading(false);
   };
 
+  const handleChooseProvider = async () => {
+    setChooseProviderLoading(true);
+
+    let idToken = "";
+    try {
+      idToken = (await auth.currentUser?.getIdToken()) as string;
+    } catch (error) {
+      console.error("Error while getting 'idToken'", error);
+      return setChooseProviderLoading(false);
+    }
+
+    let response: Response;
+    try {
+      response = await fetch("/api/chooseProvider", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          providerName: selectedProvider,
+        }),
+      });
+    } catch (error) {
+      console.error("Error while 'fetching' to 'chooseProvider' API");
+      return setChooseProviderLoading(false);
+    }
+
+    if (!response.ok) {
+      console.error("Error from 'chooseProvider' API:", await response.json());
+      return setChooseProviderLoading(false);
+    }
+
+    setChooseProviderLoading(false);
+    return setProvideModalState((prev) => ({ ...prev, open: false }));
+  };
+
   return (
     <Modal
       id="dataOwnershipModal"
@@ -114,8 +111,8 @@ export default function DataOwnershipModal({
         md: "md",
         lg: "md",
       }}
-      isOpen={dataOwnerShipModalShowValue}
-      onClose={() => dataOwnerShipModalShowValueSetter(false)}
+      isOpen={providerModalState.open}
+      onClose={() => {}}
       autoFocus={false}
     >
       <ModalOverlay backdropFilter="auto" backdropBlur="8px" />
@@ -131,23 +128,12 @@ export default function DataOwnershipModal({
           top="0"
           px={6}
           align="center"
-          justify="space-between"
           height="50px"
           bg="black"
         >
           <Flex textColor="white" fontSize="17pt" fontWeight="700" gap={2}>
-            Data Ownership
+            Welcome to BlockSocial
           </Flex>
-
-          <Icon
-            as={AiOutlineClose}
-            color="white"
-            fontSize="15pt"
-            cursor="pointer"
-            onClick={() => {
-              dataOwnerShipModalShowValueSetter(false);
-            }}
-          />
         </Flex>
 
         <ModalBody>
@@ -163,7 +149,7 @@ export default function DataOwnershipModal({
           >
             <Flex id="provider-selection" direction="column" gap="2">
               <Text textColor="white" fontSize="13pt" fontWeight="700" gap={2}>
-                Choose Provider
+                Choose your provider
               </Text>
               <Stack>
                 {activeProviders.map((ap, i) => (
@@ -174,21 +160,22 @@ export default function DataOwnershipModal({
                     offer={`${ap.deal} ${ap.currency}`}
                     selectedProviderValue={selectedProvider}
                     setSelectedProviderValue={setSelectedProvider}
+                    chooseIsDone={chooseProviderLoading}
                     key={i}
                   />
                 ))}
               </Stack>
             </Flex>
 
-            {selectedProvider ? (
-              <Button variant="outline" colorScheme="blue" rounded="full">
-                Continue with {selectedProvider}
-              </Button>
-            ) : (
-              <Text color="white" fontWeight="700" fontSize="10pt">
-                Please choose a provider to proceed.
-              </Text>
-            )}
+            <Button
+              variant="outline"
+              colorScheme="blue"
+              rounded="full"
+              onClick={handleChooseProvider}
+              isLoading={chooseProviderLoading}
+            >
+              Continue with {selectedProvider}
+            </Button>
           </Flex>
         </ModalBody>
       </ModalContent>

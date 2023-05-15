@@ -45,8 +45,6 @@ import { doc, getDoc } from "firebase/firestore";
 import { AiFillEdit } from "react-icons/ai";
 import { headerAtViewAtom } from "../atoms/headerAtViewAtom";
 
-import DataOwnershipModal from "../Modals/User/DataOwnershipModal";
-
 type Props = {
   userInformation: UserInServer;
 };
@@ -122,8 +120,6 @@ export default function Header({ userInformation }: Props) {
     userInformation.fullname
   );
   const [fullnameUpdateLoading, setFullnameUpdateLoading] = useState(false);
-
-  const [dataOwnerShipModalShow, setDataOwnerShipModalShow] = useState(false);
 
   useEffect(() => {
     // after updating photo, we are using raw base64 selected photo as pp until refresh.
@@ -365,11 +361,6 @@ export default function Header({ userInformation }: Props) {
         followInformationModalStateSetter={setFollowingsFollowesrModalState}
         followInformationModalStateValue={followingsFollowersModalState}
         userName={userInformation.username}
-      />
-
-      <DataOwnershipModal
-        dataOwnerShipModalShowValue={dataOwnerShipModalShow}
-        dataOwnerShipModalShowValueSetter={setDataOwnerShipModalShow}
       />
 
       <AlertDialog
@@ -727,9 +718,7 @@ export default function Header({ userInformation }: Props) {
                 colorScheme="blue"
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  setDataOwnerShipModalShow(true);
-                }}
+                onClick={() => {}}
               >
                 Data Ownership
               </Button>

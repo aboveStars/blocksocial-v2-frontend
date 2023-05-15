@@ -4,11 +4,12 @@ import { CurrentUser, UserInServer } from "@/components/types/User";
 
 import { auth, firestore } from "@/firebase/clientApp";
 import { User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { useSetRecoilState } from "recoil";
 import useAuthErrorCodes from "./useAuthErrorCodes";
+import { providerModalStateAtom } from "@/components/atoms/providerModalAtom";
 
 const useLoginOperations = () => {
   const setCurrentUserState = useSetRecoilState(currentUserStateAtom);
@@ -21,6 +22,8 @@ const useLoginOperations = () => {
 
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
+
+  const setProviderModalState = useSetRecoilState(providerModalStateAtom);
 
   /**
    * Starting point of login
@@ -74,7 +77,7 @@ const useLoginOperations = () => {
 
     let currentUserDataOnServer: UserInServer;
 
-    if (userDoc.exists())
+    if (userDoc.exists()) {
       currentUserDataOnServer = {
         username: userDoc.data().username,
         fullname: userDoc.data().fullname,
@@ -88,13 +91,8 @@ const useLoginOperations = () => {
         email: userDoc.data().email,
         uid: userDoc.data().uid,
       };
-
-    if (!currentUserDataOnServer!) {
-      console.log(
-        "Error while getting user document, \n At sign-up it is right."
-      );
-      setLoginLoading(false);
-      return;
+    } else {
+      return setLoginLoading(false);
     }
 
     const currentUserDataTemp: CurrentUser = {
@@ -110,6 +108,21 @@ const useLoginOperations = () => {
       email: currentUserDataOnServer.email,
       uid: currentUserDataOnServer.uid,
     };
+
+    // check if user has a provider
+
+    try {
+      const currentProviderSnapshot = await getDoc(
+        doc(firestore, `users/${displayName}/provider/currentProvider`)
+      );
+
+      if (!currentProviderSnapshot.exists()) {
+        setProviderModalState({ open: true, view: "chooseProvider" });
+      }
+    } catch (error) {
+      console.error("Error while getting provider", error);
+      return;
+    }
 
     // State Updates
     setCurrentUserState(currentUserDataTemp);

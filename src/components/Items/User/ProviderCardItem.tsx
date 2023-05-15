@@ -8,6 +8,7 @@ type Props = {
   image: string;
   selectedProviderValue: string;
   setSelectedProviderValue: React.Dispatch<SetStateAction<string>>;
+  chooseIsDone: boolean;
 };
 
 export default function ProviderCardItem({
@@ -17,6 +18,7 @@ export default function ProviderCardItem({
   image,
   selectedProviderValue,
   setSelectedProviderValue,
+  chooseIsDone,
 }: Props) {
   const [thisCardSelected, setThisCardSelected] = useState(false);
 
@@ -40,7 +42,7 @@ export default function ProviderCardItem({
       gap="1"
       align="center"
       onClick={() => {
-        setSelectedProviderValue(name);
+        if (!chooseIsDone) setSelectedProviderValue(name);
       }}
     >
       <Flex direction="column">

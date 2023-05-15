@@ -79,23 +79,13 @@ export interface IPagePreviewData {
   image: string;
 }
 
-export interface ICurrentProviderSettings {
-  apiEndpoint: string;
-  currency: string;
-  deal: number;
-  name: string;
-  since: number;
-  until: number;
-  image: string;
-}
-
 export interface IProviderSettings {
   apiEndpoint: string;
   currency: string;
   deal: number;
   name: string;
-  description: string;
-  image: string;
+  startTime: number;
+  endTime: number;
 }
 
 export interface IProviderCard {
@@ -104,4 +94,11 @@ export interface IProviderCard {
   name: string;
   description: string;
   image: string;
+}
+
+export interface InitialSignUpForm {
+  email: string;
+  fullname: string;
+  username: string;
+  password: string;
 }

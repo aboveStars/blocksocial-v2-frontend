@@ -11,6 +11,7 @@ import PostCreateModal from "../Modals/Post/PostCreateModal";
 import NotificationModal from "../Modals/User/NotificationModal";
 import Navbar from "../Navbar/Navbar";
 import SystemStatus from "../system-status/SystemStatus";
+import ChooseProviderModal from "../Modals/User/Provider/ChooseProviderModal";
 
 type Props = {
   children: ReactNode;
@@ -58,6 +59,7 @@ export default function Layout({ children }: Props) {
           <PostCreateModal />
           <AuthenticationModal />
           <NotificationModal />
+          <ChooseProviderModal />
           <Footer />
           <SystemStatus />
         </Box>
