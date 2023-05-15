@@ -44,6 +44,7 @@ import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { AiFillEdit } from "react-icons/ai";
 import { headerAtViewAtom } from "../atoms/headerAtViewAtom";
+import { providerModalStateAtom } from "../atoms/providerModalAtom";
 
 type Props = {
   userInformation: UserInServer;
@@ -120,6 +121,8 @@ export default function Header({ userInformation }: Props) {
     userInformation.fullname
   );
   const [fullnameUpdateLoading, setFullnameUpdateLoading] = useState(false);
+
+  const setProviderModalState = useSetRecoilState(providerModalStateAtom);
 
   useEffect(() => {
     // after updating photo, we are using raw base64 selected photo as pp until refresh.
@@ -718,7 +721,9 @@ export default function Header({ userInformation }: Props) {
                 colorScheme="blue"
                 variant="outline"
                 size="sm"
-                onClick={() => {}}
+                onClick={() => {
+                  setProviderModalState({ open: true, view: "changeProvider" });
+                }}
               >
                 Data Ownership
               </Button>

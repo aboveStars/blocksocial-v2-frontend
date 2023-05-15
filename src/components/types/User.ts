@@ -87,6 +87,15 @@ export interface IProviderSettings {
   startTime: number;
   endTime: number;
 }
+export interface ICurrentProviderData {
+  apiEndpoint: string;
+  currency: string;
+  deal: number;
+  name: string;
+  startTime: number;
+  endTime: number;
+  image: string;
+}
 
 export interface IProviderCard {
   currency: string;

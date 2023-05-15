@@ -19,7 +19,7 @@ import { useRecoilState } from "recoil";
 import { providerModalStateAtom } from "../../../atoms/providerModalAtom";
 
 export default function ChooseProviderModal() {
-  const [gettingCurrentDataLoading, setGettingCurrentDataLoading] =
+  const [gettingAvaliableProviders, setGettingAvaliableProviders] =
     useState(true);
 
   const [activeProviders, setActiveProviders] = useState<IProviderCard[]>([]);
@@ -31,20 +31,24 @@ export default function ChooseProviderModal() {
 
   const [chooseProviderLoading, setChooseProviderLoading] = useState(false);
 
+  const [isOpen, setIsOpen] = useState(false);
+
   useEffect(() => {
-    if (providerModalState.open && providerModalState.view === "chooseProvider")
-      handleGetActiveProviders();
-  }, [providerModalState.open]);
+    const openStatus =
+      providerModalState.open && providerModalState.view === "chooseProvider";
+    if (openStatus) handleGetActiveProviders();
+    setIsOpen(openStatus);
+  }, [providerModalState]);
 
   const handleGetActiveProviders = async () => {
-    setGettingCurrentDataLoading(true);
+    setGettingAvaliableProviders(true);
 
     let providersDocs;
     try {
       providersDocs = (await getDocs(collection(firestore, "providers"))).docs;
     } catch (error) {
       console.error("Error while getting providers docs.", error);
-      return setGettingCurrentDataLoading(false);
+      return setGettingAvaliableProviders(false);
     }
 
     let tempActiveProviders: IProviderCard[] = [];
@@ -62,7 +66,7 @@ export default function ChooseProviderModal() {
     }
 
     setActiveProviders(tempActiveProviders);
-    setGettingCurrentDataLoading(false);
+    setGettingAvaliableProviders(false);
   };
 
   const handleChooseProvider = async () => {
@@ -111,7 +115,7 @@ export default function ChooseProviderModal() {
         md: "md",
         lg: "md",
       }}
-      isOpen={providerModalState.open}
+      isOpen={isOpen}
       onClose={() => {}}
       autoFocus={false}
     >
@@ -137,12 +141,12 @@ export default function ChooseProviderModal() {
         </Flex>
 
         <ModalBody>
-          <Flex hidden={!gettingCurrentDataLoading}>
+          <Flex hidden={!gettingAvaliableProviders}>
             <Spinner size="sm" color="white" />
           </Flex>
 
           <Flex
-            hidden={gettingCurrentDataLoading}
+            hidden={gettingAvaliableProviders}
             gap="5"
             direction="column"
             align="center"

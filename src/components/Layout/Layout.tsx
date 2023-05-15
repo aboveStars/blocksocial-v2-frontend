@@ -12,6 +12,7 @@ import NotificationModal from "../Modals/User/NotificationModal";
 import Navbar from "../Navbar/Navbar";
 import SystemStatus from "../system-status/SystemStatus";
 import ChooseProviderModal from "../Modals/User/Provider/ChooseProviderModal";
+import ChangeProviderModal from "../Modals/User/Provider/ChangeProviderModal";
 
 type Props = {
   children: ReactNode;
@@ -60,6 +61,7 @@ export default function Layout({ children }: Props) {
           <AuthenticationModal />
           <NotificationModal />
           <ChooseProviderModal />
+          <ChangeProviderModal />
           <Footer />
           <SystemStatus />
         </Box>
