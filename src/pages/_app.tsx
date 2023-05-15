@@ -2,7 +2,6 @@ import { theme } from "@/components/chakra/theme";
 import Layout from "@/components/Layout/Layout";
 import { IPagePreviewData } from "@/components/types/User";
 import { ChakraProvider } from "@chakra-ui/react";
-import { Analytics } from "@vercel/analytics/react";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -53,7 +52,6 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="og:url" content={url} key="url" />
         <meta property="og:image" content={image} key="image" />
       </Head>
-      <Analytics />
       <RecoilRoot>
         <ChakraProvider theme={theme}>
           <Layout>
