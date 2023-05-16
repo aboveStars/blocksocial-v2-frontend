@@ -3,7 +3,7 @@ import { postsStatusAtom } from "@/components/atoms/postsStatusAtom";
 import MainPageLayout from "@/components/Layout/MainPageLayout";
 import { LikeDatasArrayType, PostItemData } from "@/components/types/Post";
 import { IPagePreviewData } from "@/components/types/User";
-import { firestore } from "@/firebase/clientApp";
+import { auth, firestore } from "@/firebase/clientApp";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { GetServerSidePropsContext } from "next";
 import { useEffect, useState } from "react";
@@ -20,11 +20,7 @@ export default function Home() {
   useEffect(() => {
     if (currentUserState.loading) return;
     handleMainPage();
-  }, [
-    currentUserState.username,
-    currentUserState.loading,
-    currentUserState.isThereCurrentUser,
-  ]);
+  }, [currentUserState.isThereCurrentUser]);
 
   const shufflePosts = (postsDatasArray: PostItemData[]) => {
     let currentIndex = postsDatasArray.length,
@@ -59,90 +55,140 @@ export default function Home() {
   };
 
   const handleMainPage = async () => {
+    // let currentUserUsername: string = "";
+
+    // let followings: string[] = [];
+    // let currentUserLikesDatas: LikeDatasArrayType = [];
+    // let celebrities: string[] = [];
+
+    // if (currentUserState.isThereCurrentUser) {
+    //   currentUserUsername = currentUserState.username;
+    //   try {
+    //     const [followingsSnaphot, activitiesSnapshot, celebritiesSnapshot] =
+    //       await Promise.all([
+    //         getDocs(
+    //           collection(
+    //             firestore,
+    //             `users/${currentUserState.username}/followings`
+    //           )
+    //         ),
+    //         getDoc(
+    //           doc(firestore, `users/${currentUserUsername}/activities/likes`)
+    //         ),
+    //         getDoc(doc(firestore, `popular/celebrities`)),
+    //       ]);
+
+    //     const currentUserFollowingsDocs = followingsSnaphot.docs;
+    //     if (activitiesSnapshot.exists())
+    //       currentUserLikesDatas = activitiesSnapshot.data()?.likesDatas;
+
+    //     if (celebritiesSnapshot.data())
+    //       for (const celebrity of celebritiesSnapshot.data()?.people) {
+    //         celebrities.push(celebrity);
+    //       }
+
+    //     if (currentUserFollowingsDocs)
+    //       for (const followingDoc of currentUserFollowingsDocs) {
+    //         followings.push(followingDoc.id);
+    //       }
+    //   } catch (error) {
+    //     console.error("Error while getting sources", error);
+    //   }
+    // } else {
+    //   try {
+    //     const celebritiesServer = (
+    //       await getDoc(doc(firestore, "popular/celebrities"))
+    //     ).data()?.people;
+
+    //     if (celebritiesServer)
+    //       for (const celebrity of celebritiesServer) {
+    //         celebrities.push(celebrity);
+    //       }
+    //   } catch (error) {
+    //     console.error("Error while getting popular names", error);
+    //   }
+    // }
+
+    // // merge all sources
+    // const postsSources: string[] = Array.from(
+    //   new Set(followings.concat(celebrities).concat(currentUserUsername))
+    // );
+
+    // // get posts from all sources
+    // let getPostsFromOneSourcePromises: Promise<PostItemData[]>[] = [];
+
+    // for (const source of postsSources.filter((a) => a)) {
+    //   getPostsFromOneSourcePromises.push(
+    //     getPostsFromOneSource(source, currentUserLikesDatas)
+    //   );
+    // }
+
+    // const postsArraysFromAllSources = await Promise.all(
+    //   getPostsFromOneSourcePromises
+    // );
+
+    // const posts: PostItemData[] = [];
+    // for (const postsArray of postsArraysFromAllSources) {
+    //   for (const post of postsArray) {
+    //     posts.push(post);
+    //   }
+    // }
+
+    if (!currentUserState.isThereCurrentUser) return;
+
+    const initTS = Date.now();
+
     setPostStatus({ loading: true });
 
-    let currentUserUsername: string = "";
-
-    let followings: string[] = [];
-    let currentUserLikesDatas: LikeDatasArrayType = [];
-    let celebrities: string[] = [];
-
-    if (currentUserState.isThereCurrentUser) {
-      currentUserUsername = currentUserState.username;
-      try {
-        const [followingsSnaphot, activitiesSnapshot, celebritiesSnapshot] =
-          await Promise.all([
-            getDocs(
-              collection(
-                firestore,
-                `users/${currentUserState.username}/followings`
-              )
-            ),
-            getDoc(
-              doc(firestore, `users/${currentUserUsername}/activities/likes`)
-            ),
-            getDoc(doc(firestore, `popular/celebrities`)),
-          ]);
-
-        const currentUserFollowingsDocs = followingsSnaphot.docs;
-        if (activitiesSnapshot.exists())
-          currentUserLikesDatas = activitiesSnapshot.data()?.likesDatas;
-
-        if (celebritiesSnapshot.data())
-          for (const celebrity of celebritiesSnapshot.data()?.people) {
-            celebrities.push(celebrity);
-          }
-
-        if (currentUserFollowingsDocs)
-          for (const followingDoc of currentUserFollowingsDocs) {
-            followings.push(followingDoc.id);
-          }
-      } catch (error) {
-        console.error("Error while getting sources", error);
-      }
-    } else {
-      try {
-        const celebritiesServer = (
-          await getDoc(doc(firestore, "popular/celebrities"))
-        ).data()?.people;
-
-        if (celebritiesServer)
-          for (const celebrity of celebritiesServer) {
-            celebrities.push(celebrity);
-          }
-      } catch (error) {
-        console.error("Error while getting popular names", error);
-      }
+    let idToken = "";
+    try {
+      idToken = (await auth.currentUser?.getIdToken()) as string;
+    } catch (error) {
+      console.error("Error while getting 'idToken'", error);
+      return false;
     }
 
-    // merge all sources
-    const postsSources: string[] = Array.from(
-      new Set(followings.concat(celebrities).concat(currentUserUsername))
-    );
+    const secTS = Date.now();
+    console.log("ID Token TimeStamp...");
+    console.log("Total: ", secTS - initTS, " Delta: ", secTS - initTS);
 
-    // get posts from all sources
-    let getPostsFromOneSourcePromises: Promise<PostItemData[]>[] = [];
-
-    for (const source of postsSources.filter((a) => a)) {
-      getPostsFromOneSourcePromises.push(
-        getPostsFromOneSource(source, currentUserLikesDatas)
+    let response;
+    try {
+      response = await fetch("/api/getFeed", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${idToken}`,
+        },
+      });
+    } catch (error) {
+      return console.error(
+        `Error while fetching 'getFeed'-API for ${currentUserState.username} user.`,
+        error
       );
     }
 
-    const postsArraysFromAllSources = await Promise.all(
-      getPostsFromOneSourcePromises
-    );
+    const thirdTs = Date.now();
+    console.log("GetFeedAPI Timetamp...");
+    console.log("Total: ", thirdTs - initTS, " Delta: ", thirdTs - secTS);
 
-    const posts: PostItemData[] = [];
-    for (const postsArray of postsArraysFromAllSources) {
-      for (const post of postsArray) {
-        posts.push(post);
-      }
+    if (!response.ok) {
+      return console.error(
+        `Error from 'getFeedAPI' for ${currentUserState.username} user.`,
+        await response.json()
+      );
     }
 
-    const orderedPosts = organizePosts(posts);
+    const postsFromServer: PostItemData[] = (await response.json())
+      .postItemDatas;
 
-    setPostDatasInServer(orderedPosts);
+    const forthTS = Date.now();
+    console.log("Response.JSON() Timestamp...");
+    console.log("Total: ", forthTS - initTS, " Delta: ", forthTS - thirdTs);
+
+    // const orderedPosts = organizePosts(posts);
+
+    setPostDatasInServer(postsFromServer);
     setPostStatus({ loading: false });
   };
 
