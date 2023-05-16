@@ -16,7 +16,7 @@ export default async function handler(
     console.log("Warm-Up Request");
     return res.status(200).json({ status: "Request by Server-Warmer" });
   }
-
+  
   const operationFromUsername = await getDisplayName(authorization as string);
   if (!operationFromUsername)
     return res.status(401).json({ error: "unauthorized" });

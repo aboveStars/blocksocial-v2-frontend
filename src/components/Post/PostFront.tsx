@@ -119,8 +119,6 @@ export default function PostFront({
     if (postFrontData.currentUserFollowThisSender)
       return setShowFollowButtonOnPost(false);
 
-    console.log("We don't follow ", postFrontData.senderUsername);
-
     return setShowFollowButtonOnPost(true);
   }, [currentUserState, postFrontData, router.asPath, postSenderInformation]);
 
