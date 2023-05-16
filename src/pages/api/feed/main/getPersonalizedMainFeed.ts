@@ -16,7 +16,7 @@ export default async function handler(
     console.log("Warm-Up Request");
     return res.status(200).json({ status: "Request by Server-Warmer" });
   }
-  
+
   const operationFromUsername = await getDisplayName(authorization as string);
   if (!operationFromUsername)
     return res.status(401).json({ error: "unauthorized" });
@@ -31,7 +31,6 @@ export default async function handler(
      * 3-) Ads...
      */
 
-    let postItemDatas: PostItemData[] = [];
     let postsSourcesUsernames: string[] = [];
 
     // 1
@@ -91,80 +90,25 @@ export default async function handler(
     );
 
     // 2-
-
+    let getPostsFromOneSourcePromisesArray: Promise<void | PostItemData[]>[] =
+      [];
     for (const postSourceUsername of postsSourcesUsernamesClear) {
-      let postsQuerySnaphostFromOneSource: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>;
-      try {
-        postsQuerySnaphostFromOneSource = await firestore
-          .collection(`users/${postSourceUsername}/posts`)
-          .get();
-      } catch (error) {
-        console.error(
-          `Error while creating feed for ${operationFromUsername}. (We were getting posts from ${postSourceUsername} source.)`,
-          error
-        );
-        return res.status(503).json({ error: "firebase-error" });
-      }
+      getPostsFromOneSourcePromisesArray.push(
+        getPostsFromOneSource(postSourceUsername, operationFromUsername)
+      );
+    }
 
-      if (postsQuerySnaphostFromOneSource.size !== 0) {
-        for (const postDoc of postsQuerySnaphostFromOneSource.docs) {
-          // getting like status
-          let likeStatus = false;
-          try {
-            likeStatus = (
-              await postDoc.ref
-                .collection("likes")
-                .doc(operationFromUsername)
-                .get()
-            ).exists;
-          } catch (error) {
-            console.error(
-              `Error while creating feed for ${operationFromUsername}. (We were retriving like status from ${postDoc.ref.path})`
-            );
-            return res.status(503).json({ error: "firebase-error" });
-          }
+    const getPostsFromOneSourcePromisesResults = await Promise.all(
+      getPostsFromOneSourcePromisesArray
+    );
 
-          // getting following status
-          let followStatus = false;
-          try {
-            followStatus = (
-              await firestore
-                .doc(
-                  `users/${operationFromUsername}/followings/${
-                    postDoc.data().operationFromUsername
-                  }`
-                )
-                .get()
-            ).exists;
-          } catch (error) {
-            console.error(
-              `Error while creating feed for ${operationFromUsername}. (We were getting follow status from post: ${postDoc.ref.path})`
-            );
-            return res.status(503).json({ error: "firebase error." });
-          }
+    let postItemDatas: PostItemData[] = [];
 
-          const newPostItemData: PostItemData = {
-            senderUsername: postDoc.data().senderUsername,
-
-            description: postDoc.data().description,
-            image: postDoc.data().image,
-
-            likeCount: postDoc.data().likeCount,
-            currentUserLikedThisPost: likeStatus,
-            commentCount: postDoc.data().commentCount,
-
-            postDocId: postDoc.id,
-
-            nftStatus: postDoc.data().nftStatus,
-
-            currentUserFollowThisSender: followStatus,
-
-            creationTime: postDoc.data().creationTime,
-          };
-
-          postItemDatas.push(newPostItemData);
+    for (const getPostsFromOneSourcePromisesResult of getPostsFromOneSourcePromisesResults) {
+      if (getPostsFromOneSourcePromisesResult)
+        for (const postItemData of getPostsFromOneSourcePromisesResult) {
+          postItemDatas.push(postItemData);
         }
-      }
     }
 
     return res.status(200).json({
@@ -172,3 +116,131 @@ export default async function handler(
     });
   });
 }
+
+/**
+ *
+ * @param postSourceUsername
+ * @param operationFromUsername
+ * @returns
+ */
+const getPostsFromOneSource = async (
+  postSourceUsername: string,
+  operationFromUsername: string
+) => {
+  let postItemDatas: PostItemData[] = [];
+
+  let postsQuerySnaphostFromOneSource: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>;
+  try {
+    postsQuerySnaphostFromOneSource = await firestore
+      .collection(`users/${postSourceUsername}/posts`)
+      .get();
+  } catch (error) {
+    return console.error(
+      `Error while creating feed for ${operationFromUsername}. (We were getting posts from ${postSourceUsername} source.)`,
+      error
+    );
+  }
+
+  if (postsQuerySnaphostFromOneSource.size === 0) return postItemDatas; // as empty array
+
+  let handleCreatePostItemDataPromisesArray: Promise<void | PostItemData>[] =
+    [];
+  for (const postDoc of postsQuerySnaphostFromOneSource.docs) {
+    handleCreatePostItemDataPromisesArray.push(
+      handleCreatePostItemData(postDoc, operationFromUsername)
+    );
+  }
+
+  const handleCreatePostItemDataPromisesResults = await Promise.all(
+    handleCreatePostItemDataPromisesArray
+  );
+
+  for (const handleCreatePostItemDataPromiseResult of handleCreatePostItemDataPromisesResults) {
+    if (handleCreatePostItemDataPromiseResult) {
+      postItemDatas.push(handleCreatePostItemDataPromiseResult);
+    }
+  }
+
+  return postItemDatas;
+};
+
+const handleCreatePostItemData = async (
+  postDoc: FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>,
+  operationFromUsername: string
+) => {
+  let likeStatus = false;
+
+  // getting following status
+  let followStatus = false;
+
+  const [likeResponse, followResponse] = await Promise.all([
+    handleGetLikeStatus(operationFromUsername, postDoc),
+    handleGetFollowStatus(operationFromUsername, postDoc),
+  ]);
+  
+  // undefined is false default.
+  likeStatus = likeResponse as boolean;
+  followStatus = followResponse as boolean;
+
+  const newPostItemData: PostItemData = {
+    senderUsername: postDoc.data().senderUsername,
+
+    description: postDoc.data().description,
+    image: postDoc.data().image,
+
+    likeCount: postDoc.data().likeCount,
+    currentUserLikedThisPost: likeStatus,
+    commentCount: postDoc.data().commentCount,
+
+    postDocId: postDoc.id,
+
+    nftStatus: postDoc.data().nftStatus,
+
+    currentUserFollowThisSender: followStatus,
+
+    creationTime: postDoc.data().creationTime,
+  };
+
+  return newPostItemData;
+};
+
+const handleGetLikeStatus = async (
+  operationFromUsername: string,
+  postDoc: FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>
+) => {
+  let likeStatus = false;
+  try {
+    likeStatus = (
+      await postDoc.ref.collection("likes").doc(operationFromUsername).get()
+    ).exists;
+  } catch (error) {
+    return console.error(
+      `Error while creating feed for ${operationFromUsername}. (We were retriving like status from ${postDoc.ref.path})`
+    );
+  }
+  return likeStatus;
+};
+
+const handleGetFollowStatus = async (
+  operationFromUsername: string,
+  postDoc: FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>
+) => {
+  let followStatus = false;
+  try {
+    followStatus = (
+      await firestore
+        .doc(
+          `users/${operationFromUsername}/followings/${
+            postDoc.data().operationFromUsername
+          }`
+        )
+        .get()
+    ).exists;
+  } catch (error) {
+    return console.error(
+      `Error while creating feed for ${operationFromUsername}. (We were getting follow status from post: ${postDoc.ref.path})`
+    );
+  }
+
+  return followStatus;
+};
