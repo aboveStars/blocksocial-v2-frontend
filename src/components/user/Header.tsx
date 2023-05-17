@@ -722,7 +722,7 @@ export default function Header({ userInformation }: Props) {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setProviderModalState({ open: true, view: "changeProvider" });
+                  setProviderModalState({ open: true, view: "currentProvider" });
                 }}
               >
                 Data Ownership

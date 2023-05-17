@@ -95,6 +95,7 @@ export interface ICurrentProviderData {
   startTime: number;
   endTime: number;
   image: string;
+  progress: number;
 }
 
 export interface IProviderCard {

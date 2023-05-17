@@ -1,4 +1,4 @@
-import { ICurrentProviderData, IProviderCard } from "@/components/types/User";
+import { ICurrentProviderData } from "@/components/types/User";
 import { firestore } from "@/firebase/clientApp";
 import {
   Flex,
@@ -8,10 +8,11 @@ import {
   ModalBody,
   ModalContent,
   ModalOverlay,
+  Progress,
   Spinner,
-  Text
+  Text,
 } from "@chakra-ui/react";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
@@ -20,23 +21,15 @@ import moment from "moment";
 import { AiOutlineClose } from "react-icons/ai";
 import { providerModalStateAtom } from "../../../atoms/providerModalAtom";
 
-export default function ChangeProviderModal() {
-  const [activeProviders, setActiveProviders] = useState<IProviderCard[]>([]);
-  const [selectedProvider, setSelectedProvider] = useState("BlockSocial");
-
+export default function CurrentProviderModal() {
   const [providerModalState, setProvideModalState] = useRecoilState(
     providerModalStateAtom
   );
-
-  const [chooseProviderLoading, setChooseProviderLoading] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
 
   const [gettingCurrentProviderData, setGetingCurrentProviderData] =
     useState(true);
-
-  const [gettingAvaliableProviders, setGettingAvaliableProviders] =
-    useState(false);
 
   const currentUserState = useRecoilValue(currentUserStateAtom);
 
@@ -49,43 +42,15 @@ export default function ChangeProviderModal() {
       name: "",
       startTime: -1,
       image: "",
+      progress: -1,
     });
 
   useEffect(() => {
     const openStatus =
-      providerModalState.open && providerModalState.view === "changeProvider";
+      providerModalState.open && providerModalState.view === "currentProvider";
     if (openStatus) handleGetCurrentProviderData();
     setIsOpen(openStatus);
   }, [providerModalState]);
-
-  const handleGetActiveProviders = async () => {
-    setGettingAvaliableProviders(true);
-
-    let providersDocs;
-    try {
-      providersDocs = (await getDocs(collection(firestore, "providers"))).docs;
-    } catch (error) {
-      console.error("Error while getting providers docs.", error);
-      return setGettingAvaliableProviders(false);
-    }
-
-    let tempActiveProviders: IProviderCard[] = [];
-
-    for (const proivderDoc of providersDocs) {
-      const providerObject: IProviderCard = {
-        name: proivderDoc.data().name,
-        currency: proivderDoc.data().currency,
-        deal: proivderDoc.data().deal,
-        description: proivderDoc.data().description,
-        image: proivderDoc.data().image,
-      };
-
-      tempActiveProviders.push(providerObject);
-    }
-
-    setActiveProviders(tempActiveProviders);
-    setGettingAvaliableProviders(false);
-  };
 
   const handleGetCurrentProviderData = async () => {
     setGetingCurrentProviderData(true);
@@ -125,6 +90,16 @@ export default function ChangeProviderModal() {
         );
       }
 
+      const progressValue: number =
+        (1 -
+          (currentProviderDocSnapshot.data().endTime - Date.now()) /
+            1000 /
+            60 /
+            60 /
+            24 /
+            30) *
+        100;
+
       setCurrentProviderData({
         apiEndpoint: currentProviderDocSnapshot.data().apiEndpoint,
         currency: currentProviderDocSnapshot.data().currency,
@@ -133,6 +108,7 @@ export default function ChangeProviderModal() {
         name: currentProviderDocSnapshot.data().name,
         startTime: currentProviderDocSnapshot.data().startTime,
         image: providerImageUrl,
+        progress: progressValue,
       });
     } catch (error) {
       setGetingCurrentProviderData(false);
@@ -197,52 +173,48 @@ export default function ChangeProviderModal() {
               <Text textColor="white" fontSize="13pt" fontWeight="700" gap={2}>
                 Current Provider
               </Text>
-              <Flex gap="1">
+              <Flex position="relative">
+                <Flex direction="column" justify="center" width="50%" gap="2">
+                  <Flex direction="column">
+                    <Text color="gray.500" fontSize="10pt" fontWeight="600">
+                      Name
+                    </Text>
+                    <Text color="white" fontSize="12pt" fontWeight="600">
+                      {currentProviderData.name}
+                    </Text>
+                  </Flex>
+
+                  <Flex direction="column">
+                    <Text color="gray.500" fontSize="10pt" fontWeight="600">
+                      Deal
+                    </Text>
+                  </Flex>
+                  <Flex gap="1" color="white" fontSize="12pt" fontWeight="600">
+                    <Text>{currentProviderData.deal}</Text>
+                    <Text>{currentProviderData.currency}</Text>
+                  </Flex>
+                  <Flex direction="column" gap="1">
+                    <Text color="gray.500" fontSize="10pt" fontWeight="600">
+                      Progress
+                    </Text>
+                    <Progress
+                      value={currentProviderData.progress}
+                      size="sm"
+                      hasStripe
+                      width="100%"
+                    />
+                  </Flex>
+                </Flex>
                 <Image
+                  position="absolute"
+                  top="0"
+                  right="0"
+                  align="center"
                   src={currentProviderData.image}
                   width="100px"
                   height="100px"
                   borderRadius="5"
                 />
-                <Flex direction="column" justify="center">
-                  <Flex gap="1">
-                    <Text color="white" fontSize="10pt">
-                      Name:
-                    </Text>
-                    <Text color="white" fontSize="10pt">
-                      {currentProviderData.name}
-                    </Text>
-                  </Flex>
-                  <Flex gap="1">
-                    <Text color="white" fontSize="10pt">
-                      Price:
-                    </Text>
-                    <Text color="white" fontSize="10pt">
-                      {currentProviderData.deal}
-                    </Text>
-                    <Text color="white" fontSize="10pt">
-                      {currentProviderData.currency}
-                    </Text>
-                  </Flex>
-                  <Flex gap="1">
-                    <Text color="white" fontSize="10pt">
-                      From:
-                    </Text>
-                    <Text color="white" fontSize="10pt">
-                      {moment(
-                        new Date(currentProviderData.startTime)
-                      ).fromNow()}
-                    </Text>
-                  </Flex>
-                  <Flex gap="1">
-                    <Text color="white" fontSize="10pt">
-                      Until:
-                    </Text>
-                    <Text color="white" fontSize="10pt">
-                      {moment(new Date(currentProviderData.endTime)).fromNow()}
-                    </Text>
-                  </Flex>
-                </Flex>
               </Flex>
             </Flex>
           </Flex>

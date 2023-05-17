@@ -1,7 +1,7 @@
 import { atom } from "recoil";
 
 interface IProviderModalState {
-  view: "chooseProvider" | "changeProvider";
+  view: "chooseProvider" | "currentProvider";
   open: boolean;
 }
 
