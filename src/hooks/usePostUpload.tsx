@@ -70,7 +70,7 @@ const usePostCreate = () => {
 
     let response: Response;
     try {
-      response = await fetch("/api/postUpload", {
+      response = await fetch("/api/post/postUpload", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

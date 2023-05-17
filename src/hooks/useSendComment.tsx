@@ -23,7 +23,7 @@ export default function useSendComment() {
 
     let response: Response;
     try {
-      response = await fetch("/api/postComment", {
+      response = await fetch("/api/post/sendPostComment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

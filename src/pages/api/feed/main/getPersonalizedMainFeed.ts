@@ -23,98 +23,101 @@ export default async function handler(
 
   if (req.method !== "POST") return res.status(405).json("Method not allowed");
 
-  await lock.acquire(`getPosts-${operationFromUsername}`, async () => {
-    /**
-     * We are creating feed for index....
-     * 1-) Posts from we follow...
-     * 2-) Popular posts....
-     * 3-) Ads...
-     */
+  await lock.acquire(
+    `getPersonalizedMainFeed-${operationFromUsername}`,
+    async () => {
+      /**
+       * We are creating feed for index....
+       * 1-) Posts from we follow...
+       * 2-) Popular posts....
+       * 3-) Ads...
+       */
 
-    let postsSourcesUsernames: string[] = [];
+      let postsSourcesUsernames: string[] = [];
 
-    // 1
-    let userFollowingsQuerySnapshot: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>;
-    try {
-      userFollowingsQuerySnapshot = await firestore
-        .collection(`users/${operationFromUsername}/followings`)
-        .get();
-    } catch (error) {
-      console.error(
-        `Error while creating feed for ${operationFromUsername}. (We were getting followings collection)`,
-        error
-      );
-      return res.status(503).json({ error: "Firebase Error" });
-    }
-    // if we follow at least one person...
-    if (userFollowingsQuerySnapshot.size !== 0) {
-      for (const followingDoc of userFollowingsQuerySnapshot.docs) {
-        postsSourcesUsernames.push(followingDoc.id);
+      // 1
+      let userFollowingsQuerySnapshot: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>;
+      try {
+        userFollowingsQuerySnapshot = await firestore
+          .collection(`users/${operationFromUsername}/followings`)
+          .get();
+      } catch (error) {
+        console.error(
+          `Error while creating feed for ${operationFromUsername}. (We were getting followings collection)`,
+          error
+        );
+        return res.status(503).json({ error: "Firebase Error" });
       }
-    }
-
-    // 2-)
-    let celebritiesDoc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>;
-    try {
-      celebritiesDoc = await firestore.doc(`popular/celebrities`).get();
-    } catch (error) {
-      console.error(
-        `Error while creating feed for ${operationFromUsername}. (We were getting popular people)`,
-        error
-      );
-      return res.status(503).json({ error: "Firebase Error" });
-    }
-
-    let popularPeople: string[] = [];
-    if (celebritiesDoc.data()) {
-      popularPeople = celebritiesDoc.data()!.people;
-    }
-
-    if (popularPeople.length !== 0) {
-      for (const popularPerson of popularPeople) {
-        postsSourcesUsernames.push(popularPerson);
-      }
-    }
-
-    // 3-) for now we are aborting this option
-
-    /**
-     * Now we have all sources we need.
-     * It is time to create posts item from them.
-     * But before we should remove duplications from sources.
-     */
-
-    // 1-
-    const postsSourcesUsernamesClear = Array.from(
-      new Set(postsSourcesUsernames)
-    );
-
-    // 2-
-    let getPostsFromOneSourcePromisesArray: Promise<void | PostItemData[]>[] =
-      [];
-    for (const postSourceUsername of postsSourcesUsernamesClear) {
-      getPostsFromOneSourcePromisesArray.push(
-        getPostsFromOneSource(postSourceUsername, operationFromUsername)
-      );
-    }
-
-    const getPostsFromOneSourcePromisesResults = await Promise.all(
-      getPostsFromOneSourcePromisesArray
-    );
-
-    let postItemDatas: PostItemData[] = [];
-
-    for (const getPostsFromOneSourcePromisesResult of getPostsFromOneSourcePromisesResults) {
-      if (getPostsFromOneSourcePromisesResult)
-        for (const postItemData of getPostsFromOneSourcePromisesResult) {
-          postItemDatas.push(postItemData);
+      // if we follow at least one person...
+      if (userFollowingsQuerySnapshot.size !== 0) {
+        for (const followingDoc of userFollowingsQuerySnapshot.docs) {
+          postsSourcesUsernames.push(followingDoc.id);
         }
-    }
+      }
 
-    return res.status(200).json({
-      postItemDatas: postItemDatas,
-    });
-  });
+      // 2-)
+      let celebritiesDoc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>;
+      try {
+        celebritiesDoc = await firestore.doc(`popular/celebrities`).get();
+      } catch (error) {
+        console.error(
+          `Error while creating feed for ${operationFromUsername}. (We were getting popular people)`,
+          error
+        );
+        return res.status(503).json({ error: "Firebase Error" });
+      }
+
+      let popularPeople: string[] = [];
+      if (celebritiesDoc.data()) {
+        popularPeople = celebritiesDoc.data()!.people;
+      }
+
+      if (popularPeople.length !== 0) {
+        for (const popularPerson of popularPeople) {
+          postsSourcesUsernames.push(popularPerson);
+        }
+      }
+
+      // 3-) for now we are aborting this option
+
+      /**
+       * Now we have all sources we need.
+       * It is time to create posts item from them.
+       * But before we should remove duplications from sources.
+       */
+
+      // 1-
+      const postsSourcesUsernamesClear = Array.from(
+        new Set(postsSourcesUsernames)
+      );
+
+      // 2-
+      let getPostsFromOneSourcePromisesArray: Promise<void | PostItemData[]>[] =
+        [];
+      for (const postSourceUsername of postsSourcesUsernamesClear) {
+        getPostsFromOneSourcePromisesArray.push(
+          getPostsFromOneSource(postSourceUsername, operationFromUsername)
+        );
+      }
+
+      const getPostsFromOneSourcePromisesResults = await Promise.all(
+        getPostsFromOneSourcePromisesArray
+      );
+
+      let postItemDatas: PostItemData[] = [];
+
+      for (const getPostsFromOneSourcePromisesResult of getPostsFromOneSourcePromisesResults) {
+        if (getPostsFromOneSourcePromisesResult)
+          for (const postItemData of getPostsFromOneSourcePromisesResult) {
+            postItemDatas.push(postItemData);
+          }
+      }
+
+      return res.status(200).json({
+        postItemDatas: postItemDatas,
+      });
+    }
+  );
 }
 
 /**
@@ -177,7 +180,7 @@ const handleCreatePostItemData = async (
     handleGetLikeStatus(operationFromUsername, postDoc),
     handleGetFollowStatus(operationFromUsername, postDoc),
   ]);
-  
+
   // undefined is false default.
   likeStatus = likeResponse as boolean;
   followStatus = followResponse as boolean;

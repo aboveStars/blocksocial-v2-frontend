@@ -34,7 +34,7 @@ export default function usePostDelete() {
 
     let response: Response;
     try {
-      response = await fetch("/api/postDelete", {
+      response = await fetch("/api/post/postDelete", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

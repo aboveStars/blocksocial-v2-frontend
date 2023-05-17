@@ -1,6 +1,6 @@
 import { PostServerData } from "@/components/types/Post";
 import { NextApiRequest, NextApiResponse } from "next";
-import { bucket, firestore } from "../../firebase/adminApp";
+import { bucket, firestore } from "../../../firebase/adminApp";
 
 import getDisplayName from "@/apiUtils";
 import AsyncLock from "async-lock";

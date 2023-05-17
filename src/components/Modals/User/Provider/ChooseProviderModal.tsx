@@ -82,7 +82,7 @@ export default function ChooseProviderModal() {
 
     let response: Response;
     try {
-      response = await fetch("/api/chooseProvider", {
+      response = await fetch("/api/provider/chooseProvider", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -17,7 +17,7 @@ const usePostLike = () => {
 
     let response;
     try {
-      response = await fetch("/api/postLike", {
+      response = await fetch("/api/post/postLike", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

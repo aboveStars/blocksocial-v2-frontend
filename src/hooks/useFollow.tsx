@@ -33,7 +33,7 @@ export default function useFollow() {
 
     let response: Response;
     try {
-      response = await fetch("/api/follow", {
+      response = await fetch("/api/social/follow", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

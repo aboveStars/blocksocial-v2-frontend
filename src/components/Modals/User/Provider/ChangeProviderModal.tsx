@@ -1,8 +1,6 @@
-import ProviderCardItem from "@/components/Items/User/ProviderCardItem";
 import { ICurrentProviderData, IProviderCard } from "@/components/types/User";
-import { auth, firestore } from "@/firebase/clientApp";
+import { firestore } from "@/firebase/clientApp";
 import {
-  Button,
   Flex,
   Icon,
   Image,
@@ -11,17 +9,16 @@ import {
   ModalContent,
   ModalOverlay,
   Spinner,
-  Stack,
-  Text,
+  Text
 } from "@chakra-ui/react";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
-import { providerModalStateAtom } from "../../../atoms/providerModalAtom";
-import { AiOutlineClose } from "react-icons/ai";
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import moment from "moment";
+import { AiOutlineClose } from "react-icons/ai";
+import { providerModalStateAtom } from "../../../atoms/providerModalAtom";
 
 export default function ChangeProviderModal() {
   const [activeProviders, setActiveProviders] = useState<IProviderCard[]>([]);
@@ -88,43 +85,6 @@ export default function ChangeProviderModal() {
 
     setActiveProviders(tempActiveProviders);
     setGettingAvaliableProviders(false);
-  };
-
-  const handleChooseProvider = async () => {
-    setChooseProviderLoading(true);
-
-    let idToken = "";
-    try {
-      idToken = (await auth.currentUser?.getIdToken()) as string;
-    } catch (error) {
-      console.error("Error while getting 'idToken'", error);
-      return setChooseProviderLoading(false);
-    }
-
-    let response: Response;
-    try {
-      response = await fetch("/api/chooseProvider", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-          providerName: selectedProvider,
-        }),
-      });
-    } catch (error) {
-      console.error("Error while 'fetching' to 'chooseProvider' API");
-      return setChooseProviderLoading(false);
-    }
-
-    if (!response.ok) {
-      console.error("Error from 'chooseProvider' API:", await response.json());
-      return setChooseProviderLoading(false);
-    }
-
-    setChooseProviderLoading(false);
-    return setProvideModalState((prev) => ({ ...prev, open: false }));
   };
 
   const handleGetCurrentProviderData = async () => {

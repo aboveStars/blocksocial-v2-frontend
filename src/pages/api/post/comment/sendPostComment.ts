@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 import { CommentData } from "@/components/types/Post";
 
-import { fieldValue, firestore } from "../../firebase/adminApp";
+import { fieldValue, firestore } from "../../../../firebase/adminApp";
 
 import getDisplayName from "@/apiUtils";
 import { INotificationServerData } from "@/components/types/User";

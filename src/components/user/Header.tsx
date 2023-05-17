@@ -274,7 +274,7 @@ export default function Header({ userInformation }: Props) {
 
     let response: Response;
     try {
-      response = await fetch("/api/fullnameUpdate", {
+      response = await fetch("/api/user/fullnameUpdate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

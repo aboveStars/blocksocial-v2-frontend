@@ -5,7 +5,7 @@ import { mumbaiContractAddress } from "@/ethers/ContractAddresses";
 import AsyncLock from "async-lock";
 import { ethers } from "ethers";
 import { NextApiRequest, NextApiResponse } from "next";
-import { firestore } from "../../firebase/adminApp";
+import { firestore } from "../../../firebase/adminApp";
 
 const lock = new AsyncLock();
 

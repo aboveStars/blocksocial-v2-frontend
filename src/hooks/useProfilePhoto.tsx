@@ -60,7 +60,7 @@ export default function useProfilePhoto() {
     let response: Response;
 
     try {
-      response = await fetch("/api/profilePhotoChange", {
+      response = await fetch("/api/user/profilePhotoChange", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -117,7 +117,7 @@ export default function useProfilePhoto() {
 
     let response: Response;
     try {
-      response = await fetch("/api/profilePhotoChange", {
+      response = await fetch("/api/user/profilePhotoChange", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

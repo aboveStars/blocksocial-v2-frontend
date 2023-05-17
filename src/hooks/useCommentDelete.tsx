@@ -31,7 +31,7 @@ export default function useCommentDelete() {
 
     let response: Response;
     try {
-      response = await fetch("/api/postCommentDelete", {
+      response = await fetch("/api/post/comment/postCommentDelete", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

@@ -6,7 +6,7 @@ import { mumbaiContractAddress } from "@/ethers/ContractAddresses";
 import AsyncLock from "async-lock";
 import { TransactionReceipt } from "ethers";
 import { NextApiRequest, NextApiResponse } from "next";
-import { bucket, fieldValue, firestore } from "../../firebase/adminApp";
+import { bucket, fieldValue, firestore } from "../../../firebase/adminApp";
 
 const lock = new AsyncLock();
 

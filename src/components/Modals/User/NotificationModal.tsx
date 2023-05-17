@@ -103,7 +103,7 @@ export default function NotificationModal() {
 
       let response: Response;
       try {
-        response = await fetch("/api/seenNotification", {
+        response = await fetch("/api/user/seenNotification", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

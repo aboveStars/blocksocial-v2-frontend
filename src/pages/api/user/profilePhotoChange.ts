@@ -1,7 +1,7 @@
 import getDisplayName from "@/apiUtils";
 import AsyncLock from "async-lock";
 import { NextApiRequest, NextApiResponse } from "next";
-import { bucket, firestore } from "../../firebase/adminApp";
+import { bucket, firestore } from "../../../firebase/adminApp";
 
 const lock = new AsyncLock();
 

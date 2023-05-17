@@ -3,7 +3,7 @@ import { INotificationServerData } from "@/components/types/User";
 import AsyncLock from "async-lock";
 import { NextApiRequest, NextApiResponse } from "next";
 
-import { fieldValue, firestore } from "../../firebase/adminApp";
+import { fieldValue, firestore } from "../../../firebase/adminApp";
 
 const lock = new AsyncLock();
 

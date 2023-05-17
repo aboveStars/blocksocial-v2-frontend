@@ -3,7 +3,7 @@ import { PostServerData } from "@/components/types/Post";
 import AsyncLock from "async-lock";
 import { NextApiRequest, NextApiResponse } from "next";
 
-import { bucket, fieldValue, firestore } from "../../firebase/adminApp";
+import { bucket, fieldValue, firestore } from "../../../firebase/adminApp";
 
 const lock = new AsyncLock();
 

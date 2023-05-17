@@ -1,7 +1,10 @@
 import getDisplayName from "@/apiUtils";
 import { PostItemData } from "@/components/types/Post";
 import { firestore } from "@/firebase/adminApp";
+import AsyncLock from "async-lock";
 import { NextApiRequest, NextApiResponse } from "next";
+
+const lock = new AsyncLock();
 
 export default async function handler(
   req: NextApiRequest,
@@ -24,36 +27,41 @@ export default async function handler(
 
   if (req.method !== "POST") return res.status(405).json("Method not allowed");
 
-  let postsDocsQuerySnapshot: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>;
-  try {
-    postsDocsQuerySnapshot = await firestore
-      .collection(`users/${username}/posts`)
-      .get();
-  } catch (error) {
-    console.error(
-      `Error while creating user (single) ${username} feed for ${operationFromUsername} user.`,
-      error
-    );
-    return res.status(503).json({ error: "firebase error" });
-  }
+  await lock.acquire(
+    `getPersonalizedUserFeed-${operationFromUsername}`,
+    async () => {
+      let postsDocsQuerySnapshot: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>;
+      try {
+        postsDocsQuerySnapshot = await firestore
+          .collection(`users/${username}/posts`)
+          .get();
+      } catch (error) {
+        console.error(
+          `Error while creating user (single) ${username} feed for ${operationFromUsername} user.`,
+          error
+        );
+        return res.status(503).json({ error: "firebase error" });
+      }
 
-  let handleCreatePostItemDataPromisesArray: Promise<PostItemData>[] = [];
-  if (postsDocsQuerySnapshot.size !== 0) {
-    for (const postDoc of postsDocsQuerySnapshot.docs) {
-      handleCreatePostItemDataPromisesArray.push(
-        handleCreatePostItemData(postDoc, operationFromUsername)
+      let handleCreatePostItemDataPromisesArray: Promise<PostItemData>[] = [];
+      if (postsDocsQuerySnapshot.size !== 0) {
+        for (const postDoc of postsDocsQuerySnapshot.docs) {
+          handleCreatePostItemDataPromisesArray.push(
+            handleCreatePostItemData(postDoc, operationFromUsername)
+          );
+        }
+      }
+
+      const handleCreatePostItemDataPromisesResults = await Promise.all(
+        handleCreatePostItemDataPromisesArray
       );
+
+      let postItemDatas: PostItemData[] = [];
+      postItemDatas = handleCreatePostItemDataPromisesResults;
+
+      return res.status(200).json({ postItemDatas: postItemDatas });
     }
-  }
-
-  const handleCreatePostItemDataPromisesResults = await Promise.all(
-    handleCreatePostItemDataPromisesArray
   );
-
-  let postItemDatas: PostItemData[] = [];
-  postItemDatas = handleCreatePostItemDataPromisesResults;
-
-  return res.status(200).json({ postItemDatas: postItemDatas });
 }
 
 const handleCreatePostItemData = async (

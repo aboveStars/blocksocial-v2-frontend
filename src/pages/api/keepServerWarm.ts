@@ -13,52 +13,52 @@ export default async function handler(
   }
 
   const warmUps = [
-    fetch("https:/blocksocial.vercel.app/api/follow", {
+    fetch("https:/blocksocial.vercel.app/api/social/follow", {
       headers: {
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/fullnameUpdate", {
+    fetch("https:/blocksocial.vercel.app/api/user/fullnameUpdate", {
       headers: {
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/postComment", {
+    fetch("https:/blocksocial.vercel.app/api/post/comment/sendPostComment", {
       headers: {
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/postCommentDelete", {
+    fetch("https:/blocksocial.vercel.app/api/post/comment/postCommentDelete", {
       headers: {
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/postDelete", {
+    fetch("https:/blocksocial.vercel.app/api/post/postDelete", {
       headers: {
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/postLike", {
+    fetch("https:/blocksocial.vercel.app/api/post/postLike", {
       headers: {
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/postUplaod", {
+    fetch("https:/blocksocial.vercel.app/api/post/postUplaod", {
       headers: {
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/profilePhotoChange", {
+    fetch("https:/blocksocial.vercel.app/api/user/profilePhotoChange", {
       headers: {
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/refreshNFT", {
+    fetch("https:/blocksocial.vercel.app/api/nft/refreshNFT", {
       headers: {
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/seenNotification", {
+    fetch("https:/blocksocial.vercel.app/api/user/seenNotification", {
       headers: {
         cron: cron,
       },
@@ -68,12 +68,12 @@ export default async function handler(
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/transferNFT", {
+    fetch("https:/blocksocial.vercel.app/api/nft/transferNFT", {
       headers: {
         cron: cron,
       },
     }),
-    fetch("https:/blocksocial.vercel.app/api/uploadNFT", {
+    fetch("https:/blocksocial.vercel.app/api/nft/uploadNFT", {
       headers: {
         cron: cron,
       },
@@ -84,6 +84,33 @@ export default async function handler(
         cron: cron,
       },
     }),
+
+    fetch("https:/blocksocial.vercel.app/api/feed/main/getAnonymousMainFeed", {
+      headers: {
+        cron: cron,
+      },
+    }),
+    fetch(
+      "https:/blocksocial.vercel.app/api/feed/main/getPersonalizedMainFeed",
+      {
+        headers: {
+          cron: cron,
+        },
+      }
+    ),
+    fetch("https:/blocksocial.vercel.app/api/feed/user/getAnonymousUserFeed", {
+      headers: {
+        cron: cron,
+      },
+    }),
+    fetch(
+      "https:/blocksocial.vercel.app/api/feed/user/getPersonalizedUserFeed",
+      {
+        headers: {
+          cron: cron,
+        },
+      }
+    ),
   ];
 
   try {

@@ -42,7 +42,7 @@ export default function useNFT() {
 
     let response;
     try {
-      response = await fetch("/api/uploadNFT", {
+      response = await fetch("/api/nft/uploadNFT", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -100,7 +100,7 @@ export default function useNFT() {
 
     let response: Response;
     try {
-      response = await fetch("/api/refreshNFT", {
+      response = await fetch("/api/nft/refreshNFT", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -152,7 +152,7 @@ export default function useNFT() {
 
     let response: Response;
     try {
-      response = await fetch("/api/transferNFT", {
+      response = await fetch("/api/nft/transferNFT", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
