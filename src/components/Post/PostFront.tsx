@@ -32,6 +32,7 @@ import { firestore } from "@/firebase/clientApp";
 import useFollow from "@/hooks/useFollow";
 import usePostDelete from "@/hooks/usePostDelete";
 
+import usePostLike from "@/hooks/usePostLike";
 import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";
@@ -41,8 +42,6 @@ import { authModalStateAtom } from "../atoms/authModalAtom";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
 import { postsAtViewAtom } from "../atoms/postsAtViewAtom";
 import { OpenPanelName, PostFrontData } from "../types/Post";
-import usePostLike from "@/hooks/usePostLike";
-import { fakeWaiting } from "../utils/FakeWaiting";
 
 type Props = {
   postFrontData: PostFrontData;
@@ -57,14 +56,11 @@ export default function PostFront({
     username: postFrontData.senderUsername,
     fullname: "",
     profilePhoto: "",
-    followedByCurrentUser: true,
   });
 
   const { like } = usePostLike();
 
   const currentUserState = useRecoilValue(currentUserStateAtom);
-
-  // To update post values locally
 
   const router = useRouter();
 
@@ -112,15 +108,11 @@ export default function PostFront({
     if (router.asPath.includes(postFrontData.senderUsername))
       return setShowFollowButtonOnPost(false);
 
-    if (postSenderInformation.followedByCurrentUser) {
-      return setShowFollowButtonOnPost(false);
-    }
-
     if (postFrontData.currentUserFollowThisSender)
       return setShowFollowButtonOnPost(false);
 
     return setShowFollowButtonOnPost(true);
-  }, [currentUserState, postFrontData, router.asPath, postSenderInformation]);
+  }, [currentUserState, postFrontData]);
 
   /**
    * Simply gets postSender's pp and fullname.
@@ -133,23 +125,11 @@ export default function PostFront({
     const userDocRef = doc(firestore, `users/${username}`);
     const userDocSnapshot = await getDoc(userDocRef);
 
-    let currentUserFollowsThisPostSender = false;
-    if (currentUserState.isThereCurrentUser)
-      currentUserFollowsThisPostSender = (
-        await getDoc(
-          doc(
-            firestore,
-            `users/${currentUserState.username}/followings/${username}`
-          )
-        )
-      ).exists();
-
     if (userDocSnapshot.exists()) {
       setPostSenderInformation((prev) => ({
         ...prev,
         fullname: userDocSnapshot.data().fullname,
         profilePhoto: userDocSnapshot.data().profilePhoto,
-        followedByCurrentUser: currentUserFollowsThisPostSender,
       }));
     }
   };

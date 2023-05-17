@@ -234,7 +234,7 @@ const handleGetFollowStatus = async (
       await firestore
         .doc(
           `users/${operationFromUsername}/followings/${
-            postDoc.data().operationFromUsername
+            postDoc.data().senderUsername
           }`
         )
         .get()
