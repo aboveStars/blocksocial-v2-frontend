@@ -24,8 +24,6 @@ export default async function handler(
 
   if (req.method !== "POST") return res.status(405).json("Method not allowed");
 
-  let postItemDatas: PostItemData[] = [];
-
   let postsDocsQuerySnapshot: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>;
   try {
     postsDocsQuerySnapshot = await firestore
@@ -39,62 +37,102 @@ export default async function handler(
     return res.status(503).json({ error: "firebase error" });
   }
 
+  let handleCreatePostItemDataPromisesArray: Promise<PostItemData>[] = [];
   if (postsDocsQuerySnapshot.size !== 0) {
     for (const postDoc of postsDocsQuerySnapshot.docs) {
-      // getting like status
-      let likeStatus = false;
-      try {
-        likeStatus = (
-          await postDoc.ref.collection("likes").doc(operationFromUsername).get()
-        ).exists;
-      } catch (error) {
-        console.error(
-          `Error while creating (single) user: ${username} feed for ${operationFromUsername}. (We were retriving like status from ${postDoc.ref.path})`
-        );
-        return res.status(503).json({ error: "firebase-error" });
-      }
-
-      // getting following status
-      let followStatus = false;
-      try {
-        followStatus = (
-          await firestore
-            .doc(
-              `users/${operationFromUsername}/followings/${
-                postDoc.data().operationFromUsername
-              }`
-            )
-            .get()
-        ).exists;
-      } catch (error) {
-        console.error(
-          `Error while creating (single) user: ${username} for ${operationFromUsername}. (We were getting follow status from post: ${postDoc.ref.path})`
-        );
-        return res.status(503).json({ error: "firebase error." });
-      }
-
-      const newPostItemData: PostItemData = {
-        senderUsername: postDoc.data().senderUsername,
-
-        description: postDoc.data().description,
-        image: postDoc.data().image,
-
-        likeCount: postDoc.data().likeCount,
-        currentUserLikedThisPost: likeStatus,
-        commentCount: postDoc.data().commentCount,
-
-        postDocId: postDoc.id,
-
-        nftStatus: postDoc.data().nftStatus,
-
-        currentUserFollowThisSender: followStatus,
-
-        creationTime: postDoc.data().creationTime,
-      };
-
-      postItemDatas.push(newPostItemData);
+      handleCreatePostItemDataPromisesArray.push(
+        handleCreatePostItemData(postDoc, operationFromUsername)
+      );
     }
   }
 
+  const handleCreatePostItemDataPromisesResults = await Promise.all(
+    handleCreatePostItemDataPromisesArray
+  );
+
+  let postItemDatas: PostItemData[] = [];
+  postItemDatas = handleCreatePostItemDataPromisesResults;
+
   return res.status(200).json({ postItemDatas: postItemDatas });
 }
+
+const handleCreatePostItemData = async (
+  postDoc: FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>,
+  operationFromUsername: string
+) => {
+  let likeStatus = false;
+
+  // getting following status
+  let followStatus = false;
+
+  const [likeResponse, followResponse] = await Promise.all([
+    handleGetLikeStatus(operationFromUsername, postDoc),
+    handleGetFollowStatus(operationFromUsername, postDoc),
+  ]);
+
+  // undefined is false default.
+  likeStatus = likeResponse as boolean;
+  followStatus = followResponse as boolean;
+
+  const newPostItemData: PostItemData = {
+    senderUsername: postDoc.data().senderUsername,
+
+    description: postDoc.data().description,
+    image: postDoc.data().image,
+
+    likeCount: postDoc.data().likeCount,
+    currentUserLikedThisPost: likeStatus,
+    commentCount: postDoc.data().commentCount,
+
+    postDocId: postDoc.id,
+
+    nftStatus: postDoc.data().nftStatus,
+
+    currentUserFollowThisSender: followStatus,
+
+    creationTime: postDoc.data().creationTime,
+  };
+
+  return newPostItemData;
+};
+
+const handleGetLikeStatus = async (
+  operationFromUsername: string,
+  postDoc: FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>
+) => {
+  let likeStatus = false;
+  try {
+    likeStatus = (
+      await postDoc.ref.collection("likes").doc(operationFromUsername).get()
+    ).exists;
+  } catch (error) {
+    return console.error(
+      `Error while creating user (single) feed for ${operationFromUsername}. (We were retriving like status from ${postDoc.ref.path})`
+    );
+  }
+  return likeStatus;
+};
+
+const handleGetFollowStatus = async (
+  operationFromUsername: string,
+  postDoc: FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>
+) => {
+  let followStatus = false;
+  try {
+    followStatus = (
+      await firestore
+        .doc(
+          `users/${operationFromUsername}/followings/${
+            postDoc.data().operationFromUsername
+          }`
+        )
+        .get()
+    ).exists;
+  } catch (error) {
+    return console.error(
+      `Error while creating user (single) feed for ${operationFromUsername}. (We were getting follow status from post: ${postDoc.ref.path})`
+    );
+  }
+
+  return followStatus;
+};
