@@ -146,7 +146,8 @@ export default function PostFront({
 
     setFollowOperationLoading(true);
 
-    const updatedPostsAtView = postsAtView.map((a) => {
+    // update other posts to prevent unnecessary follow requests
+    let updatedPostsAtView = postsAtView.map((a) => {
       if (
         a.senderUsername === postFrontData.senderUsername &&
         a.postDocId !== postFrontData.postDocId
@@ -178,10 +179,18 @@ export default function PostFront({
       return setFollowOperationLoading(false);
     }
 
-    setPostSenderInformation((prev) => ({
-      ...prev,
-      followedByCurrentUser: true,
-    }));
+    // update current post
+    updatedPostsAtView = postsAtView.map((a) => {
+      if (a.postDocId === postFrontData.postDocId) {
+        const updatedPost = { ...a };
+        updatedPost.currentUserFollowThisSender = true;
+        return updatedPost;
+      } else {
+        return a;
+      }
+    });
+
+    setPostsAtView(updatedPostsAtView);
 
     setFollowOperationLoading(false);
   };
