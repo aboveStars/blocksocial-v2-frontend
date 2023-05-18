@@ -132,6 +132,7 @@ export default function ChooseProviderModal() {
           top="0"
           px={6}
           align="center"
+          justify="space-between"
           height="50px"
           bg="black"
         >

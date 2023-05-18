@@ -1,6 +1,9 @@
 import { ICurrentProviderData } from "@/components/types/User";
 import { firestore } from "@/firebase/clientApp";
 import {
+  AspectRatio,
+  CircularProgress,
+  CircularProgressLabel,
   Flex,
   Icon,
   Image,
@@ -8,7 +11,6 @@ import {
   ModalBody,
   ModalContent,
   ModalOverlay,
-  Progress,
   Spinner,
   Text,
 } from "@chakra-ui/react";
@@ -17,8 +19,9 @@ import { useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
-import moment from "moment";
+import { format } from "date-fns";
 import { AiOutlineClose } from "react-icons/ai";
+import { BsCalendar4, BsCalendarCheckFill } from "react-icons/bs";
 import { providerModalStateAtom } from "../../../atoms/providerModalAtom";
 
 export default function CurrentProviderModal() {
@@ -145,9 +148,10 @@ export default function CurrentProviderModal() {
           position="sticky"
           top="0"
           px={6}
+          align="center"
+          justify="space-between"
           height="50px"
           bg="black"
-          justify="space-between"
         >
           <Flex textColor="white" fontSize="17pt" fontWeight="700" gap={2}>
             Data Ownership
@@ -188,33 +192,80 @@ export default function CurrentProviderModal() {
                     <Text color="gray.500" fontSize="10pt" fontWeight="600">
                       Deal
                     </Text>
+                    <Flex
+                      gap="1"
+                      color="white"
+                      fontSize="12pt"
+                      fontWeight="600"
+                    >
+                      <Text>{currentProviderData.deal}</Text>
+                      <Text>{currentProviderData.currency}</Text>
+                    </Flex>
                   </Flex>
-                  <Flex gap="1" color="white" fontSize="12pt" fontWeight="600">
-                    <Text>{currentProviderData.deal}</Text>
-                    <Text>{currentProviderData.currency}</Text>
+
+                  <Flex direction="column">
+                    <Text color="gray.500" fontSize="10pt" fontWeight="600">
+                      Duration
+                    </Text>
+                    <Flex align="center" gap="5" pl="0.5">
+                      <Flex direction="column" gap="1">
+                        <Flex align="center" gap="1">
+                          <Icon as={BsCalendar4} color="white" />
+                          <Text fontSize="12pt" fontWeight="600" color="white">
+                            {format(
+                              new Date(currentProviderData.startTime),
+                              "dd MMM yyyy"
+                            )}
+                          </Text>
+                        </Flex>
+                        <Flex align="center" gap="1">
+                          <Icon as={BsCalendarCheckFill} color="white" />
+                          <Text fontSize="12pt" fontWeight="600" color="white">
+                            {format(
+                              new Date(currentProviderData.endTime),
+                              "dd MMM yyyy"
+                            )}
+                          </Text>
+                        </Flex>
+                      </Flex>
+                    </Flex>
                   </Flex>
+
                   <Flex direction="column" gap="1">
                     <Text color="gray.500" fontSize="10pt" fontWeight="600">
                       Progress
                     </Text>
-                    <Progress
-                      value={currentProviderData.progress}
-                      size="sm"
-                      hasStripe
-                      width="100%"
-                    />
+                    <Flex>
+                      <CircularProgress
+                        value={currentProviderData.progress}
+                        color={
+                          currentProviderData.progress <= 25
+                            ? "red"
+                            : currentProviderData.progress <= 50
+                            ? "yellow"
+                            : currentProviderData.progress <= 75
+                            ? "blue"
+                            : "green"
+                        }
+                        size="59px"
+                      >
+                        <CircularProgressLabel color="white" fontWeight="600">
+                          {
+                            currentProviderData.progress
+                              .toString()
+                              .split(".")[0]
+                          }
+                          %
+                        </CircularProgressLabel>
+                      </CircularProgress>
+                    </Flex>
                   </Flex>
                 </Flex>
-                <Image
-                  position="absolute"
-                  top="0"
-                  right="0"
-                  align="center"
-                  src={currentProviderData.image}
-                  width="100px"
-                  height="100px"
-                  borderRadius="5"
-                />
+                <Flex position="absolute" right="0" width="35%">
+                  <AspectRatio ratio={1} width="100%">
+                    <Image src={currentProviderData.image} borderRadius="5" />
+                  </AspectRatio>
+                </Flex>
               </Flex>
             </Flex>
           </Flex>
