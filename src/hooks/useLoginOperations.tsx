@@ -2,14 +2,14 @@ import { authModalStateAtom } from "@/components/atoms/authModalAtom";
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { CurrentUser, UserInServer } from "@/components/types/User";
 
+import { providerModalStateAtom } from "@/components/atoms/providerModalAtom";
 import { auth, firestore } from "@/firebase/clientApp";
 import { User } from "firebase/auth";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { useSetRecoilState } from "recoil";
 import useAuthErrorCodes from "./useAuthErrorCodes";
-import { providerModalStateAtom } from "@/components/atoms/providerModalAtom";
 
 const useLoginOperations = () => {
   const setCurrentUserState = useSetRecoilState(currentUserStateAtom);
