@@ -30,12 +30,13 @@ export default function useCommentDelete() {
     }
 
     let response: Response;
+
     try {
       response = await fetch("/api/post/comment/postCommentDelete", {
-        method: "DELETE",
+        method: "POST",
         headers: {
-          "Content-Type": "application/json",
           authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           commentDocPath: userCommentDocPath,

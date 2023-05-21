@@ -78,7 +78,37 @@ export default async function handler(
         }
       }
 
-      // 3-) for now we are aborting this option
+      /**
+       * Stage-3 (MOST CRITICAL PART)
+       * Now we should show ADs to user.
+       * In this part we should use "proivder API Endpoint".
+       * Provider has responsablilty to provide relatable posts, ads.
+       * Provider has access to user's activities such as likes, comments; general information like age, sex, or country where user lives.
+       * Users have independence to share which information they want.
+       * After all this data processed, provider should provide an API Endpoint for user.
+       * Post from followers, friends always will be shown by BlockSocial.
+       */
+
+      // Get API Endpoint.
+      let providerAPIEndpoint = "";
+      let currentProviderDocSnapshot: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>;
+      try {
+        currentProviderDocSnapshot = await firestore
+          .doc(`users/${operationFromUsername}/provider/currentProvider`)
+          .get();
+      } catch (error) {
+        console.error(
+          `Error while creating personalizedMainFeed for ${operationFromUsername}. (We were getting provider endpoint)`
+        );
+      }
+
+      if (currentProviderDocSnapshot!.exists && currentProviderDocSnapshot!) {
+        const currentProviderDocData = currentProviderDocSnapshot.data();
+        if (currentProviderDocData)
+          providerAPIEndpoint = currentProviderDocData.apiEndpoint;
+      }
+
+      console.log(providerAPIEndpoint);
 
       /**
        * Now we have all sources we need.

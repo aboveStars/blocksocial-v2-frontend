@@ -1,5 +1,4 @@
 import { auth } from "@/firebase/clientApp";
-import { useState } from "react";
 
 export default function useSendComment() {
   /**
@@ -23,7 +22,7 @@ export default function useSendComment() {
 
     let response: Response;
     try {
-      response = await fetch("/api/post/sendPostComment", {
+      response = await fetch("/api/post/comment/sendPostComment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

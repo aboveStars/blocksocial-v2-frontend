@@ -22,10 +22,11 @@ export default async function handler(
   if (!operationFromUsername)
     return res.status(401).json({ error: "unauthorized" });
 
-  if (req.method !== "DELETE")
-    return res.status(405).json("Method not allowed");
+  if (req.method !== "POST") return res.status(405).json("Method not allowed");
 
   if (!commentDocPath || !postDocPath) {
+    console.log(commentDocPath);
+    console.log(postDocPath);
     return res.status(422).json({ error: "Invalid prop or props" });
   }
 
@@ -54,6 +55,22 @@ export default async function handler(
     } catch (error) {
       console.error(error);
       return res.status(503).json({ error: "Firebase error" });
+    }
+
+    try {
+      await firestore
+        .doc(
+          `users/${operationFromUsername}/activities/postActivities/postComments/${commentDocPath.replace(
+            /\//g,
+            "-"
+          )}`
+        )
+        .delete();
+    } catch (error) {
+      console.error(
+        "Error while deleting comment. (We were deleting activities)",
+        error
+      );
     }
 
     // send notification

@@ -34,10 +34,11 @@ export default async function handler(
   }
 
   await lock.acquire(`postCommentAPI-${operationFromUsername}`, async () => {
+    const commentTimeStamp = Date.now();
     const newCommentData: CommentData = {
       comment: comment,
       commentSenderUsername: operationFromUsername,
-      creationTime: Date.now(),
+      creationTime: commentTimeStamp,
     };
 
     let newCommentDocPath = `${postDocPath}/comments/${operationFromUsername}${Date.now()}${uuidv4()
@@ -60,29 +61,57 @@ export default async function handler(
       return res.status(503).json({ error: "Firebase error" });
     }
 
-    // send notification
     try {
-      const postSenderUsername = (await firestore.doc(postDocPath).get()).data()
-        ?.senderUsername;
-      const newcommentNotificationObject: INotificationServerData = {
-        cause: "comment",
-        notificationTime: Date.now(),
-        seen: false,
-        sender: operationFromUsername,
-        commentDocPath: newCommentDocPath,
+      const unSlashedPostCommentDocPath = newCommentDocPath.replace(/\//g, "-");
+
+      const newCommentActivityObject = {
+        commentTime: commentTimeStamp,
+        comment: comment,
+        commentedPostDocPath: postDocPath,
       };
       await firestore
-        .collection(`users/${postSenderUsername}/notifications`)
-        .add({
-          ...newcommentNotificationObject,
-        });
+        .doc(
+          `users/${operationFromUsername}/activities/postActivities/postComments/${unSlashedPostCommentDocPath}`
+        )
+        .set({ ...newCommentActivityObject });
     } catch (error) {
       console.error(
-        "Error while sending comment. (We were sending notification)",
+        "Error while sending comment. (We were updating activities.)",
         error
       );
-      return res.status(503).json({ error: "Firebase error" });
     }
+
+    // send notification
+    let postSenderUsername = "";
+    try {
+      postSenderUsername = (await firestore.doc(postDocPath).get()).data()
+        ?.senderUsername;
+    } catch (error) {
+      console.error("Error while like. (We were getting post sender username");
+    }
+
+    if (postSenderUsername)
+      if (operationFromUsername !== postSenderUsername)
+        try {
+          const newcommentNotificationObject: INotificationServerData = {
+            cause: "comment",
+            notificationTime: Date.now(),
+            seen: false,
+            sender: operationFromUsername,
+            commentDocPath: newCommentDocPath,
+          };
+          await firestore
+            .collection(`users/${postSenderUsername}/notifications`)
+            .add({
+              ...newcommentNotificationObject,
+            });
+        } catch (error) {
+          console.error(
+            "Error while sending comment. (We were sending notification)",
+            error
+          );
+          return res.status(503).json({ error: "Firebase error" });
+        }
 
     return res.status(200).json({ newCommentDocPath: newCommentDocPath });
   });

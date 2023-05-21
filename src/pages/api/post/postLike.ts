@@ -64,48 +64,25 @@ export default async function handler(
     const likeTimestamp = Date.now();
 
     try {
+      const unSlashedPostDocPath = postDocPath.replace(/\//g, "-");
       if (opCode === 1) {
-        if (
-          (
-            await firestore
-              .doc(`users/${operationFromUsername}/activities/likes`)
-              .get()
-          ).exists
-        ) {
-          await firestore
-            .doc(`users/${operationFromUsername}/activities/likes`)
-            .update({
-              likesDatas: fieldValue.arrayUnion({
-                likeTime: likeTimestamp,
-                likedPostDocPath: postDocPath,
-              }),
-            });
-        } else {
-          await firestore
-            .doc(`users/${operationFromUsername}/activities/likes`)
-            .set({
-              likesDatas: fieldValue.arrayUnion({
-                likeTime: likeTimestamp,
-                likedPostDocPath: postDocPath,
-              }),
-            });
-        }
-      } else {
-        const likeTime = (
-          await firestore
-            .doc(postDocPath)
-            .collection("likes")
-            .doc(operationFromUsername)
-            .get()
-        ).data()?.likeTime;
+        const newLikeObjectForLikeActivity = {
+          likeTime: likeTimestamp,
+          likedPostDocPath: postDocPath,
+        };
         await firestore
-          .doc(`users/${operationFromUsername}/activities/likes`)
-          .update({
-            likesDatas: fieldValue.arrayRemove({
-              likeTime: likeTime,
-              likedPostDocPath: postDocPath,
-            }),
+          .doc(
+            `users/${operationFromUsername}/activities/postActivities/postLikes/${unSlashedPostDocPath}`
+          )
+          .set({
+            ...newLikeObjectForLikeActivity,
           });
+      } else {
+        await firestore
+          .doc(
+            `users/${operationFromUsername}/activities/postActivities/postLikes/${unSlashedPostDocPath}`
+          )
+          .delete();
       }
     } catch (error) {
       console.error("Error while updating activities of user", error);
@@ -132,45 +109,51 @@ export default async function handler(
       return res.status(503).json({ error: "Firebase error" });
     }
 
-    // send notification
+    let postSenderUsername = "";
     try {
-      if (opCode === 1) {
-        const newLikeNotificationObject: INotificationServerData = {
-          seen: false,
-          notificationTime: likeTimestamp,
-          sender: operationFromUsername,
-          cause: "like",
-        };
-
-        const postSenderUsername = (
-          await firestore.doc(postDocPath).get()
-        ).data()?.senderUsername;
-
-        await firestore
-          .collection(`users/${postSenderUsername}/notifications`)
-          .add({ ...newLikeNotificationObject });
-      } else {
-        const postSenderUsername = (
-          await firestore.doc(postDocPath).get()
-        ).data()?.senderUsername;
-
-        const likeNotificationDoc = (
-          await firestore
-            .collection(`users/${postSenderUsername}/notifications`)
-            .where("cause", "==", "like")
-            .where("sender", "==", operationFromUsername)
-            .get()
-        ).docs[0];
-
-        if (likeNotificationDoc) await likeNotificationDoc.ref.delete();
-      }
+      postSenderUsername = (await firestore.doc(postDocPath).get()).data()
+        ?.senderUsername;
     } catch (error) {
-      console.error(
-        "Error while like. (We were sending or deleting notification)",
-        error
-      );
-      return res.status(503).json({ error: "Firebase error" });
+      console.error("Error while like. (We were getting post sender username");
     }
+
+    // send notification
+    if (postSenderUsername)
+      if (operationFromUsername !== postSenderUsername)
+        try {
+          if (opCode === 1) {
+            const newLikeNotificationObject: INotificationServerData = {
+              seen: false,
+              notificationTime: likeTimestamp,
+              sender: operationFromUsername,
+              cause: "like",
+            };
+
+            await firestore
+              .collection(`users/${postSenderUsername}/notifications`)
+              .add({ ...newLikeNotificationObject });
+          } else {
+            const postSenderUsername = (
+              await firestore.doc(postDocPath).get()
+            ).data()?.senderUsername;
+
+            const likeNotificationDoc = (
+              await firestore
+                .collection(`users/${postSenderUsername}/notifications`)
+                .where("cause", "==", "like")
+                .where("sender", "==", operationFromUsername)
+                .get()
+            ).docs[0];
+
+            if (likeNotificationDoc) await likeNotificationDoc.ref.delete();
+          }
+        } catch (error) {
+          console.error(
+            "Error while like. (We were sending or deleting notification)",
+            error
+          );
+          return res.status(503).json({ error: "Firebase error" });
+        }
 
     return res.status(200).json({});
   });
