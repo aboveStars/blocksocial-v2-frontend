@@ -86,7 +86,7 @@ export default async function handler(
        * Provider has access to user's activities such as likes, comments; general information like age, sex, or country where user lives.
        * Users have independence to share which information they want.
        * After all this data processed, provider should provide an API Endpoint for user.
-       * Post from followers, friends always will be shown by BlockSocial.
+       * Posts from followers, friends always will be shown by BlockSocial.
        */
 
       // Get API Endpoint.
