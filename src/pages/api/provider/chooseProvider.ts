@@ -41,7 +41,7 @@ export default async function handler(
       const currentTimeStamp = Date.now();
 
       initialProviderSettings = {
-        apiEndpoint: providerSettingsSnapshotInServer.data()?.apiEndpoint,
+
         currency: providerSettingsSnapshotInServer.data()?.currency,
         deal: providerSettingsSnapshotInServer.data()?.deal,
         endTime: currentTimeStamp + 30 * 24 * 60 * 60 * 1000,

@@ -80,7 +80,6 @@ export interface IPagePreviewData {
 }
 
 export interface IProviderSettings {
-  apiEndpoint: string;
   currency: string;
   deal: number;
   name: string;
@@ -88,7 +87,6 @@ export interface IProviderSettings {
   endTime: number;
 }
 export interface ICurrentProviderData {
-  apiEndpoint: string;
   currency: string;
   deal: number;
   name: string;

@@ -81,7 +81,11 @@ export default async function handler(
       /**
        * Stage-3 (MOST CRITICAL PART)
        * Now we should show ADs to user.
+       *
+       *
        * In this part we should use "proivder API Endpoint".
+       *
+       *
        * Provider has responsablilty to provide relatable posts, ads.
        * Provider has access to user's activities such as likes, comments; general information like age, sex, or country where user lives.
        * Users have independence to share which information they want.
@@ -89,8 +93,8 @@ export default async function handler(
        * Posts from followers, friends always will be shown by BlockSocial.
        */
 
-      // Get API Endpoint.
-      let providerAPIEndpoint = "";
+      // Get Provider (name).
+      let provider = "";
       let currentProviderDocSnapshot: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>;
       try {
         currentProviderDocSnapshot = await firestore
@@ -104,11 +108,73 @@ export default async function handler(
 
       if (currentProviderDocSnapshot!.exists && currentProviderDocSnapshot!) {
         const currentProviderDocData = currentProviderDocSnapshot.data();
-        if (currentProviderDocData)
-          providerAPIEndpoint = currentProviderDocData.apiEndpoint;
+        if (currentProviderDocData) provider = currentProviderDocData.name;
       }
 
-      console.log(providerAPIEndpoint);
+      console.log(provider);
+
+      let response;
+      try {
+        response = await fetch("http://localhost:3000/api/client/provideFeed", {
+          method: "POST",
+          headers: {
+            authorization: process.env
+              .NEXT_PUBLIC_API_KEY_BETWEEN_SERVICES as string,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: operationFromUsername,
+            provider: provider,
+          }),
+        });
+      } catch (error) {
+        console.error(
+          "Error while gettingPersonalizedMainFeed.(We were fetching provideFeed)",
+          error
+        );
+      }
+
+      let postDocPathArray: string[] = [];
+      if (response) {
+        if (!response.ok) {
+          console.error(
+            "Error while generating personalized main feed. Error from provideFeed API",
+            await response.text()
+          );
+        }
+      }
+
+      if (response) {
+        if (response.ok)
+          postDocPathArray = (await response.json()).postDocPathArray;
+      }
+
+      let handleCreatePostItemDatasFromPostDocPathPromisesArray: Promise<void | PostItemData>[] =
+        [];
+      if (postDocPathArray.length !== 0) {
+        for (const postDocPath of postDocPathArray)
+          handleCreatePostItemDatasFromPostDocPathPromisesArray.push(
+            handleCreatePostItemDataFromPostDocPath(
+              postDocPath,
+              operationFromUsername
+            )
+          );
+      }
+
+      let postItemDatas: PostItemData[] = [];
+
+      const handleCreatePostItemDatasFromPostDocPathPromisesArrayResult =
+        await Promise.all(
+          handleCreatePostItemDatasFromPostDocPathPromisesArray
+        );
+
+      for (const handleCreatePostItemDataFromPostDocPathPromiseResult of handleCreatePostItemDatasFromPostDocPathPromisesArrayResult) {
+        if (handleCreatePostItemDataFromPostDocPathPromiseResult) {
+          postItemDatas.push(
+            handleCreatePostItemDataFromPostDocPathPromiseResult
+          );
+        }
+      }
 
       /**
        * Now we have all sources we need.
@@ -133,8 +199,6 @@ export default async function handler(
       const getPostsFromOneSourcePromisesResults = await Promise.all(
         getPostsFromOneSourcePromisesArray
       );
-
-      let postItemDatas: PostItemData[] = [];
 
       for (const getPostsFromOneSourcePromisesResult of getPostsFromOneSourcePromisesResults) {
         if (getPostsFromOneSourcePromisesResult)
@@ -237,9 +301,61 @@ const handleCreatePostItemData = async (
   return newPostItemData;
 };
 
+const handleCreatePostItemDataFromPostDocPath = async (
+  postDocPath: string,
+  operationFromUsername: string
+) => {
+  let postDoc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>;
+  try {
+    postDoc = await firestore.doc(postDocPath).get();
+  } catch (error) {
+    return console.error(
+      "Error while creating post item data from postDocPath via provider.",
+      error
+    );
+  }
+
+  let likeStatus = false;
+
+  // getting following status
+  let followStatus = false;
+
+  const [likeResponse, followResponse] = await Promise.all([
+    handleGetLikeStatus(operationFromUsername, postDoc),
+    handleGetFollowStatus(operationFromUsername, postDoc),
+  ]);
+
+  // undefined is false default.
+  likeStatus = likeResponse as boolean;
+  followStatus = followResponse as boolean;
+
+  const newPostItemData: PostItemData = {
+    senderUsername: postDoc.data()?.senderUsername,
+
+    description: postDoc.data()?.description,
+    image: postDoc.data()?.image,
+
+    likeCount: postDoc.data()?.likeCount,
+    currentUserLikedThisPost: likeStatus,
+    commentCount: postDoc.data()?.commentCount,
+
+    postDocId: postDoc.id,
+
+    nftStatus: postDoc.data()?.nftStatus,
+
+    currentUserFollowThisSender: followStatus,
+
+    creationTime: postDoc.data()?.creationTime,
+  };
+
+  return newPostItemData;
+};
+
 const handleGetLikeStatus = async (
   operationFromUsername: string,
-  postDoc: FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>
+  postDoc:
+    | FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>
+    | FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>
 ) => {
   let likeStatus = false;
   try {
@@ -256,7 +372,9 @@ const handleGetLikeStatus = async (
 
 const handleGetFollowStatus = async (
   operationFromUsername: string,
-  postDoc: FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>
+  postDoc:
+    | FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>
+    | FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>
 ) => {
   let followStatus = false;
   try {
@@ -264,7 +382,7 @@ const handleGetFollowStatus = async (
       await firestore
         .doc(
           `users/${operationFromUsername}/followings/${
-            postDoc.data().senderUsername
+            postDoc.data()?.senderUsername
           }`
         )
         .get()

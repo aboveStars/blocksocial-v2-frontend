@@ -38,7 +38,6 @@ export default function CurrentProviderModal() {
 
   const [currentProviderData, setCurrentProviderData] =
     useState<ICurrentProviderData>({
-      apiEndpoint: "",
       currency: "",
       deal: -1,
       endTime: -1,
@@ -104,7 +103,6 @@ export default function CurrentProviderModal() {
         100;
 
       setCurrentProviderData({
-        apiEndpoint: currentProviderDocSnapshot.data().apiEndpoint,
         currency: currentProviderDocSnapshot.data().currency,
         deal: currentProviderDocSnapshot.data().deal,
         endTime: currentProviderDocSnapshot.data().endTime,
