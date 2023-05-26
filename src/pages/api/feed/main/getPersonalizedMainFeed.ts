@@ -78,22 +78,8 @@ export default async function handler(
         }
       }
 
-      /**
-       * Stage-3 (MOST CRITICAL PART)
-       * Now we should show ADs to user.
-       *
-       *
-       * In this part we should use "proivder API Endpoint".
-       *
-       *
-       * Provider has responsablilty to provide relatable posts, ads.
-       * Provider has access to user's activities such as likes, comments; general information like age, sex, or country where user lives.
-       * Users have independence to share which information they want.
-       * After all this data processed, provider should provide an API Endpoint for user.
-       * Posts from followers, friends always will be shown by BlockSocial.
-       */
+      // 3-)
 
-      // Get Provider (name).
       let provider = "";
       let currentProviderDocSnapshot: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>;
       try {
@@ -147,6 +133,27 @@ export default async function handler(
           postDocPathArray = (await response.json()).postDocPathArray;
       }
 
+      /**
+       * Now we have two types of sources.
+       * First one is "username source" which then we get all posts of this from this "username"
+       * Second one is "postDocPath" which contains directly posts.
+       * Now it is time to create promises arrays of these two sources.s
+       */
+
+      // Creating "promises array" for "First" type source (source as username)
+      const postsSourcesUsernamesClear = Array.from(
+        new Set(postsSourcesUsernames)
+      );
+
+      let getPostsFromOneSourcePromisesArray: Promise<void | PostItemData[]>[] =
+        [];
+      for (const postSourceUsername of postsSourcesUsernamesClear) {
+        getPostsFromOneSourcePromisesArray.push(
+          getPostsFromOneSource(postSourceUsername, operationFromUsername)
+        );
+      }
+
+      // Creating "promises array" for "Second" type source (source as postDocPath)
       let handleCreatePostItemDatasFromPostDocPathPromisesArray: Promise<void | PostItemData>[] =
         [];
       if (postDocPathArray.length !== 0) {
@@ -159,49 +166,33 @@ export default async function handler(
           );
       }
 
-      let postItemDatas: PostItemData[] = [];
-
-      const handleCreatePostItemDatasFromPostDocPathPromisesArrayResult =
-        await Promise.all(
-          handleCreatePostItemDatasFromPostDocPathPromisesArray
-        );
-
-      for (const handleCreatePostItemDataFromPostDocPathPromiseResult of handleCreatePostItemDatasFromPostDocPathPromisesArrayResult) {
-        if (handleCreatePostItemDataFromPostDocPathPromiseResult) {
-          postItemDatas.push(
-            handleCreatePostItemDataFromPostDocPathPromiseResult
-          );
-        }
-      }
-
       /**
-       * Now we have all sources we need.
-       * It is time to create posts item from them.
-       * But before we should remove duplications from sources.
+       * Now we have promises array.
+       * But before Promise.All() for simultaneous approach, we need to notice something.
+       * We are merging these two promises arrays. But...
+       * First promises array (source as username) returns Promise<void | PostItemData[]>
+       * Second promises array (source as postDocPath) returns Promise<void | PostItemData>
+       * So after "resolve" promises we should check if the result is array or not.
+       * If it is array we should again use "for..of" loop and add "postItemData" to "postItemDatas" array.
        */
 
-      // 1-
-      const postsSourcesUsernamesClear = Array.from(
-        new Set(postsSourcesUsernames)
-      );
+      const finalPromisesArray = [
+        ...getPostsFromOneSourcePromisesArray,
+        ...handleCreatePostItemDatasFromPostDocPathPromisesArray,
+      ];
 
-      // 2-
-      let getPostsFromOneSourcePromisesArray: Promise<void | PostItemData[]>[] =
-        [];
-      for (const postSourceUsername of postsSourcesUsernamesClear) {
-        getPostsFromOneSourcePromisesArray.push(
-          getPostsFromOneSource(postSourceUsername, operationFromUsername)
-        );
-      }
+      let postItemDatas: PostItemData[] = [];
 
-      const getPostsFromOneSourcePromisesResults = await Promise.all(
-        getPostsFromOneSourcePromisesArray
-      );
+      const finalPromisesArrayResult = await Promise.all(finalPromisesArray);
 
-      for (const getPostsFromOneSourcePromisesResult of getPostsFromOneSourcePromisesResults) {
-        if (getPostsFromOneSourcePromisesResult)
-          for (const postItemData of getPostsFromOneSourcePromisesResult) {
-            postItemDatas.push(postItemData);
+      for (const finalPromiseResult of finalPromisesArrayResult) {
+        if (finalPromiseResult)
+          if (Array.isArray(finalPromiseResult)) {
+            for (const postItemData of finalPromiseResult) {
+              postItemDatas.push(postItemData);
+            }
+          } else {
+            postItemDatas.push(finalPromiseResult);
           }
       }
 
