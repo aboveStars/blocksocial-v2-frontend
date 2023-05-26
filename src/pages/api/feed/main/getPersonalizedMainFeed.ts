@@ -111,8 +111,6 @@ export default async function handler(
         if (currentProviderDocData) provider = currentProviderDocData.name;
       }
 
-      console.log(provider);
-
       let response;
       try {
         response = await fetch("http://localhost:3000/api/client/provideFeed", {

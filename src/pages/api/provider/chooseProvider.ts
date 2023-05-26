@@ -41,7 +41,6 @@ export default async function handler(
       const currentTimeStamp = Date.now();
 
       initialProviderSettings = {
-
         currency: providerSettingsSnapshotInServer.data()?.currency,
         deal: providerSettingsSnapshotInServer.data()?.deal,
         endTime: currentTimeStamp + 30 * 24 * 60 * 60 * 1000,
@@ -54,6 +53,30 @@ export default async function handler(
         error
       );
       return res.status(422).json({ Error: "Invalid Prop or Props" });
+    }
+
+    let response;
+    try {
+      response = await fetch("http://192.168.1.5:3000/api/client/deal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: process.env
+            .NEXT_PUBLIC_API_KEY_BETWEEN_SERVICES as string,
+        },
+        body: JSON.stringify({
+          username: operationFromUsername,
+          provider: providerName,
+        }),
+      });
+    } catch (error) {
+      console.error("Error while fetching deal api", error);
+      return res.status(503).json({ error: "Internal Server Error" });
+    }
+
+    if (!response.ok) {
+      console.error("Error from deal api", await response.text());
+      return res.status(503).json({ error: "Internal Server Error" });
     }
 
     try {
