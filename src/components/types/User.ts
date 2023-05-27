@@ -96,12 +96,16 @@ export interface ICurrentProviderData {
   progress: number;
 }
 
-export interface IProviderCard {
-  currency: string;
-  deal: number;
+export interface IProviderShowcaseItem {
   name: string;
   description: string;
   image: string;
+
+  score: number;
+  clientCount: number;
+
+  minPrice: number;
+  maxPrice: number;
 }
 
 export interface InitialSignUpForm {

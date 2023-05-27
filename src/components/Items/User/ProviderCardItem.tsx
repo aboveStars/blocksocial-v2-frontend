@@ -4,8 +4,14 @@ import React, { SetStateAction, useEffect, useState } from "react";
 type Props = {
   name: string;
   description: string;
-  offer: string;
   image: string;
+
+  minPrice: number;
+  maxPrice: number;
+
+  score: number;
+  clientCount: number;
+
   selectedProviderValue: string;
   setSelectedProviderValue: React.Dispatch<SetStateAction<string>>;
   chooseIsDone: boolean;
@@ -14,8 +20,11 @@ type Props = {
 export default function ProviderCardItem({
   name,
   description,
-  offer,
   image,
+  minPrice,
+  maxPrice,
+  score,
+  clientCount,
   selectedProviderValue,
   setSelectedProviderValue,
   chooseIsDone,
@@ -31,7 +40,7 @@ export default function ProviderCardItem({
       id="provider-card"
       width="100%"
       height="110px"
-      p="6"
+      p="8"
       rounded="full"
       cursor="pointer"
       border="1px"
@@ -47,27 +56,43 @@ export default function ProviderCardItem({
     >
       <Flex direction="column">
         <Flex gap="1">
-          <Text color="gray.500" fontSize="10pt" fontWeight="700">
-            Provider Name:
+          <Text color="gray.500" fontSize="9pt" fontWeight="700">
+            Name:
           </Text>
-          <Text color="white" fontSize="10pt" fontWeight="700">
+          <Text color="white" fontSize="9pt" fontWeight="700">
             {name}
           </Text>
         </Flex>
         <Flex gap="1">
-          <Text color="gray.500" fontSize="10pt" fontWeight="700">
+          <Text color="gray.500" fontSize="9pt" fontWeight="700">
             Description:
           </Text>
-          <Text color="white" fontSize="10pt" fontWeight="700">
+          <Text color="white" fontSize="9pt" fontWeight="700">
             {description}
           </Text>
         </Flex>
         <Flex gap="1">
-          <Text color="gray.500" fontSize="10pt" fontWeight="700">
+          <Text color="gray.500" fontSize="9pt" fontWeight="700">
             Offer:
           </Text>
-          <Text color="white" fontSize="10pt" fontWeight="700">
-            {offer}
+          <Text color="white" fontSize="9pt" fontWeight="700">
+            {minPrice}$-{maxPrice}$
+          </Text>
+        </Flex>
+        <Flex gap="1">
+          <Text color="gray.500" fontSize="9pt" fontWeight="700">
+            Score:
+          </Text>
+          <Text color="white" fontSize="9pt" fontWeight="700">
+            {score}%
+          </Text>
+        </Flex>
+        <Flex gap="1">
+          <Text color="gray.500" fontSize="9pt" fontWeight="700">
+            Client Count:
+          </Text>
+          <Text color="white" fontSize="9pt" fontWeight="700">
+            {clientCount}
           </Text>
         </Flex>
       </Flex>

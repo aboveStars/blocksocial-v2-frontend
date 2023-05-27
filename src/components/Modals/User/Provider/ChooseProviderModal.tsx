@@ -1,6 +1,6 @@
 import ProviderCardItem from "@/components/Items/User/ProviderCardItem";
-import { IProviderCard } from "@/components/types/User";
-import { auth, firestore } from "@/firebase/clientApp";
+
+import { auth } from "@/firebase/clientApp";
 import {
   Button,
   Flex,
@@ -12,17 +12,19 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { collection, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 
+import { IProviderShowcaseItem } from "@/components/types/User";
 import { providerModalStateAtom } from "../../../atoms/providerModalAtom";
 
 export default function ChooseProviderModal() {
   const [gettingAvaliableProviders, setGettingAvaliableProviders] =
     useState(true);
 
-  const [activeProviders, setActiveProviders] = useState<IProviderCard[]>([]);
+  const [activeProviders, setActiveProviders] = useState<
+    IProviderShowcaseItem[]
+  >([]);
   const [selectedProvider, setSelectedProvider] = useState("BlockSocial");
 
   const [providerModalState, setProvideModalState] = useRecoilState(
@@ -43,29 +45,45 @@ export default function ChooseProviderModal() {
   const handleGetActiveProviders = async () => {
     setGettingAvaliableProviders(true);
 
-    let providersDocs;
+    let idToken = "";
     try {
-      providersDocs = (await getDocs(collection(firestore, "providers"))).docs;
+      idToken = (await auth.currentUser?.getIdToken()) as string;
     } catch (error) {
-      console.error("Error while getting providers docs.", error);
-      return setGettingAvaliableProviders(false);
+      console.error("Error while getting 'idToken'", error);
     }
 
-    let tempActiveProviders: IProviderCard[] = [];
-
-    for (const proivderDoc of providersDocs) {
-      const providerObject: IProviderCard = {
-        name: proivderDoc.data().name,
-        currency: proivderDoc.data().currency,
-        deal: proivderDoc.data().deal,
-        description: proivderDoc.data().description,
-        image: proivderDoc.data().image,
-      };
-
-      tempActiveProviders.push(providerObject);
+    let response: Response;
+    try {
+      response = await fetch(
+        "http://192.168.1.5:3000/api/client/provideShowcase",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: process.env
+              .NEXT_PUBLIC_API_KEY_BETWEEN_SERVICES as string,
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error while 'fetching' to 'provideShowcase' API");
+      return false;
     }
 
-    setActiveProviders(tempActiveProviders);
+    if (!response.ok) {
+      console.error("Error from 'provideShowcase' API:", await response.json());
+      return false;
+    }
+
+    const { providersShowcaseDatas } = await response.json();
+
+    let tempProviderShowcaseDatas: IProviderShowcaseItem[] = [];
+
+    for (const providerShowcaseItemData of providersShowcaseDatas) {
+      tempProviderShowcaseDatas.push(providerShowcaseItemData);
+    }
+
+    setActiveProviders(tempProviderShowcaseDatas);
     setGettingAvaliableProviders(false);
   };
 
@@ -162,7 +180,10 @@ export default function ChooseProviderModal() {
                     description={ap.description}
                     image={ap.image}
                     name={ap.name}
-                    offer={`${ap.deal} ${ap.currency}`}
+                    minPrice={ap.minPrice}
+                    maxPrice={ap.maxPrice}
+                    clientCount={ap.clientCount}
+                    score={ap.score}
                     selectedProviderValue={selectedProvider}
                     setSelectedProviderValue={setSelectedProvider}
                     chooseIsDone={chooseProviderLoading}

@@ -30,30 +30,6 @@ export default async function handler(
 
   await lock.acquire(`chooseProvider-${operationFromUsername}`, async () => {
     let initialProviderSettings: IProviderSettings;
-    try {
-      const providerSettingsSnapshotInServer = await firestore
-        .doc(`providers/${providerName}`)
-        .get();
-
-      if (!providerSettingsSnapshotInServer.exists)
-        throw new Error(`There is no provider with this name: ${providerName}`);
-
-      const currentTimeStamp = Date.now();
-
-      initialProviderSettings = {
-        currency: providerSettingsSnapshotInServer.data()?.currency,
-        deal: providerSettingsSnapshotInServer.data()?.deal,
-        endTime: currentTimeStamp + 30 * 24 * 60 * 60 * 1000,
-        name: providerSettingsSnapshotInServer.id,
-        startTime: currentTimeStamp,
-      };
-    } catch (error) {
-      console.error(
-        "Error while getting provider settings from database",
-        error
-      );
-      return res.status(422).json({ Error: "Invalid Prop or Props" });
-    }
 
     let response;
     try {
@@ -79,11 +55,13 @@ export default async function handler(
       return res.status(503).json({ error: "Internal Server Error" });
     }
 
+    const { dealResult } = await response.json();
+
     try {
       await firestore
         .doc(`users/${operationFromUsername}/provider/currentProvider`)
         .set({
-          ...initialProviderSettings,
+          ...dealResult,
         });
     } catch (error) {
       console.error("Error while creating doc for choosen proivder", error);
