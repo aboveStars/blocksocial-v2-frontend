@@ -1,5 +1,5 @@
 import getDisplayName from "@/apiUtils";
-import { IProviderSettings } from "@/components/types/User";
+
 import { firestore } from "@/firebase/adminApp";
 import AsyncLock from "async-lock";
 
@@ -29,8 +29,6 @@ export default async function handler(
     return res.status(422).json({ error: "Invalid prop or props" });
 
   await lock.acquire(`chooseProvider-${operationFromUsername}`, async () => {
-    let initialProviderSettings: IProviderSettings;
-
     let response;
     try {
       response = await fetch("http://192.168.1.5:3000/api/client/deal", {

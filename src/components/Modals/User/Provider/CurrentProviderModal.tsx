@@ -1,5 +1,5 @@
 import { ICurrentProviderData } from "@/components/types/User";
-import { firestore } from "@/firebase/clientApp";
+import { auth, firestore } from "@/firebase/clientApp";
 import {
   AspectRatio,
   CircularProgress,
@@ -14,7 +14,12 @@ import {
   Spinner,
   Text,
 } from "@chakra-ui/react";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  DocumentData,
+  DocumentSnapshot,
+  doc,
+  getDoc,
+} from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
@@ -38,13 +43,15 @@ export default function CurrentProviderModal() {
 
   const [currentProviderData, setCurrentProviderData] =
     useState<ICurrentProviderData>({
-      currency: "",
-      deal: -1,
-      endTime: -1,
+      clientCount: 0,
+      description: "",
+      earning: 0,
+      endTime: 0,
       name: "",
-      startTime: -1,
+      score: 0,
+      startTime: 0,
+      progress: 0,
       image: "",
-      progress: -1,
     });
 
   useEffect(() => {
@@ -55,68 +62,138 @@ export default function CurrentProviderModal() {
   }, [providerModalState]);
 
   const handleGetCurrentProviderData = async () => {
+    /**
+     * This area has two steps.
+     * First one get our "special" status like "name", "earning", "startTime" and "endTime" from BS-Database.
+     * Second one get general provider status like "score", "description", "clientCount"
+     * We should use parallel fetching.
+     */
+
     setGetingCurrentProviderData(true);
+
+    const specialOperationResult =
+      await getSpecializedInformtaionAboutCurrentProvider();
+
+    if (!specialOperationResult) {
+      console.error(
+        "Error while creating current provider data. (Special Information Fetching is failed."
+      );
+      setGetingCurrentProviderData(false);
+      return false;
+    }
+
+    const generalInformationResult =
+      await getGeneralInformationAboutCurrentProvider(
+        specialOperationResult.name
+      );
+
+    if (!generalInformationResult) {
+      console.error(
+        "Error while creating current provider data. (General Information Fetching is failed.)"
+      );
+      setGetingCurrentProviderData(false);
+      return false;
+    }
+
+    const progressValue: number =
+      (1 -
+        (specialOperationResult.endTime - Date.now()) /
+          1000 /
+          60 /
+          60 /
+          24 /
+          30) *
+      100;
+
+    const tempCurrentUserProviderData: ICurrentProviderData = {
+      ...specialOperationResult,
+      ...generalInformationResult,
+      progress: progressValue,
+    };
+
+    setCurrentProviderData(tempCurrentUserProviderData);
+
+    setGetingCurrentProviderData(false);
+  };
+
+  const getSpecializedInformtaionAboutCurrentProvider = async () => {
+    let currentProviderDocSnapshot: DocumentSnapshot<DocumentData>;
     try {
-      const currentProviderDocSnapshot = await getDoc(
+      currentProviderDocSnapshot = await getDoc(
         doc(
           firestore,
           `users/${currentUserState.username}/provider/currentProvider`
         )
       );
-      if (!currentProviderDocSnapshot.exists()) {
-        setGetingCurrentProviderData(false);
-        throw new Error(
-          `There is no provider with assosicated with this user.`
-        );
-      }
-
-      let providerImageUrl = "";
-      try {
-        const providerDocSnapshot = await getDoc(
-          doc(firestore, `providers/${currentProviderDocSnapshot.data().name}`)
-        );
-
-        if (!providerDocSnapshot.exists()) {
-          throw new Error(
-            `There is no documnet for provider of: ${
-              currentProviderDocSnapshot.data().name
-            }`
-          );
-        }
-
-        providerImageUrl = providerDocSnapshot.data().image;
-      } catch (error) {
-        return console.error(
-          "Error while getting image of current provider",
-          error
-        );
-      }
-
-      const progressValue: number =
-        (1 -
-          (currentProviderDocSnapshot.data().endTime - Date.now()) /
-            1000 /
-            60 /
-            60 /
-            24 /
-            30) *
-        100;
-
-      setCurrentProviderData({
-        currency: currentProviderDocSnapshot.data().currency,
-        deal: currentProviderDocSnapshot.data().deal,
-        endTime: currentProviderDocSnapshot.data().endTime,
-        name: currentProviderDocSnapshot.data().name,
-        startTime: currentProviderDocSnapshot.data().startTime,
-        image: providerImageUrl,
-        progress: progressValue,
-      });
     } catch (error) {
-      setGetingCurrentProviderData(false);
-      return console.error("Error while getting current user doc.", error);
+      console.error(
+        "Error while geting current provider data. (We were getting specialized infos.",
+        error
+      );
+      return false;
     }
 
-    setGetingCurrentProviderData(false);
+    if (!currentProviderDocSnapshot.exists) {
+      console.error(
+        "Error while getting current provider data. (Doc doesn't exist)"
+      );
+      return false;
+    }
+
+    const specializedInformation = {
+      name: currentProviderDocSnapshot.data()?.name,
+      startTime: currentProviderDocSnapshot.data()?.startTime,
+      endTime: currentProviderDocSnapshot.data()?.endTime,
+      earning: currentProviderDocSnapshot.data()?.earning,
+    };
+
+    return specializedInformation;
+  };
+
+  const getGeneralInformationAboutCurrentProvider = async (
+    currentProviderName: string
+  ) => {
+    let response: Response;
+    try {
+      response = await fetch(
+        "http://192.168.1.5:3000/api/client/provideProviderInformation",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: process.env
+              .NEXT_PUBLIC_API_KEY_BETWEEN_SERVICES as string,
+          },
+          body: JSON.stringify({
+            providerName: currentProviderName,
+          }),
+        }
+      );
+    } catch (error) {
+      console.error(
+        "Error while 'fetching' to 'provideProviderInformation' API"
+      );
+      return false;
+    }
+
+    if (!response.ok) {
+      console.error(
+        "Error from 'provideProviderInformation' API:",
+        await response.text()
+      );
+      return false;
+    }
+
+    const { providerInformation } = await response.json();
+
+    const generalInformation = {
+      score: providerInformation.score,
+      clientCount: providerInformation.clientCount,
+      description: providerInformation.description,
+      image: providerInformation.image,
+    };
+
+    return generalInformation;
   };
 
   return (
@@ -185,10 +262,56 @@ export default function CurrentProviderModal() {
                       {currentProviderData.name}
                     </Text>
                   </Flex>
+                  <Flex direction="column">
+                    <Text color="gray.500" fontSize="10pt" fontWeight="600">
+                      Description
+                    </Text>
+                    <Text color="white" fontSize="12pt" fontWeight="600">
+                      {currentProviderData.description}
+                    </Text>
+                  </Flex>
+                  <Flex direction="column">
+                    <Text color="gray.500" fontSize="10pt" fontWeight="600">
+                      Client Count
+                    </Text>
+                    <Text color="white" fontSize="12pt" fontWeight="600">
+                      {currentProviderData.clientCount}
+                    </Text>
+                  </Flex>
+
+                  <Flex direction="column" gap="1">
+                    <Text color="gray.500" fontSize="10pt" fontWeight="600">
+                      Score
+                    </Text>
+                    <Flex>
+                      <CircularProgress
+                        value={currentProviderData.score}
+                        color={
+                          currentProviderData.score <= 25
+                            ? "red"
+                            : currentProviderData.score <= 50
+                            ? "yellow"
+                            : currentProviderData.score <= 75
+                            ? "blue"
+                            : "green"
+                        }
+                        size="59px"
+                      >
+                        <CircularProgressLabel color="white" fontWeight="600">
+                          {
+                            currentProviderData.progress
+                              .toString()
+                              .split(".")[0]
+                          }
+                          %
+                        </CircularProgressLabel>
+                      </CircularProgress>
+                    </Flex>
+                  </Flex>
 
                   <Flex direction="column">
                     <Text color="gray.500" fontSize="10pt" fontWeight="600">
-                      Deal
+                      Earning
                     </Text>
                     <Flex
                       gap="1"
@@ -196,8 +319,8 @@ export default function CurrentProviderModal() {
                       fontSize="12pt"
                       fontWeight="600"
                     >
-                      <Text>{currentProviderData.deal}</Text>
-                      <Text>{currentProviderData.currency}</Text>
+                      <Text>$</Text>
+                      <Text>{currentProviderData.earning}</Text>
                     </Flex>
                   </Flex>
 
@@ -205,7 +328,7 @@ export default function CurrentProviderModal() {
                     <Text color="gray.500" fontSize="10pt" fontWeight="600">
                       Duration
                     </Text>
-                    <Flex align="center" gap="5" pl="0.5">
+                    <Flex align="center" gap="3" pl="0.5">
                       <Flex direction="column" gap="1">
                         <Flex align="center" gap="1">
                           <Icon as={BsCalendar4} color="white" />
@@ -226,36 +349,30 @@ export default function CurrentProviderModal() {
                           </Text>
                         </Flex>
                       </Flex>
-                    </Flex>
-                  </Flex>
-
-                  <Flex direction="column" gap="1">
-                    <Text color="gray.500" fontSize="10pt" fontWeight="600">
-                      Progress
-                    </Text>
-                    <Flex>
-                      <CircularProgress
-                        value={currentProviderData.progress}
-                        color={
-                          currentProviderData.progress <= 25
-                            ? "red"
-                            : currentProviderData.progress <= 50
-                            ? "yellow"
-                            : currentProviderData.progress <= 75
-                            ? "blue"
-                            : "green"
-                        }
-                        size="59px"
-                      >
-                        <CircularProgressLabel color="white" fontWeight="600">
-                          {
-                            currentProviderData.progress
-                              .toString()
-                              .split(".")[0]
+                      <Flex>
+                        <CircularProgress
+                          value={currentProviderData.progress}
+                          color={
+                            currentProviderData.progress <= 25
+                              ? "red"
+                              : currentProviderData.progress <= 50
+                              ? "yellow"
+                              : currentProviderData.progress <= 75
+                              ? "blue"
+                              : "green"
                           }
-                          %
-                        </CircularProgressLabel>
-                      </CircularProgress>
+                          size="59px"
+                        >
+                          <CircularProgressLabel color="white" fontWeight="600">
+                            {
+                              currentProviderData.progress
+                                .toString()
+                                .split(".")[0]
+                            }
+                            %
+                          </CircularProgressLabel>
+                        </CircularProgress>
+                      </Flex>
                     </Flex>
                   </Flex>
                 </Flex>

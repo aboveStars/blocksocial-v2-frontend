@@ -79,21 +79,24 @@ export interface IPagePreviewData {
   image: string;
 }
 
-export interface IProviderSettings {
-  currency: string;
-  deal: number;
-  name: string;
-  startTime: number;
-  endTime: number;
-}
+
+
 export interface ICurrentProviderData {
-  currency: string;
-  deal: number;
   name: string;
+  description: string;
+  image : string
+
   startTime: number;
   endTime: number;
-  image: string;
-  progress: number;
+
+  earning: number;
+
+  score: number;
+  clientCount: number;
+
+  progress : number
+
+
 }
 
 export interface IProviderShowcaseItem {
