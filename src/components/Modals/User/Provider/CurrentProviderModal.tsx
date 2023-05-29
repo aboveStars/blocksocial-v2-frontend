@@ -1,5 +1,5 @@
 import { ICurrentProviderData } from "@/components/types/User";
-import { auth, firestore } from "@/firebase/clientApp";
+import { firestore } from "@/firebase/clientApp";
 import {
   AspectRatio,
   CircularProgress,
@@ -298,12 +298,7 @@ export default function CurrentProviderModal() {
                         size="59px"
                       >
                         <CircularProgressLabel color="white" fontWeight="600">
-                          {
-                            currentProviderData.progress
-                              .toString()
-                              .split(".")[0]
-                          }
-                          %
+                          {currentProviderData.score.toString().split(".")[0]}%
                         </CircularProgressLabel>
                       </CircularProgress>
                     </Flex>

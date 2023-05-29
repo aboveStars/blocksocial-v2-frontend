@@ -1,5 +1,4 @@
 import ProviderCardItem from "@/components/Items/User/ProviderCardItem";
-
 import { auth } from "@/firebase/clientApp";
 import {
   Button,
@@ -38,19 +37,13 @@ export default function ChooseProviderModal() {
   useEffect(() => {
     const openStatus =
       providerModalState.open && providerModalState.view === "chooseProvider";
+
     if (openStatus) handleGetActiveProviders();
     setIsOpen(openStatus);
   }, [providerModalState]);
 
   const handleGetActiveProviders = async () => {
     setGettingAvaliableProviders(true);
-
-    let idToken = "";
-    try {
-      idToken = (await auth.currentUser?.getIdToken()) as string;
-    } catch (error) {
-      console.error("Error while getting 'idToken'", error);
-    }
 
     let response: Response;
     try {
@@ -164,17 +157,12 @@ export default function ChooseProviderModal() {
             <Spinner size="sm" color="white" />
           </Flex>
 
-          <Flex
-            hidden={gettingAvaliableProviders}
-            gap="5"
-            direction="column"
-            align="center"
-          >
+          <Flex hidden={gettingAvaliableProviders} gap="5" direction="column">
             <Flex id="provider-selection" direction="column" gap="2">
               <Text textColor="white" fontSize="13pt" fontWeight="700" gap={2}>
                 Choose your provider
               </Text>
-              <Stack>
+              <Stack gap="1">
                 {activeProviders.map((ap, i) => (
                   <ProviderCardItem
                     description={ap.description}
@@ -199,6 +187,8 @@ export default function ChooseProviderModal() {
               rounded="full"
               onClick={handleChooseProvider}
               isLoading={chooseProviderLoading}
+              mb="5"
+              size="sm"
             >
               Continue with {selectedProvider}
             </Button>
