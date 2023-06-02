@@ -31,7 +31,7 @@ export default async function handler(
   await lock.acquire(`chooseProvider-${operationFromUsername}`, async () => {
     let response;
     try {
-      response = await fetch("http://192.168.1.5:3000/api/client/deal", {
+      response = await fetch("http://192.168.1.3:3000/api/client/deal", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

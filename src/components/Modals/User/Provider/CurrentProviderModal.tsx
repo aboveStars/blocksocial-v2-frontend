@@ -156,7 +156,7 @@ export default function CurrentProviderModal() {
     let response: Response;
     try {
       response = await fetch(
-        "http://192.168.1.5:3000/api/client/provideProviderInformation",
+        "http://192.168.1.3:3000/api/client/provideProviderInformation",
         {
           method: "POST",
           headers: {

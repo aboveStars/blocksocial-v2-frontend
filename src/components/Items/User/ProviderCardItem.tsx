@@ -1,10 +1,4 @@
-import {
-  CircularProgress,
-  CircularProgressLabel,
-  Flex,
-  Image,
-  Text,
-} from "@chakra-ui/react";
+import { Flex, Image, Text } from "@chakra-ui/react";
 import React, { SetStateAction, useEffect, useState } from "react";
 
 type Props = {

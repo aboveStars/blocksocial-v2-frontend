@@ -48,7 +48,7 @@ export default function ChooseProviderModal() {
     let response: Response;
     try {
       response = await fetch(
-        "http://192.168.1.5:3000/api/client/provideShowcase",
+        "http://192.168.1.3:3000/api/client/provideShowcase",
         {
           method: "POST",
           headers: {
