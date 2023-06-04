@@ -23,11 +23,13 @@ import {
 import { useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
+import ProviderUserStarRateItem from "@/components/Items/Provider/ProviderUserStarRateItem";
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { format } from "date-fns";
 import { AiOutlineClose } from "react-icons/ai";
 import { BsCalendar4, BsCalendarCheckFill } from "react-icons/bs";
 import { providerModalStateAtom } from "../../../atoms/providerModalAtom";
+import ProviderScoreStarItem from "@/components/Items/Provider/ProviderScoreStarItem";
 
 export default function CurrentProviderModal() {
   const [providerModalState, setProvideModalState] = useRecoilState(
@@ -109,6 +111,7 @@ export default function CurrentProviderModal() {
       ...specialOperationResult,
       ...generalInformationResult,
       progress: progressValue,
+
     };
 
     setCurrentProviderData(tempCurrentUserProviderData);
@@ -283,25 +286,25 @@ export default function CurrentProviderModal() {
                     <Text color="gray.500" fontSize="10pt" fontWeight="600">
                       Score
                     </Text>
-                    <Flex>
-                      <CircularProgress
-                        value={currentProviderData.score}
-                        color={
-                          currentProviderData.score <= 25
-                            ? "red"
-                            : currentProviderData.score <= 50
-                            ? "yellow"
-                            : currentProviderData.score <= 75
-                            ? "blue"
-                            : "green"
+                    <Text color="white" fontSize="12pt" fontWeight="600">
+                      <ProviderScoreStarItem
+                        value={
+                          (currentProviderData.score) as
+                            | 0
+                            | 1
+                            | 2
+                            | 3
+                            | 4
+                            | 5
                         }
-                        size="59px"
-                      >
-                        <CircularProgressLabel color="white" fontWeight="600">
-                          {currentProviderData.score.toString().split(".")[0]}%
-                        </CircularProgressLabel>
-                      </CircularProgress>
-                    </Flex>
+                      />
+                    </Text>
+                  </Flex>
+                  <Flex direction="column" gap="1">
+                    <Text color="gray.500" fontSize="10pt" fontWeight="600">
+                      Your Score
+                    </Text>
+                    <ProviderUserStarRateItem value={3} />
                   </Flex>
 
                   <Flex direction="column">

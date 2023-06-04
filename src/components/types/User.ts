@@ -79,12 +79,10 @@ export interface IPagePreviewData {
   image: string;
 }
 
-
-
 export interface ICurrentProviderData {
   name: string;
   description: string;
-  image : string
+  image: string;
 
   startTime: number;
   endTime: number;
@@ -94,9 +92,7 @@ export interface ICurrentProviderData {
   score: number;
   clientCount: number;
 
-  progress : number
-
-
+  progress: number;
 }
 
 export interface IProviderShowcaseItem {

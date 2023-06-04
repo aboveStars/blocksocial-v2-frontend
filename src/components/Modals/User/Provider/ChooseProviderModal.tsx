@@ -1,4 +1,4 @@
-import ProviderCardItem from "@/components/Items/User/ProviderCardItem";
+import ProviderCardItem from "@/components/Items/Provider/ProviderCardItem";
 import { auth } from "@/firebase/clientApp";
 import {
   Button,
