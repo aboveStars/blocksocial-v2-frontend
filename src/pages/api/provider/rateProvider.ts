@@ -9,7 +9,7 @@ export default async function handler(
   const { cron, authorization } = req.headers;
   const { score } = req.body;
 
-  console.log(score)
+  console.log(score);
 
   if (cron === process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
     console.log("Warm-Up Request");
@@ -39,7 +39,7 @@ export default async function handler(
     return res.status(503).json({ error: "Firebase Error" });
   }
 
-  console.log(provider)
+  console.log(provider);
 
   // update current user doc
   try {
@@ -57,19 +57,22 @@ export default async function handler(
   }
 
   try {
-    await fetch("http://192.168.1.3:3000/api/client/takeRate", {
-      method: "POST",
-      headers: {
-        authorization: process.env
-          .NEXT_PUBLIC_API_KEY_BETWEEN_SERVICES as string,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        score: score,
-        provider: provider,
-        username: operationFromUsername,
-      }),
-    });
+    await fetch(
+      `${process.env.NEXT_PUBLIC_API_ENDPOINT_TO_PROVIDER_PANEL_FOR_NORMAL_BLOCKSOCIAL}/client/takeRate`,
+      {
+        method: "POST",
+        headers: {
+          authorization: process.env
+            .NEXT_PUBLIC_API_KEY_BETWEEN_SERVICES as string,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          score: score,
+          provider: provider,
+          username: operationFromUsername,
+        }),
+      }
+    );
   } catch (error) {
     console.error(
       "Error while rating provider. (We were fetching the getRate API...",

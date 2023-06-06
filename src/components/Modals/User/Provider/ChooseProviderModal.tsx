@@ -48,7 +48,7 @@ export default function ChooseProviderModal() {
     let response: Response;
     try {
       response = await fetch(
-        "http://192.168.1.3:3000/api/client/provideShowcase",
+        `${process.env.NEXT_PUBLIC_API_ENDPOINT_TO_PROVIDER_PANEL_FOR_NORMAL_BLOCKSOCIAL}/client/provideShowcase`,
         {
           method: "POST",
           headers: {

@@ -51,6 +51,7 @@ export default function CurrentProviderModal() {
       endTime: 0,
       name: "",
       score: 0,
+      currentUserScore: 0,
       startTime: 0,
       progress: 0,
       image: "",
@@ -111,7 +112,6 @@ export default function CurrentProviderModal() {
       ...specialOperationResult,
       ...generalInformationResult,
       progress: progressValue,
-
     };
 
     setCurrentProviderData(tempCurrentUserProviderData);
@@ -148,6 +148,7 @@ export default function CurrentProviderModal() {
       startTime: currentProviderDocSnapshot.data()?.startTime,
       endTime: currentProviderDocSnapshot.data()?.endTime,
       earning: currentProviderDocSnapshot.data()?.earning,
+      currentUserScore: currentProviderDocSnapshot.data()?.userScore,
     };
 
     return specializedInformation;
@@ -159,7 +160,7 @@ export default function CurrentProviderModal() {
     let response: Response;
     try {
       response = await fetch(
-        "http://192.168.1.3:3000/api/client/provideProviderInformation",
+        `${process.env.NEXT_PUBLIC_API_ENDPOINT_TO_PROVIDER_PANEL_FOR_NORMAL_BLOCKSOCIAL}/client/provideProviderInformation`,
         {
           method: "POST",
           headers: {
@@ -289,13 +290,7 @@ export default function CurrentProviderModal() {
                     <Text color="white" fontSize="12pt" fontWeight="600">
                       <ProviderScoreStarItem
                         value={
-                          (currentProviderData.score) as
-                            | 0
-                            | 1
-                            | 2
-                            | 3
-                            | 4
-                            | 5
+                          currentProviderData.score as 0 | 1 | 2 | 3 | 4 | 5
                         }
                       />
                     </Text>
@@ -304,7 +299,18 @@ export default function CurrentProviderModal() {
                     <Text color="gray.500" fontSize="10pt" fontWeight="600">
                       Your Score
                     </Text>
-                    <ProviderUserStarRateItem value={3} />
+                    <ProviderUserStarRateItem
+                      value={
+                        currentProviderData.currentUserScore as
+                          | 0
+                          | 1
+                          | 2
+                          | 3
+                          | 4
+                          | 5
+                      }
+                      key={currentProviderData.currentUserScore}
+                    />
                   </Flex>
 
                   <Flex direction="column">
