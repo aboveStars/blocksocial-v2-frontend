@@ -197,6 +197,8 @@ export default function CurrentProviderModal() {
       image: providerInformation.image,
     };
 
+    console.log(generalInformation);
+
     return generalInformation;
   };
 
@@ -292,6 +294,7 @@ export default function CurrentProviderModal() {
                         value={
                           currentProviderData.score as 0 | 1 | 2 | 3 | 4 | 5
                         }
+                        key={currentProviderData.score}
                       />
                     </Text>
                   </Flex>

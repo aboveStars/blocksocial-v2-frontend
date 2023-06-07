@@ -1,5 +1,6 @@
 import { Flex, Image, Text } from "@chakra-ui/react";
 import React, { SetStateAction, useEffect, useState } from "react";
+import ProviderScoreStarItem from "./ProviderScoreStarItem";
 
 type Props = {
   name: string;
@@ -60,96 +61,28 @@ export default function ProviderCardItem({
       <Text color="gray.200" fontSize="9pt" fontWeight="700">
         "{description}"
       </Text>
+      <ProviderScoreStarItem
+        key={score}
+        value={score as 0 | 1 | 2 | 3 | 4 | 5}
+      />
       <Flex gap="3">
         <Flex direction="column" align="center">
           <Text color="gray.500" fontSize="9pt" fontWeight="700">
             Client Count
           </Text>
-          <Text color="white" fontSize="9pt">
+          <Text color="white" fontSize="9pt" fontWeight="700">
             {clientCount}
-          </Text>
-        </Flex>
-        <Flex direction="column" align="center">
-          <Text color="gray.500" fontSize="9pt" fontWeight="700">
-            Score
-          </Text>
-          <Text color="white" fontSize="9pt">
-            {score}%
           </Text>
         </Flex>
         <Flex direction="column" align="center">
           <Text color="gray.500" fontSize="9pt" fontWeight="700">
             Price
           </Text>
-          <Text color="white" fontSize="9pt">
+          <Text color="white" fontSize="9pt" fontWeight="700">
             {minPrice}-{maxPrice}
           </Text>
         </Flex>
       </Flex>
     </Flex>
-
-    // <Flex
-    //   id="provider-card"
-    //   width="100%"
-    //   height="110px"
-    //   p="8"
-    //   rounded="full"
-    //   cursor="pointer"
-    //   border="1px"
-    //   borderColor={thisCardSelected ? "white" : "gray"}
-    //   _hover={{
-    //     borderColor: thisCardSelected ? "white" : "gray.700",
-    //   }}
-    //   gap="1"
-    //   align="center"
-    //   onClick={() => {
-    //     if (!chooseIsDone) setSelectedProviderValue(name);
-    //   }}
-    // >
-    //   <Flex direction="column">
-    //     <Flex gap="1">
-    //       <Text color="gray.500" fontSize="9pt" fontWeight="700">
-    //         Name:
-    //       </Text>
-    //       <Text color="white" fontSize="9pt" fontWeight="700">
-    //         {name}
-    //       </Text>
-    //     </Flex>
-    //     <Flex gap="1">
-    //       <Text color="gray.500" fontSize="9pt" fontWeight="700">
-    //         Description:
-    //       </Text>
-    //       <Text color="white" fontSize="9pt" fontWeight="700">
-    //         {description}
-    //       </Text>
-    //     </Flex>
-    //     <Flex gap="1">
-    //       <Text color="gray.500" fontSize="9pt" fontWeight="700">
-    //         Offer:
-    //       </Text>
-    //       <Text color="white" fontSize="9pt" fontWeight="700">
-    //         {minPrice}$-{maxPrice}$
-    //       </Text>
-    //     </Flex>
-    //     <Flex gap="1">
-    //       <Text color="gray.500" fontSize="9pt" fontWeight="700">
-    //         Score:
-    //       </Text>
-    //       <Text color="white" fontSize="9pt" fontWeight="700">
-    //         {score}%
-    //       </Text>
-    //     </Flex>
-    //     <Flex gap="1">
-    //       <Text color="gray.500" fontSize="9pt" fontWeight="700">
-    //         Client Count:
-    //       </Text>
-    //       <Text color="white" fontSize="9pt" fontWeight="700">
-    //         {clientCount}
-    //       </Text>
-    //     </Flex>
-    //   </Flex>
-
-    //   <Image src={image} width="90px" height="90px" rounded="full" />
-    // </Flex>
   );
 }

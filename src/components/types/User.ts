@@ -90,7 +90,8 @@ export interface ICurrentProviderData {
   earning: number;
 
   score: number;
-  currentUserScore : number;
+  currentUserScore: number;
+
   clientCount: number;
 
   progress: number;

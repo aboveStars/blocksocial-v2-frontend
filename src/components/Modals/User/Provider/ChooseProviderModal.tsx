@@ -38,8 +38,8 @@ export default function ChooseProviderModal() {
     const openStatus =
       providerModalState.open && providerModalState.view === "chooseProvider";
 
-    if (openStatus) handleGetActiveProviders();
-    setIsOpen(openStatus);
+    if (true) handleGetActiveProviders();
+    setIsOpen(true);
   }, [providerModalState]);
 
   const handleGetActiveProviders = async () => {
@@ -73,8 +73,21 @@ export default function ChooseProviderModal() {
     let tempProviderShowcaseDatas: IProviderShowcaseItem[] = [];
 
     for (const providerShowcaseItemData of providersShowcaseDatas) {
-      tempProviderShowcaseDatas.push(providerShowcaseItemData);
+      tempProviderShowcaseDatas.push({
+        clientCount: providerShowcaseItemData.clientCount,
+        description: providerShowcaseItemData.description,
+        image: providerShowcaseItemData.image,
+        maxPrice: providerShowcaseItemData.maxPrice,
+        minPrice: providerShowcaseItemData.minPrice,
+        name: providerShowcaseItemData.name,
+        score: providerShowcaseItemData.rateCount
+          ? providerShowcaseItemData.sumScore /
+            providerShowcaseItemData.rateCount
+          : 0,
+      });
     }
+
+    tempProviderShowcaseDatas.sort((a, b) => b.score - a.score);
 
     setActiveProviders(tempProviderShowcaseDatas);
     setGettingAvaliableProviders(false);
