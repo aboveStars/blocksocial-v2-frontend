@@ -87,7 +87,7 @@ export interface ICurrentProviderData {
   startTime: number;
   endTime: number;
 
-  earning: number;
+  yield: number;
 
   score: number;
   currentUserScore: number;
@@ -105,8 +105,7 @@ export interface IProviderShowcaseItem {
   score: number;
   clientCount: number;
 
-  minPrice: number;
-  maxPrice: number;
+  offer: number;
 }
 
 export interface InitialSignUpForm {

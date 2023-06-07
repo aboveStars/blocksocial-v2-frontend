@@ -38,8 +38,8 @@ export default function ChooseProviderModal() {
     const openStatus =
       providerModalState.open && providerModalState.view === "chooseProvider";
 
-    if (true) handleGetActiveProviders();
-    setIsOpen(true);
+    if (openStatus) handleGetActiveProviders();
+    setIsOpen(openStatus);
   }, [providerModalState]);
 
   const handleGetActiveProviders = async () => {
@@ -77,8 +77,7 @@ export default function ChooseProviderModal() {
         clientCount: providerShowcaseItemData.clientCount,
         description: providerShowcaseItemData.description,
         image: providerShowcaseItemData.image,
-        maxPrice: providerShowcaseItemData.maxPrice,
-        minPrice: providerShowcaseItemData.minPrice,
+        offer: providerShowcaseItemData.offer,
         name: providerShowcaseItemData.name,
         score: providerShowcaseItemData.rateCount
           ? providerShowcaseItemData.sumScore /
@@ -181,8 +180,7 @@ export default function ChooseProviderModal() {
                     description={ap.description}
                     image={ap.image}
                     name={ap.name}
-                    minPrice={ap.minPrice}
-                    maxPrice={ap.maxPrice}
+                    offer={ap.offer}
                     clientCount={ap.clientCount}
                     score={ap.score}
                     selectedProviderValue={selectedProvider}

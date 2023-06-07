@@ -1,14 +1,15 @@
-import { Flex, Image, Text } from "@chakra-ui/react";
+import { Flex, Icon, Image, SkeletonCircle, Text } from "@chakra-ui/react";
 import React, { SetStateAction, useEffect, useState } from "react";
 import ProviderScoreStarItem from "./ProviderScoreStarItem";
+
+import { TbBuilding } from "react-icons/tb";
 
 type Props = {
   name: string;
   description: string;
   image: string;
 
-  minPrice: number;
-  maxPrice: number;
+  offer: number;
 
   score: number;
   clientCount: number;
@@ -22,8 +23,8 @@ export default function ProviderCardItem({
   name,
   description,
   image,
-  minPrice,
-  maxPrice,
+
+  offer,
   score,
   clientCount,
   selectedProviderValue,
@@ -54,7 +55,19 @@ export default function ProviderCardItem({
       borderRadius="25px"
       p="3"
     >
-      <Image src={image} rounded="full" width="100px" height="100px" />
+      <Image
+        src={image}
+        fallback={
+          image ? (
+            <SkeletonCircle width="100px" height="100px" />
+          ) : (
+            <Icon as={TbBuilding} width="100px" height="100px" />
+          )
+        }
+        rounded="full"
+        width="100px"
+        height="100px"
+      />
       <Text color="white" fontSize="10pt" fontWeight="700">
         {name}
       </Text>
@@ -76,10 +89,10 @@ export default function ProviderCardItem({
         </Flex>
         <Flex direction="column" align="center">
           <Text color="gray.500" fontSize="9pt" fontWeight="700">
-            Price
+            Offer
           </Text>
           <Text color="white" fontSize="9pt" fontWeight="700">
-            {minPrice}-{maxPrice}
+            {offer}
           </Text>
         </Flex>
       </Flex>

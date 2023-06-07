@@ -9,8 +9,6 @@ export default async function handler(
   const { cron, authorization } = req.headers;
   const { score } = req.body;
 
-  console.log(score);
-
   if (cron === process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
     console.log("Warm-Up Request");
     return res.status(200).json({ status: "Request by Server-Warmer" });
@@ -38,8 +36,6 @@ export default async function handler(
     );
     return res.status(503).json({ error: "Firebase Error" });
   }
-
-  console.log(provider);
 
   // update current user doc
   try {

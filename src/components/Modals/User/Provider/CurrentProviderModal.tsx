@@ -47,7 +47,7 @@ export default function CurrentProviderModal() {
     useState<ICurrentProviderData>({
       clientCount: 0,
       description: "",
-      earning: 0,
+      yield: 0,
       endTime: 0,
       name: "",
       score: 0,
@@ -147,7 +147,7 @@ export default function CurrentProviderModal() {
       name: currentProviderDocSnapshot.data()?.name,
       startTime: currentProviderDocSnapshot.data()?.startTime,
       endTime: currentProviderDocSnapshot.data()?.endTime,
-      earning: currentProviderDocSnapshot.data()?.earning,
+      yield: currentProviderDocSnapshot.data()?.yield,
       currentUserScore: currentProviderDocSnapshot.data()?.userScore,
     };
 
@@ -259,7 +259,7 @@ export default function CurrentProviderModal() {
                 Current Provider
               </Text>
               <Flex position="relative">
-                <Flex direction="column" justify="center" width="50%" gap="2">
+                <Flex direction="column" justify="center" width="60%" gap="2">
                   <Flex direction="column">
                     <Text color="gray.500" fontSize="10pt" fontWeight="600">
                       Name
@@ -318,7 +318,7 @@ export default function CurrentProviderModal() {
 
                   <Flex direction="column">
                     <Text color="gray.500" fontSize="10pt" fontWeight="600">
-                      Earning
+                      Yield
                     </Text>
                     <Flex
                       gap="1"
@@ -327,15 +327,15 @@ export default function CurrentProviderModal() {
                       fontWeight="600"
                     >
                       <Text>$</Text>
-                      <Text>{currentProviderData.earning}</Text>
+                      <Text>{currentProviderData.yield}</Text>
                     </Flex>
                   </Flex>
 
-                  <Flex direction="column">
+                  <Flex direction="column" width="100%">
                     <Text color="gray.500" fontSize="10pt" fontWeight="600">
                       Duration
                     </Text>
-                    <Flex align="center" gap="3" pl="0.5">
+                    <Flex align="center" gap="3" pl="0.5" width="100%">
                       <Flex direction="column" gap="1">
                         <Flex align="center" gap="1">
                           <Icon as={BsCalendar4} color="white" />
