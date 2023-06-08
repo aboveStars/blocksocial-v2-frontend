@@ -1,53 +1,53 @@
 import { auth } from "@/firebase/clientApp";
-import useLoginOperations from "@/hooks/useLoginOperations";
 import { Box, Center, Flex, Image } from "@chakra-ui/react";
 import { ReactNode, useEffect, useState } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useRecoilState } from "recoil";
-import { currentUserStateAtom } from "../atoms/currentUserAtom";
+
 import Footer from "../Footer/Footer";
 import AuthenticationModal from "../Modals/AuthenticationModal/AuthenticationModal";
 import PostCreateModal from "../Modals/Post/PostCreateModal";
 import NotificationModal from "../Modals/User/NotificationModal";
-import Navbar from "../Navbar/Navbar";
-import SystemStatus from "../system-status/SystemStatus";
 import ChooseProviderModal from "../Modals/User/Provider/ChooseProviderModal";
 import CurrentProviderModal from "../Modals/User/Provider/CurrentProviderModal";
+import Navbar from "../Navbar/Navbar";
+import SystemStatus from "../system-status/SystemStatus";
+import useLogin from "@/hooks/authHooks/useLogin";
 
 type Props = {
   children: ReactNode;
 };
 
 export default function Layout({ children }: Props) {
-  const [currentUserState, setCurrentUserState] =
-    useRecoilState(currentUserStateAtom);
   const [innerHeight, setInnerHeight] = useState("95vh");
 
-  const [user, loading, error] = useAuthState(auth);
+  const [loading, setLoading] = useState(true);
 
-  const { onLogin } = useLoginOperations();
+  const { logSignedUserIn } = useLogin();
 
   useEffect(() => {
     setInnerHeight(`${window.innerHeight}px`);
   }, []);
 
   useEffect(() => {
-    if (user) {
-      onLogin(user);
-    }
-  }, [user]);
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      setLoading(true);
+      if (user) {
+        console.log("We have user!");
+        await logSignedUserIn(user);
+        console.log("User has been initialized.");
+        setLoading(false);
+      } else {
+        console.log("We don't have user");
+        setLoading(false);
+        // User is signed out, handle the signed-out state
+      }
+    });
 
-  useEffect(() => {
-    if (!user)
-      setCurrentUserState((prev) => ({
-        ...prev,
-        loading: loading,
-      }));
-  }, [loading]);
+    return () => unsubscribe(); // Cleanup the event listener when component unmounts
+  }, []);
 
   return (
     <>
-      {currentUserState.loading ? (
+      {loading ? (
         <>
           <Center height={innerHeight}>
             <Image src="/bsicon.jpg" align="center" width="90px" />

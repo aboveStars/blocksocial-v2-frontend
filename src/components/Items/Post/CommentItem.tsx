@@ -1,6 +1,6 @@
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { firestore } from "@/firebase/clientApp";
-import useCommentDelete from "@/hooks/useCommentDelete";
+import useCommentDelete from "@/hooks/postHooks/useCommentDelete";
 import {
   Flex,
   Icon,

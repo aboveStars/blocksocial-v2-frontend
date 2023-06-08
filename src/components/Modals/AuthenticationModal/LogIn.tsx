@@ -1,5 +1,5 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
-import useLoginOperations from "@/hooks/useLoginOperations";
+import useLogin from "@/hooks/authHooks/useLogin";
 
 import {
   Button,
@@ -19,11 +19,11 @@ export default function LogIn() {
     password: "",
   });
 
-  const { directLogin, loginLoading, loginError, setLoginError } =
-    useLoginOperations();
+  const { logSignedOutUserIn } = useLogin();
+
+  const [loading, setLoading] = useState(false);
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setLoginError("");
     setLoginForm((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
@@ -32,7 +32,9 @@ export default function LogIn() {
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    directLogin(loginForm.emailOrUsername, loginForm.password);
+    setLoading(true);
+    await logSignedOutUserIn(loginForm.emailOrUsername, loginForm.password);
+    setLoading(false);
   };
 
   return (
@@ -96,7 +98,7 @@ export default function LogIn() {
           bg="black"
           textColor="white"
           type="submit"
-          isLoading={loginLoading}
+          isLoading={loading}
           _hover={{
             bg: "black",
             textColor: "white",
@@ -106,7 +108,7 @@ export default function LogIn() {
         </Button>
 
         <Text color="red" textAlign="center" fontSize="10pt">
-          {loginError}
+          {}
         </Text>
 
         <Flex fontSize="9pt" justify="center">

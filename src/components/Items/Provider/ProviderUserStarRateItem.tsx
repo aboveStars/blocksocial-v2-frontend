@@ -1,5 +1,5 @@
 import { fakeWaiting } from "@/components/utils/FakeWaiting";
-import useRateProvider from "@/hooks/useRateProvider";
+import useRateProvider from "@/hooks/providerHooks/useRateProvider";
 import { Flex, Icon, Spinner } from "@chakra-ui/react";
 import React, { useState } from "react";
 

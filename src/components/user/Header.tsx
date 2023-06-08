@@ -26,12 +26,12 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
 
-import useProfilePhoto from "@/hooks/useProfilePhoto";
+import useProfilePhoto from "@/hooks/personalizationHooks/useProfilePhoto";
 
 import { BiError, BiPencil } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
 
-import useFollow from "@/hooks/useFollow";
+import useFollow from "@/hooks/socialHooks/useFollow";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
 import { defaultCurrentUserState, UserInServer } from "../types/User";
@@ -138,15 +138,10 @@ export default function Header({ userInformation }: Props) {
         setIsCurrentUserPage((prev) => false);
       }
     } else {
-      if (currentUserState.loading) return;
       setGettingFollowStatus(false);
       setIsCurrentUserPage((prev) => false);
     }
-  }, [
-    userInformation,
-    currentUserState.isThereCurrentUser,
-    currentUserState.loading,
-  ]);
+  }, [userInformation, currentUserState.isThereCurrentUser]);
 
   useEffect(() => {
     const poorStatus: boolean = !(
@@ -214,7 +209,6 @@ export default function Header({ userInformation }: Props) {
     // Clear States
     setCurrentUserState({
       ...defaultCurrentUserState,
-      loading: false,
     });
     setAuthModalState((prev) => ({
       ...prev,
@@ -693,11 +687,7 @@ export default function Header({ userInformation }: Props) {
                 onClick={() => {
                   handleFollowOnHeader(1);
                 }}
-                isLoading={
-                  currentUserState.loading ||
-                  gettingFollowStatus ||
-                  followOperationLoading
-                }
+                isLoading={gettingFollowStatus || followOperationLoading}
               >
                 Follow
               </Button>

@@ -1,12 +1,27 @@
 import { InitialSignUpForm } from "@/components/types/User";
+import useLogin from "./useLogin";
 
 export default function useSignUp() {
-  /**
-   * @param initSignUpForm
-   * @param captchaToken
-   * @returns true if operation is successfull, otherwise false.
-   */
-  const initialSignUp = async (
+  const { logSignedOutUserIn } = useLogin();
+
+  const initiateSignUp = async (
+    signUpForm: InitialSignUpForm,
+    captchaToken: string
+  ) => {
+    const handleSignUpResult = await handleSignUp(signUpForm, captchaToken);
+
+    if (!handleSignUpResult) return false;
+
+    const operationResult = await logSignedOutUserIn(
+      signUpForm.email,
+      signUpForm.password
+    );
+
+    if (!operationResult) return false;
+    return true;
+  };
+
+  const handleSignUp = async (
     initSignUpForm: InitialSignUpForm,
     captchaToken: string
   ) => {
@@ -36,9 +51,7 @@ export default function useSignUp() {
     return true;
   };
 
-  const verifySignUp = async () => {};
-
-  const setProviderOnSignUp = async () => {};
-
-  return { initialSignUp, verifySignUp, setProviderOnSignUp };
+  return {
+    initiateSignUp,
+  };
 }

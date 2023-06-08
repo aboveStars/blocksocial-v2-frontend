@@ -30,6 +30,7 @@ import { AiOutlineClose } from "react-icons/ai";
 import { BsCalendar4, BsCalendarCheckFill } from "react-icons/bs";
 import { providerModalStateAtom } from "../../../atoms/providerModalAtom";
 import ProviderScoreStarItem from "@/components/Items/Provider/ProviderScoreStarItem";
+import WithdrawArea from "./WithdrawArea";
 
 export default function CurrentProviderModal() {
   const [providerModalState, setProvideModalState] = useRecoilState(
@@ -55,6 +56,7 @@ export default function CurrentProviderModal() {
       startTime: 0,
       progress: 0,
       image: "",
+      expired: false,
     });
 
   useEffect(() => {
@@ -108,10 +110,13 @@ export default function CurrentProviderModal() {
           30) *
       100;
 
+    const expiredStatus = Date.now() >= specialOperationResult.endTime;
+
     const tempCurrentUserProviderData: ICurrentProviderData = {
       ...specialOperationResult,
       ...generalInformationResult,
       progress: progressValue,
+      expired: expiredStatus,
     };
 
     setCurrentProviderData(tempCurrentUserProviderData);
@@ -197,8 +202,6 @@ export default function CurrentProviderModal() {
       image: providerInformation.image,
     };
 
-    console.log(generalInformation);
-
     return generalInformation;
   };
 
@@ -213,7 +216,8 @@ export default function CurrentProviderModal() {
       }}
       isOpen={isOpen}
       onClose={() => {
-        setProvideModalState((prev) => ({ ...prev, open: false }));
+        if (!currentProviderData.expired)
+          setProvideModalState((prev) => ({ ...prev, open: false }));
       }}
       autoFocus={false}
     >
@@ -237,15 +241,18 @@ export default function CurrentProviderModal() {
           <Flex textColor="white" fontSize="17pt" fontWeight="700" gap={2}>
             Data Ownership
           </Flex>
-          <Icon
-            as={AiOutlineClose}
-            color="white"
-            fontSize="15pt"
-            cursor="pointer"
-            onClick={() =>
-              setProvideModalState((prev) => ({ ...prev, open: false }))
-            }
-          />
+          {!currentProviderData.expired && (
+            <Icon
+              as={AiOutlineClose}
+              color="white"
+              fontSize="15pt"
+              cursor="pointer"
+              onClick={() => {
+                if (!currentProviderData.expired)
+                  setProvideModalState((prev) => ({ ...prev, open: false }));
+              }}
+            />
+          )}
         </Flex>
 
         <ModalBody>
@@ -258,6 +265,20 @@ export default function CurrentProviderModal() {
               <Text textColor="white" fontSize="13pt" fontWeight="700" gap={2}>
                 Current Provider
               </Text>
+              {currentProviderData.expired && (
+                <Flex
+                  id="yellow-expired-warning"
+                  direction="column"
+                  gap="3"
+                  mb="3"
+                >
+                  <Text color="yellow.500" fontSize="10pt">
+                    Your subscription is expired. Please withdraw your money and
+                    choose new provider.
+                  </Text>
+                  <WithdrawArea />
+                </Flex>
+              )}
               <Flex position="relative">
                 <Flex direction="column" justify="center" width="60%" gap="2">
                   <Flex direction="column">
@@ -289,14 +310,11 @@ export default function CurrentProviderModal() {
                     <Text color="gray.500" fontSize="10pt" fontWeight="600">
                       Score
                     </Text>
-                    <Text color="white" fontSize="12pt" fontWeight="600">
-                      <ProviderScoreStarItem
-                        value={
-                          currentProviderData.score as 0 | 1 | 2 | 3 | 4 | 5
-                        }
-                        key={currentProviderData.score}
-                      />
-                    </Text>
+
+                    <ProviderScoreStarItem
+                      value={currentProviderData.score as 0 | 1 | 2 | 3 | 4 | 5}
+                      key={currentProviderData.score}
+                    />
                   </Flex>
                   <Flex direction="column" gap="1">
                     <Text color="gray.500" fontSize="10pt" fontWeight="600">
@@ -320,12 +338,7 @@ export default function CurrentProviderModal() {
                     <Text color="gray.500" fontSize="10pt" fontWeight="600">
                       Yield
                     </Text>
-                    <Flex
-                      gap="1"
-                      color="white"
-                      fontSize="12pt"
-                      fontWeight="600"
-                    >
+                    <Flex color="white" fontSize="12pt" fontWeight="600">
                       <Text>$</Text>
                       <Text>{currentProviderData.yield}</Text>
                     </Flex>

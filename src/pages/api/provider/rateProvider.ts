@@ -22,17 +22,22 @@ export default async function handler(
 
   if (!score) return res.status(422).json({ error: "Invalid Prop or Props" });
 
-  let provider;
+  let currentProviderDoc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>;
   try {
-    provider = (
-      await firestore
-        .doc(`users/${operationFromUsername}/provider/currentProvider`)
-        .get()
-    ).data()?.name;
+    currentProviderDoc = await firestore
+      .doc(`users/${operationFromUsername}/provider/currentProvider`)
+      .get();
   } catch (error) {
     console.error(
       "Error while updating rate. (We were looking for current provider of user.)",
       error
+    );
+    return res.status(503).json({ error: "Firebase Error" });
+  }
+
+  if (!currentProviderDoc.exists) {
+    console.error(
+      "Error on rate provider. Current provider doc doesn't exist."
     );
     return res.status(503).json({ error: "Firebase Error" });
   }
@@ -64,8 +69,9 @@ export default async function handler(
         },
         body: JSON.stringify({
           score: score,
-          provider: provider,
+          provider: currentProviderDoc.data()?.name,
           username: operationFromUsername,
+          startTime: currentProviderDoc.data()?.startTime,
         }),
       }
     );

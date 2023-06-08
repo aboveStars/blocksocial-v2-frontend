@@ -34,7 +34,6 @@ export const defaultUserInServer: UserInServer = {
 
 export interface CurrentUser {
   isThereCurrentUser: boolean;
-  loading: boolean;
 
   username: string;
   fullname: string;
@@ -48,7 +47,6 @@ export interface CurrentUser {
 
 export const defaultCurrentUserState: CurrentUser = {
   isThereCurrentUser: false,
-  loading: true,
 
   username: "",
   fullname: "",
@@ -95,6 +93,8 @@ export interface ICurrentProviderData {
   clientCount: number;
 
   progress: number;
+
+  expired: boolean;
 }
 
 export interface IProviderShowcaseItem {

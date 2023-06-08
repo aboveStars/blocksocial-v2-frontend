@@ -29,10 +29,10 @@ import {
 import { BsDot, BsImage } from "react-icons/bs";
 
 import { firestore } from "@/firebase/clientApp";
-import useFollow from "@/hooks/useFollow";
-import usePostDelete from "@/hooks/usePostDelete";
+import useFollow from "@/hooks/socialHooks/useFollow";
+import usePostDelete from "@/hooks/postHooks/usePostDelete";
 
-import usePostLike from "@/hooks/usePostLike";
+import usePostLike from "@/hooks/postHooks/usePostLike";
 import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
 import { useRouter } from "next/router";

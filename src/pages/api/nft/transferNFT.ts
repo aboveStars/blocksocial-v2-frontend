@@ -1,7 +1,7 @@
 import getDisplayName from "@/apiUtils";
 import { PostServerData } from "@/components/types/Post";
-import { blockSocialSmartContract } from "@/ethers/clientApp";
-import { mumbaiContractAddress } from "@/ethers/ContractAddresses";
+import { blockSocialSmartContract } from "@/web3/BlockSocialV2NFTContract/blocksocialV2NFTApp";
+import { mumbaiContractAddress } from "@/web3/BlockSocialV2NFTContract/ContractAddresses";
 import AsyncLock from "async-lock";
 import { ethers } from "ethers";
 import { NextApiRequest, NextApiResponse } from "next";

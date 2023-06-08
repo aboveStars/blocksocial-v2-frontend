@@ -22,8 +22,7 @@ import { AiOutlineCheckCircle } from "react-icons/ai";
 import { BiError, BiErrorCircle } from "react-icons/bi";
 
 import { InitialSignUpForm } from "@/components/types/User";
-import useLoginOperations from "@/hooks/useLoginOperations";
-import useSignUp from "@/hooks/useSignUp";
+import useSignUp from "@/hooks/authHooks/useSignUp";
 import ReCAPTCHA from "react-google-recaptcha";
 
 export default function SignUp() {
@@ -60,9 +59,7 @@ export default function SignUp() {
 
   const captchaRef = useRef<ReCAPTCHA>(null);
 
-  const { directLogin } = useLoginOperations();
-
-  const { initialSignUp } = useSignUp();
+  const { initiateSignUp } = useSignUp();
 
   const isUserNameTaken = async (susUsername: string) => {
     if (!susUsername) return false;
@@ -144,14 +141,12 @@ export default function SignUp() {
       return;
     }
 
-    const operationResult = await initialSignUp(signUpForm, captchaToken);
+    const operationResult = await initiateSignUp(signUpForm, captchaToken);
     if (!operationResult) {
       setError("Error on Sign-Up.");
       console.error("Error while signing-up.");
       return setSignUpLoading(false);
     }
-
-    await directLogin(signUpForm.email, signUpForm.password);
   };
 
   const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {

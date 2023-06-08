@@ -17,8 +17,6 @@ export default function Home() {
   const setPostStatus = useSetRecoilState(postsStatusAtom);
 
   useEffect(() => {
-    if (currentUserState.loading) return;
-
     if (currentUserState.isThereCurrentUser) {
       handlePersonalizedMainFeed();
     } else {
@@ -59,8 +57,6 @@ export default function Home() {
   };
 
   const handlePersonalizedMainFeed = async () => {
-    const initTS = Date.now();
-
     setPostStatus({ loading: true });
 
     let idToken = "";
@@ -70,10 +66,6 @@ export default function Home() {
       console.error("Error while getting 'idToken'", error);
       return false;
     }
-
-    const secTS = Date.now();
-    console.log("ID Token TimeStamp...");
-    console.log("Total: ", secTS - initTS, " Delta: ", secTS - initTS);
 
     let response;
     try {
@@ -91,10 +83,6 @@ export default function Home() {
       );
     }
 
-    const thirdTs = Date.now();
-    console.log("GetFeedAPI Timetamp...");
-    console.log("Total: ", thirdTs - initTS, " Delta: ", thirdTs - secTS);
-
     if (!response.ok) {
       return console.error(
         `Error from 'getFeedAPI' for ${currentUserState.username} user.`,
@@ -104,10 +92,6 @@ export default function Home() {
 
     const postsFromServer: PostItemData[] = (await response.json())
       .postItemDatas;
-
-    const forthTS = Date.now();
-    console.log("Response.JSON() Timestamp...");
-    console.log("Total: ", forthTS - initTS, " Delta: ", forthTS - thirdTs);
 
     setPostDatasInServer(postsFromServer);
     setPostStatus({ loading: false });

@@ -36,8 +36,6 @@ export default function UserPage({ userInformation }: Props) {
   }, []);
 
   useEffect(() => {
-    if (currentUserState.loading) return;
-
     if (currentUserState.isThereCurrentUser) {
       handlePersonalizedUserFeed();
     } else {
