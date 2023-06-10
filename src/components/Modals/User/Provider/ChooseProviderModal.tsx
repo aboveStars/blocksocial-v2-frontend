@@ -24,7 +24,7 @@ export default function ChooseProviderModal() {
   const [activeProviders, setActiveProviders] = useState<
     IProviderShowcaseItem[]
   >([]);
-  const [selectedProvider, setSelectedProvider] = useState("BlockSocial");
+  const [selectedProvider, setSelectedProvider] = useState("SmartFeed");
 
   const [providerModalState, setProvideModalState] = useRecoilState(
     providerModalStateAtom

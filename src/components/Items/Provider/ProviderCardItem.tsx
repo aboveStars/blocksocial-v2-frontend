@@ -89,7 +89,7 @@ export default function ProviderCardItem({
         </Flex>
         <Flex direction="column" align="center">
           <Text color="gray.500" fontSize="9pt" fontWeight="700">
-            Offer
+            Offer (MATIC)
           </Text>
           <Text color="white" fontSize="9pt" fontWeight="700">
             {offer}
