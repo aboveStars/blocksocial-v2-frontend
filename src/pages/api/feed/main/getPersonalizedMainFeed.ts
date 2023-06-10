@@ -306,6 +306,9 @@ const handleCreatePostItemDataFromPostDocPath = async (
     );
   }
 
+  if (!postDoc.exists)
+    return console.error("This post doesn't exist anymore.", postDocPath);
+
   let likeStatus = false;
 
   // getting following status
