@@ -34,7 +34,6 @@ export const defaultUserInServer: UserInServer = {
 
 export interface CurrentUser {
   isThereCurrentUser: boolean;
-  loading: boolean;
 
   username: string;
   fullname: string;
@@ -48,7 +47,6 @@ export interface CurrentUser {
 
 export const defaultCurrentUserState: CurrentUser = {
   isThereCurrentUser: false,
-  loading: true,
 
   username: "",
   fullname: "",
@@ -77,4 +75,42 @@ export interface IPagePreviewData {
   type: string;
   url: string;
   image: string;
+}
+
+export interface ICurrentProviderData {
+  name: string;
+  description: string;
+  image: string;
+
+  startTime: number;
+  endTime: number;
+
+  yield: number;
+
+  score: number;
+  currentUserScore: number;
+
+  clientCount: number;
+
+  progress: number;
+
+  expired: boolean;
+}
+
+export interface IProviderShowcaseItem {
+  name: string;
+  description: string;
+  image: string;
+
+  score: number;
+  clientCount: number;
+
+  offer: number;
+}
+
+export interface InitialSignUpForm {
+  email: string;
+  fullname: string;
+  username: string;
+  password: string;
 }

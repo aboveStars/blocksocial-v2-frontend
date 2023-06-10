@@ -26,32 +26,26 @@ export default function AuthenticationModal() {
     }));
   };
   return (
-    <>
-      <Modal
-        isOpen={authModalState.open}
-        onClose={handleClose}
-        autoFocus={false}
-      >
-        <ModalOverlay backdropFilter="auto" backdropBlur="5px" />
-        <ModalContent>
-          <ModalHeader textAlign="center">
-            {authModalState.view == "logIn" && "Log In"}
-            {authModalState.view == "signUp" && "Sign Up"}
-            {authModalState.view == "resetPassword" && "Reset Password"}
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Flex direction="column" pb="6">
-              <Text fontSize="2xl" fontWeight={700} mb={5} align="center">
-                BlockSocial
-              </Text>
-              {authModalState.view == "signUp" && <SignUp />}
-              {authModalState.view == "logIn" && <LogIn />}
-              {authModalState.view === "resetPassword" && <ResetPassword />}
-            </Flex>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    </>
+    <Modal isOpen={authModalState.open} onClose={handleClose} autoFocus={false}>
+      <ModalOverlay backdropFilter="auto" backdropBlur="5px" />
+      <ModalContent>
+        <ModalHeader textAlign="center">
+          {authModalState.view == "logIn" && "Log In"}
+          {authModalState.view == "signUp" && "Sign Up"}
+          {authModalState.view == "resetPassword" && "Reset Password"}
+        </ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <Flex direction="column" pb="6">
+            <Text fontSize="2xl" fontWeight={700} mb={5} align="center">
+              BlockSocial
+            </Text>
+            {authModalState.view == "signUp" && <SignUp />}
+            {authModalState.view == "logIn" && <LogIn />}
+            {authModalState.view === "resetPassword" && <ResetPassword />}
+          </Flex>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
   );
 }

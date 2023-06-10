@@ -42,7 +42,7 @@ export default async function handler(
   if (req.method !== "POST")
     return res.status(405).json({ error: "Method not allowed" });
 
-  await lock.acquire(`signupAPI-${email}${fullname}${username}`, async () => {
+  await lock.acquire(`signupAPI-${username}`, async () => {
     const emailRegex =
       /^[A-Za-z0-9._%+-]+@(gmail|yahoo|outlook|aol|icloud|protonmail|yandex|mail|zoho)\.(com|net|org)$/i;
     if (!emailRegex.test(email)) {
@@ -82,17 +82,25 @@ export default async function handler(
     if (!passwordRegex.test(password)) {
       return res.status(400).json({ error: "Invalid Password" });
     }
+
     let newUserData: UserInServer;
+    let createdUid;
     try {
       const { uid } = await auth.createUser({
         email: email,
         password: password,
         displayName: username,
       });
+      createdUid = uid;
+    } catch (error) {
+      console.error("Error while signup. (We were creating user)", error);
+      const err = error as AuthError;
+      return res.status(503).json({ error: err.message });
+    }
 
+    try {
       const batch = firestore.batch();
       batch.set(firestore.doc(`usernames/${username}`), {});
-
       newUserData = {
         username: username,
         fullname: fullname,
@@ -103,15 +111,13 @@ export default async function handler(
         nftCount: 0,
 
         email: email || "",
-        uid: uid,
+        uid: createdUid,
       };
       batch.set(firestore.doc(`users/${username}`), newUserData);
-
       await batch.commit();
     } catch (error) {
-      console.error("Error while signup. (We were creating user)", error);
-      const err = error as AuthError;
-      return res.status(503).json({ error: err.message });
+      console.error("Error while signup. (We were creating docs)", error);
+      return res.status(503).json({ error: error });
     }
     return res.status(200).json(newUserData);
   });

@@ -58,8 +58,6 @@ export default function Authentication() {
           cursor="pointer"
           onClick={() => router.push(`/${currentUserState.username}`)}
         />
-      ) : currentUserState.loading ? (
-        <></>
       ) : (
         <>
           <Flex

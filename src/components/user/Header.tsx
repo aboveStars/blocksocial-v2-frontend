@@ -26,12 +26,12 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { currentUserStateAtom } from "../atoms/currentUserAtom";
 
-import useProfilePhoto from "@/hooks/useProfilePhoto";
+import useProfilePhoto from "@/hooks/personalizationHooks/useProfilePhoto";
 
 import { BiError, BiPencil } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
 
-import useFollow from "@/hooks/useFollow";
+import useFollow from "@/hooks/socialHooks/useFollow";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { authModalStateAtom } from "../atoms/authModalAtom";
 import { defaultCurrentUserState, UserInServer } from "../types/User";
@@ -44,8 +44,7 @@ import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { AiFillEdit } from "react-icons/ai";
 import { headerAtViewAtom } from "../atoms/headerAtViewAtom";
-
-import {} from "react-icons/bi";
+import { providerModalStateAtom } from "../atoms/providerModalAtom";
 
 type Props = {
   userInformation: UserInServer;
@@ -123,6 +122,8 @@ export default function Header({ userInformation }: Props) {
   );
   const [fullnameUpdateLoading, setFullnameUpdateLoading] = useState(false);
 
+  const setProviderModalState = useSetRecoilState(providerModalStateAtom);
+
   useEffect(() => {
     // after updating photo, we are using raw base64 selected photo as pp until refresh.
     setSelectedProfilePhoto("");
@@ -137,15 +138,10 @@ export default function Header({ userInformation }: Props) {
         setIsCurrentUserPage((prev) => false);
       }
     } else {
-      if (currentUserState.loading) return;
       setGettingFollowStatus(false);
       setIsCurrentUserPage((prev) => false);
     }
-  }, [
-    userInformation,
-    currentUserState.isThereCurrentUser,
-    currentUserState.loading,
-  ]);
+  }, [userInformation, currentUserState.isThereCurrentUser]);
 
   useEffect(() => {
     const poorStatus: boolean = !(
@@ -213,7 +209,6 @@ export default function Header({ userInformation }: Props) {
     // Clear States
     setCurrentUserState({
       ...defaultCurrentUserState,
-      loading: false,
     });
     setAuthModalState((prev) => ({
       ...prev,
@@ -273,7 +268,7 @@ export default function Header({ userInformation }: Props) {
 
     let response: Response;
     try {
-      response = await fetch("/api/fullnameUpdate", {
+      response = await fetch("/api/user/fullnameUpdate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -692,11 +687,7 @@ export default function Header({ userInformation }: Props) {
                 onClick={() => {
                   handleFollowOnHeader(1);
                 }}
-                isLoading={
-                  currentUserState.loading ||
-                  gettingFollowStatus ||
-                  followOperationLoading
-                }
+                isLoading={gettingFollowStatus || followOperationLoading}
               >
                 Follow
               </Button>
@@ -715,6 +706,19 @@ export default function Header({ userInformation }: Props) {
                 isLoading={signOutLoading}
               >
                 Sign Out
+              </Button>
+              <Button
+                colorScheme="blue"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setProviderModalState({
+                    open: true,
+                    view: "currentProvider",
+                  });
+                }}
+              >
+                Data Ownership
               </Button>
             </Flex>
           </Flex>

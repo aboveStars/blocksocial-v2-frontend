@@ -21,15 +21,16 @@ import { doc, getDoc } from "firebase/firestore";
 import { AiOutlineCheckCircle } from "react-icons/ai";
 import { BiError, BiErrorCircle } from "react-icons/bi";
 
-import useLoginOperations from "@/hooks/useLoginOperations";
+import { InitialSignUpForm } from "@/components/types/User";
+import useSignUp from "@/hooks/authHooks/useSignUp";
 import ReCAPTCHA from "react-google-recaptcha";
 
 export default function SignUp() {
-  const [signUpForm, setSignUpForm] = useState({
+  const [signUpForm, setSignUpForm] = useState<InitialSignUpForm>({
     email: "",
     fullname: "",
-    username: "",
     password: "",
+    username: "",
   });
 
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
@@ -58,7 +59,7 @@ export default function SignUp() {
 
   const captchaRef = useRef<ReCAPTCHA>(null);
 
-  const { directLogin } = useLoginOperations();
+  const { initiateSignUp } = useSignUp();
 
   const isUserNameTaken = async (susUsername: string) => {
     if (!susUsername) return false;
@@ -140,32 +141,12 @@ export default function SignUp() {
       return;
     }
 
-    let response: Response;
-    try {
-      response = await fetch("/api/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...signUpForm,
-          captchaToken: captchaToken,
-        }),
-      });
-    } catch (error) {
-      setSignUpLoading(false);
-      return console.error("Error while fetching to 'signUp' API", error);
+    const operationResult = await initiateSignUp(signUpForm, captchaToken);
+    if (!operationResult) {
+      setError("Error on Sign-Up.");
+      console.error("Error while signing-up.");
+      return setSignUpLoading(false);
     }
-
-    if (!response.ok) {
-      const { error } = await response.json();
-      setError(error);
-      setSignUpLoading(false);
-      return console.error("Error while signup from 'signup' API", error);
-    }
-
-    await directLogin(signUpForm.email, signUpForm.password);
-    setSignUpLoading(false);
   };
 
   const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -524,7 +505,7 @@ export default function SignUp() {
           Sign Up
         </Button>
 
-        <Flex justify="center">
+        <Flex justify="center" hidden={signUpLoading}>
           <ReCAPTCHA
             size="normal"
             ref={captchaRef}

@@ -1,26 +1,23 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
 import { auth } from "@/firebase/clientApp";
-import useAuthErrorCodes from "@/hooks/useAuthErrorCodes";
+import useAuthErrorCodes from "@/hooks/authHooks/useAuthErrorCodes";
 import {
-  Input,
   Button,
   Flex,
-  Text,
   FormControl,
   FormLabel,
+  Input,
+  Text,
 } from "@chakra-ui/react";
-import { AuthError } from "firebase/auth";
+import { sendPasswordResetEmail } from "firebase/auth";
 import React, { useRef, useState } from "react";
-import { useSendPasswordResetEmail } from "react-firebase-hooks/auth";
+
 import { useSetRecoilState } from "recoil";
 
 type Props = {};
 
 export default function ResetPassword({}: Props) {
   const setAuthModalState = useSetRecoilState(authModalStateAtom);
-
-  const [sendPasswordResetEmail, sending, error] =
-    useSendPasswordResetEmail(auth);
 
   const [email, setEmail] = useState("");
 
@@ -31,18 +28,29 @@ export default function ResetPassword({}: Props) {
 
   const { getFriendlyAuthError } = useAuthErrorCodes();
 
+  const [loading, setLoading] = useState(false);
+  const [isThereError, setIsThereError] = useState(false);
+
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     setSendResetEmailSendSuccessfull(false);
-    // Password Reset
-    const sendPasswordResult = await sendPasswordResetEmail(email);
-    if (!sendPasswordResult) {
-      console.log("Error at sending");
+    setIsThereError(false);
+
+    setLoading(true);
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      setLoading(false);
+      console.error("Error while sending password reset email", error);
+      setIsThereError(true);
       return;
     }
-    console.log("Success at sending password reset");
+
     if (emailInputRef.current) emailInputRef.current.value = "";
     setSendResetEmailSendSuccessfull(true);
+    setLoading(false);
   };
 
   return (
@@ -61,7 +69,7 @@ export default function ResetPassword({}: Props) {
               border: "1px solid",
               borderColor: "blue.500",
             }}
-            borderColor={sending ? "unset" : error ? "red" : "unset"}
+            borderColor={loading ? "unset" : isThereError ? "red" : "unset"}
             bg="gray.50"
           />
           <FormLabel
@@ -82,7 +90,7 @@ export default function ResetPassword({}: Props) {
           bg="black"
           textColor="white"
           type="submit"
-          isLoading={sending}
+          isLoading={loading}
           _hover={{
             bg: "black",
             textColor: "white",
@@ -93,7 +101,7 @@ export default function ResetPassword({}: Props) {
 
         <Flex align="center" justify="center" mb={2}>
           <Text color="red" fontSize="10pt">
-            {error && getFriendlyAuthError(error as AuthError)}
+            {}
           </Text>
 
           <Flex direction="column" align="center">

@@ -1,5 +1,5 @@
 import { firestore } from "@/firebase/clientApp";
-import useSendComment from "@/hooks/useSendComment";
+import useSendComment from "@/hooks/postHooks/useSendComment";
 
 import {
   Flex,

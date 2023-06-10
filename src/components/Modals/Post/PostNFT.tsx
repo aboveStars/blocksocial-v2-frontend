@@ -1,6 +1,6 @@
 import { NFTMetadata } from "@/components/types/NFT";
 import { OpenPanelName, PostItemData } from "@/components/types/Post";
-import useNFT from "@/hooks/useNFT";
+import useNFT from "@/hooks/nftHooks/useNFT";
 import {
   AspectRatio,
   Button,
@@ -32,7 +32,7 @@ import {
 
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postsAtViewAtom } from "@/components/atoms/postsAtViewAtom";
-import { mumbaiContractAddress } from "@/ethers/ContractAddresses";
+import { mumbaiContractAddress } from "@/web3/BlockSocialV2NFTContract/ContractAddresses";
 import { format } from "date-fns";
 import { ethers } from "ethers";
 import { BiError } from "react-icons/bi";

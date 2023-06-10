@@ -1,5 +1,5 @@
 import { firestore } from "@/firebase/clientApp";
-import useFollow from "@/hooks/useFollow";
+import useFollow from "@/hooks/socialHooks/useFollow";
 import {
   Flex,
   Text,
