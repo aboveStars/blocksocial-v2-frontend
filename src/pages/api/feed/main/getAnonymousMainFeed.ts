@@ -2,8 +2,6 @@ import { PostItemData } from "@/components/types/Post";
 import { firestore } from "@/firebase/adminApp";
 import { NextApiRequest, NextApiResponse } from "next";
 
-
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

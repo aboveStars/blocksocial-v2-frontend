@@ -79,7 +79,6 @@ export default async function handler(
       }
 
       // 3-)
-
       let provider = "";
       let currentProviderDocSnapshot: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>;
       try {
@@ -99,18 +98,21 @@ export default async function handler(
 
       let response;
       try {
-        response = await fetch("http://localhost:3000/api/client/provideFeed", {
-          method: "POST",
-          headers: {
-            authorization: process.env
-              .NEXT_PUBLIC_API_KEY_BETWEEN_SERVICES as string,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: operationFromUsername,
-            provider: provider,
-          }),
-        });
+        response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_ENDPOINT_TO_PROVIDER_PANEL_FOR_NORMAL_BLOCKSOCIAL}/client/provideFeed`,
+          {
+            method: "POST",
+            headers: {
+              authorization: process.env
+                .NEXT_PUBLIC_API_KEY_BETWEEN_SERVICES as string,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username: operationFromUsername,
+              provider: provider,
+            }),
+          }
+        );
       } catch (error) {
         console.error(
           "Error while gettingPersonalizedMainFeed.(We were fetching provideFeed)",
