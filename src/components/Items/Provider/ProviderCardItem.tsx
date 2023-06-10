@@ -72,7 +72,7 @@ export default function ProviderCardItem({
         {name}
       </Text>
       <Text color="gray.200" fontSize="9pt" fontWeight="700">
-        "{description}"
+        &quot;{description}&quot;
       </Text>
       <ProviderScoreStarItem
         key={score}

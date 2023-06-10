@@ -115,7 +115,7 @@ export default function CurrentProviderModal() {
     const tempCurrentUserProviderData: ICurrentProviderData = {
       ...specialOperationResult,
       ...generalInformationResult,
-      progress: progressValue,
+      progress: progressValue > 100 ? 100 : progressValue,
       expired: expiredStatus,
     };
 
@@ -273,9 +273,16 @@ export default function CurrentProviderModal() {
                   mb="3"
                 >
                   <Text color="yellow.500" fontSize="10pt">
-                    Your subscription is expired. Please withdraw your money and
-                    choose new provider.
+                    The subscription has expired. Please withdraw the yield and
+                    select a new service provider.
                   </Text>
+                  <Flex gap="1">
+                    <Text color="green.500">Your yield:</Text>
+                    <Text color="pink.500">
+                      {currentProviderData.yield} MATIC
+                    </Text>
+                  </Flex>
+
                   <WithdrawArea />
                 </Flex>
               )}
