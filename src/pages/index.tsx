@@ -126,7 +126,9 @@ export default function Home() {
     const postsFromServer: PostItemData[] = (await response.json())
       .postItemDatas;
 
-    setPostDatasInServer(postsFromServer);
+    const organizedPosts: PostItemData[] = organizePosts(postsFromServer);
+
+    setPostDatasInServer(organizedPosts);
 
     setPostStatus({ loading: false });
   };

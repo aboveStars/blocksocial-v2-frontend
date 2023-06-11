@@ -120,6 +120,8 @@ export default function UserPage({ userInformation }: Props) {
     const postsFromServer: PostItemData[] = (await response.json())
       .postItemDatas;
 
+    postsFromServer.sort((a, b) => b.creationTime - a.creationTime);
+
     setPostDatasInServer(postsFromServer);
     setPostStatus({ loading: false });
   };
