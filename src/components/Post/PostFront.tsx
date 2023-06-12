@@ -112,7 +112,7 @@ export default function PostFront({
       return setShowFollowButtonOnPost(false);
 
     return setShowFollowButtonOnPost(true);
-  }, [currentUserState, postFrontData]);
+  }, [currentUserState, postFrontData, router.asPath]);
 
   /**
    * Simply gets postSender's pp and fullname.
@@ -166,7 +166,8 @@ export default function PostFront({
     const operationResult = await follow(postFrontData.senderUsername, 1);
 
     if (!operationResult) {
-      const updatedPostsAtView = postsAtView.map((a) => {
+      console.log("there is issue in here. We are reverting");
+      const revertedPostsAtView = updatedPostsAtView.map((a) => {
         if (a.senderUsername === postFrontData.senderUsername) {
           const updatedPost = { ...a };
           updatedPost.currentUserFollowThisSender = false;
@@ -175,12 +176,12 @@ export default function PostFront({
           return a;
         }
       });
-      setPostsAtView(updatedPostsAtView);
+      setPostsAtView(revertedPostsAtView);
       return setFollowOperationLoading(false);
     }
 
     // update current post
-    updatedPostsAtView = postsAtView.map((a) => {
+    const finalUpdatedPostsAtView = updatedPostsAtView.map((a) => {
       if (a.postDocId === postFrontData.postDocId) {
         const updatedPost = { ...a };
         updatedPost.currentUserFollowThisSender = true;
@@ -190,7 +191,7 @@ export default function PostFront({
       }
     });
 
-    setPostsAtView(updatedPostsAtView);
+    setPostsAtView(finalUpdatedPostsAtView);
 
     setFollowOperationLoading(false);
   };
