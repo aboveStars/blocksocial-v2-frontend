@@ -79,6 +79,7 @@ export default async function handler(
       }
 
       // 3-)
+
       let provider = "";
       let currentProviderDocSnapshot: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>;
       try {
@@ -91,10 +92,7 @@ export default async function handler(
         );
       }
 
-      if (currentProviderDocSnapshot!.exists && currentProviderDocSnapshot!) {
-        const currentProviderDocData = currentProviderDocSnapshot.data();
-        if (currentProviderDocData) provider = currentProviderDocData.name;
-      }
+      provider = currentProviderDocSnapshot!.data()?.name as string;
 
       let response;
       try {
