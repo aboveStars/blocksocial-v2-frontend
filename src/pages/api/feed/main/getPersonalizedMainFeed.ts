@@ -196,6 +196,25 @@ export default async function handler(
           }
       }
 
+      // delete duplications (postItemDatas => clearPostItemDatas => finalPostItemDatas => postItemDatas)
+      let countedPostDocIds: string[] = [];
+
+      const clearPostItemDatas = postItemDatas.map((a) => {
+        if (!countedPostDocIds.includes(a.postDocId)) {
+          countedPostDocIds.push(a.postDocId);
+          return a;
+        } else {
+          return;
+        }
+      });
+
+      let finalPostItemDatas: PostItemData[] = [];
+      for (const clearPostItemData of clearPostItemDatas) {
+        if (clearPostItemData) finalPostItemDatas.push(clearPostItemData);
+      }
+
+      postItemDatas = finalPostItemDatas;
+
       return res.status(200).json({
         postItemDatas: postItemDatas,
       });
