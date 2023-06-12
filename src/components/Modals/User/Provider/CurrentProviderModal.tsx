@@ -345,9 +345,14 @@ export default function CurrentProviderModal() {
                     <Text color="gray.500" fontSize="10pt" fontWeight="600">
                       Yield
                     </Text>
-                    <Flex color="white" fontSize="12pt" fontWeight="600">
-                      <Text>$</Text>
+                    <Flex
+                      color="white"
+                      fontSize="12pt"
+                      fontWeight="600"
+                      gap="1"
+                    >
                       <Text>{currentProviderData.yield}</Text>
+                      <Text>MATIC</Text>
                     </Flex>
                   </Flex>
 
