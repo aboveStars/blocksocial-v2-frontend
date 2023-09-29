@@ -1,7 +1,6 @@
 import { auth } from "@/firebase/clientApp";
-import { Box, Center, Flex, Image } from "@chakra-ui/react";
+import { Box, Center, Flex, Image, Text } from "@chakra-ui/react";
 import { ReactNode, useEffect, useState } from "react";
-
 import Footer from "../Footer/Footer";
 import AuthenticationModal from "../Modals/AuthenticationModal/AuthenticationModal";
 import PostCreateModal from "../Modals/Post/PostCreateModal";
@@ -50,7 +49,7 @@ export default function Layout({ children }: Props) {
       {loading ? (
         <>
           <Center height={innerHeight}>
-            <Image src="/bsicon.jpg" align="center" width="90px" />
+            <Image src="/og.png" align="center" width="90px" />
           </Center>
         </>
       ) : (

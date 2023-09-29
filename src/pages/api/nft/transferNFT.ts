@@ -1,11 +1,10 @@
 import getDisplayName from "@/apiUtils";
 import { PostServerData } from "@/components/types/Post";
-import { blockSocialSmartContract } from "@/web3/BlockSocialV2NFTContract/blocksocialV2NFTApp";
-import { mumbaiContractAddress } from "@/web3/BlockSocialV2NFTContract/ContractAddresses";
 import AsyncLock from "async-lock";
 import { ethers } from "ethers";
 import { NextApiRequest, NextApiResponse } from "next";
 import { firestore } from "../../../firebase/adminApp";
+import { apidonNFT, apidonNFTMumbaiContractAddress } from "@/web3/NFT/ApidonNFTApp";
 
 const lock = new AsyncLock();
 
@@ -75,8 +74,8 @@ export default async function handler(
     }
 
     try {
-      const tx = await blockSocialSmartContract.approve(
-        mumbaiContractAddress,
+      const tx = await apidonNFT.approve(
+        apidonNFTMumbaiContractAddress,
         pd.nftStatus.tokenId
       );
       const r = await tx.wait(1);
@@ -92,7 +91,7 @@ export default async function handler(
     }
 
     try {
-      const nftMintTx = await blockSocialSmartContract.safeTransferFrom(
+      const nftMintTx = await apidonNFT.safeTransferFrom(
         process.env.NEXT_PUBLIC_OWNER_PUBLIC_ADDRESS,
         transferAddress,
         pd.nftStatus.tokenId

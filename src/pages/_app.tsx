@@ -17,7 +17,7 @@ export default function App({ Component, pageProps }: AppProps) {
     pageProps.pagePreviewData;
   const title: string = fetchedPagePreviewData?.title
     ? fetchedPagePreviewData.title
-    : "BlockSocial";
+    : "Apdion";
   const description: string = fetchedPagePreviewData?.description
     ? fetchedPagePreviewData.description
     : "Create NFT's from your posts and much more!";
@@ -26,24 +26,24 @@ export default function App({ Component, pageProps }: AppProps) {
     : "website";
   const url: string = fetchedPagePreviewData?.url
     ? fetchedPagePreviewData.url
-    : "https://blocksocial.vercel.app";
+    : "https://apidon.vercel.app";
   const image: string = fetchedPagePreviewData?.image
     ? fetchedPagePreviewData.image
-    : "https://blocksocial.vercel.app/bsicon.jpg";
+    : "https://apdion.vercel.app/og.png";
 
   return (
     <>
       <Head>
         <title>
           {router.asPath === "/"
-            ? "BlockSocial"
-            : `${router.asPath.split("/")[1]} - BlockSocial`}
+            ? "Apidon"
+            : `${router.asPath.split("/")[1]} - Apidon`}
         </title>
-        <link rel="icon" href="/bsicon.jpg" />
+        <link rel="icon" href="/favicon.ico" />
 
         <meta
           property="description"
-          content="BlockSocial is a social media platform that allows users to truly own and control their data while utilizing blockchain technology"
+          content="Apidon is a social media platform that allows users to truly own and control their data while utilizing blockchain technology"
         />
 
         <meta property="og:title" content={title} key="title" />

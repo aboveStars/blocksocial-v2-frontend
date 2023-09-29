@@ -32,7 +32,7 @@ import {
 
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
 import { postsAtViewAtom } from "@/components/atoms/postsAtViewAtom";
-import { mumbaiContractAddress } from "@/web3/BlockSocialV2NFTContract/ContractAddresses";
+
 import { format } from "date-fns";
 import { ethers } from "ethers";
 import { BiError } from "react-icons/bi";
@@ -47,6 +47,7 @@ import { GrTextAlignFull } from "react-icons/gr";
 import { MdContentCopy } from "react-icons/md";
 import { RxText } from "react-icons/rx";
 import { useRecoilValue, useSetRecoilState } from "recoil";
+import { apidonNFTMumbaiContractAddress } from "@/web3/NFT/ApidonNFTApp";
 
 type Props = {
   openPanelNameValue: OpenPanelName;
@@ -576,7 +577,7 @@ export default function PostNFT({
                       cursor="pointer"
                       onClick={() => {
                         window.open(
-                          `https://testnets.opensea.io/assets/mumbai/${mumbaiContractAddress}/${postInformation.nftStatus.tokenId}`,
+                          `https://testnets.opensea.io/assets/mumbai/${apidonNFTMumbaiContractAddress}/${postInformation.nftStatus.tokenId}`,
                           "blank"
                         );
                       }}
@@ -612,7 +613,7 @@ export default function PostNFT({
                                 postInformation.nftStatus.transferredAddress
                                   .length
                               )}`
-                            : "BlockSocial"}
+                            : "Apidon"}
                         </Text>
                         <Icon
                           as={MdContentCopy}
@@ -653,12 +654,12 @@ export default function PostNFT({
                         </AspectRatio>
 
                         <Text color="white" fontSize="11pt">
-                          {`${mumbaiContractAddress.slice(
+                          {`${apidonNFTMumbaiContractAddress.slice(
                             0,
                             5
-                          )}...${mumbaiContractAddress.slice(
-                            mumbaiContractAddress.length - 3,
-                            mumbaiContractAddress.length
+                          )}...${apidonNFTMumbaiContractAddress.slice(
+                            apidonNFTMumbaiContractAddress.length - 3,
+                            apidonNFTMumbaiContractAddress.length
                           )}`}
                         </Text>
                         <Icon
@@ -668,7 +669,7 @@ export default function PostNFT({
                           cursor="pointer"
                           onClick={() => {
                             navigator.clipboard.writeText(
-                              mumbaiContractAddress
+                              apidonNFTMumbaiContractAddress
                             );
                           }}
                         />

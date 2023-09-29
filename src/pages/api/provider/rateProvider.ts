@@ -59,7 +59,7 @@ export default async function handler(
 
   try {
     await fetch(
-      `${process.env.NEXT_PUBLIC_API_ENDPOINT_TO_PROVIDER_PANEL_FOR_NORMAL_BLOCKSOCIAL}/client/takeRate`,
+      `${process.env.NEXT_PUBLIC_API_ENDPOINT_TO_APIDON_PROVIDER_SERVER}/client/takeRate`,
       {
         method: "POST",
         headers: {

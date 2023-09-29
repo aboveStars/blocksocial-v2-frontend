@@ -31,18 +31,21 @@ export default async function handler(
   await lock.acquire(`chooseProvider-${operationFromUsername}`, async () => {
     let response;
     try {
-      response = await fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT_TO_PROVIDER_PANEL_FOR_NORMAL_BLOCKSOCIAL}/client/deal`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: process.env
-            .NEXT_PUBLIC_API_KEY_BETWEEN_SERVICES as string,
-        },
-        body: JSON.stringify({
-          username: operationFromUsername,
-          provider: providerName,
-        }),
-      });
+      response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_ENDPOINT_TO_APIDON_PROVIDER_SERVER}/client/deal`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: process.env
+              .NEXT_PUBLIC_API_KEY_BETWEEN_SERVICES as string,
+          },
+          body: JSON.stringify({
+            username: operationFromUsername,
+            provider: providerName,
+          }),
+        }
+      );
     } catch (error) {
       console.error("Error while fetching deal api", error);
       return res.status(503).json({ error: "Internal Server Error" });

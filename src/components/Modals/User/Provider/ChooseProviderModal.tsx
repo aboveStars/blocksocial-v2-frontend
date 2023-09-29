@@ -48,7 +48,7 @@ export default function ChooseProviderModal() {
     let response: Response;
     try {
       response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_ENDPOINT_TO_PROVIDER_PANEL_FOR_NORMAL_BLOCKSOCIAL}/client/provideShowcase`,
+        `${process.env.NEXT_PUBLIC_API_ENDPOINT_TO_APIDON_PROVIDER_SERVER}/client/provideShowcase`,
         {
           method: "POST",
           headers: {
@@ -160,7 +160,7 @@ export default function ChooseProviderModal() {
           bg="black"
         >
           <Flex textColor="white" fontSize="17pt" fontWeight="700" gap={2}>
-            Welcome to BlockSocial
+            Welcome to Apidon
           </Flex>
         </Flex>
 

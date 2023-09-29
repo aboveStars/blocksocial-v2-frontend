@@ -14,6 +14,8 @@ export default async function handler(
   const { cron, authorization } = req.headers;
   const { postDocId } = req.body;
 
+  console.log("postDocId: ", postDocId)
+
   if (cron === process.env.NEXT_PUBLIC_CRON_HEADER_KEY) {
     console.log("Warm-Up Request");
     return res.status(200).json({ status: "Request by Server-Warmer" });
@@ -23,7 +25,7 @@ export default async function handler(
   if (!operationFromUsername)
     return res.status(401).json({ error: "unauthorized" });
 
-  if (req.method !== "DELETE")
+  if (req.method !== "POST")
     return res.status(405).json("Method not allowed");
 
   if (!postDocId) {

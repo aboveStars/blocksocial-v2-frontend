@@ -165,7 +165,7 @@ export default function CurrentProviderModal() {
     let response: Response;
     try {
       response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_ENDPOINT_TO_PROVIDER_PANEL_FOR_NORMAL_BLOCKSOCIAL}/client/provideProviderInformation`,
+        `${process.env.NEXT_PUBLIC_API_ENDPOINT_TO_APIDON_PROVIDER_SERVER}/client/provideProviderInformation`,
         {
           method: "POST",
           headers: {

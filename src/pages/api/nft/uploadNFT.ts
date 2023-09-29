@@ -1,12 +1,12 @@
 import getDisplayName from "@/apiUtils";
 import { NFTMetadata } from "@/components/types/NFT";
 import { PostServerData } from "@/components/types/Post";
-import { blockSocialSmartContract } from "@/web3/BlockSocialV2NFTContract/blocksocialV2NFTApp";
-import { mumbaiContractAddress } from "@/web3/BlockSocialV2NFTContract/ContractAddresses";
+
 import AsyncLock from "async-lock";
 import { TransactionReceipt } from "ethers";
 import { NextApiRequest, NextApiResponse } from "next";
 import { bucket, fieldValue, firestore } from "../../../firebase/adminApp";
+import { apidonNFT, apidonNFTMumbaiContractAddress } from "@/web3/NFT/ApidonNFTApp";
 
 const lock = new AsyncLock();
 
@@ -119,7 +119,7 @@ export default async function handler(
     let txReceipt: TransactionReceipt | null = null;
     let nftMintTx;
     try {
-      nftMintTx = await blockSocialSmartContract.mint(newMetadataFilePublicURL);
+      nftMintTx = await apidonNFT.mint(newMetadataFilePublicURL);
     } catch (error) {
       console.error(
         "Error while uploading NFT. (We started to mint process.)",
@@ -143,7 +143,7 @@ export default async function handler(
       return res.status(503).json({ error: "Blockchain error" });
     }
     const tokenId = parseInt(txReceipt.logs[1].topics[2], 16);
-    const openSeaLinkCreated = `https://testnets.opensea.io/assets/mumbai/${mumbaiContractAddress}/${tokenId}`;
+    const openSeaLinkCreated = `https://testnets.opensea.io/assets/mumbai/${apidonNFTMumbaiContractAddress}/${tokenId}`;
 
     try {
       await firestore.doc(`users/${operationFromUsername}`).update({
@@ -164,7 +164,7 @@ export default async function handler(
       name: metadata.name,
       description: metadata.description,
       tokenId: tokenId,
-      contractAddress: mumbaiContractAddress,
+      contractAddress: apidonNFTMumbaiContractAddress,
       openseaUrl: openSeaLinkCreated,
       transferred: false,
       transferredAddress: "",

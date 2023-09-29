@@ -1,9 +1,7 @@
 import { authModalStateAtom } from "@/components/atoms/authModalAtom";
 import { currentUserStateAtom } from "@/components/atoms/currentUserAtom";
-
 import { Button, Flex, Icon, Image, SkeletonCircle } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-
 import React from "react";
 import { BsPersonCircle } from "react-icons/bs";
 import { CgProfile } from "react-icons/cg";
@@ -96,7 +94,7 @@ export default function Authentication() {
               md: "none",
               lg: "none",
             }}
-          >
+          >   
             <Icon
               as={BsPersonCircle}
               color="white"

@@ -1,6 +1,7 @@
 import getDisplayName from "@/apiUtils";
 import { firestore } from "@/firebase/adminApp";
-import { blockSocialV2SimplePayment } from "@/web3/BlockSocialV2SimplePaymantContract/blocksocialV2SimplePaymentApp";
+import { apidonPayment } from "@/web3/Payment/ApidonPaymentApp";
+
 import { TransactionReceipt, ethers } from "ethers";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -75,10 +76,7 @@ export default async function handler(
   let withdrawTx;
   try {
     const yieldValueInWei = ethers.parseUnits(yieldValue.toString(), "ether");
-    withdrawTx = await blockSocialV2SimplePayment.withdraw(
-      yieldValueInWei,
-      withdrawAddress
-    );
+    withdrawTx = await apidonPayment.withdraw(yieldValueInWei, withdrawAddress);
   } catch (error) {
     console.error(
       "Error on withdraw. We were sending request to blockchain",
@@ -133,7 +131,7 @@ export default async function handler(
   let response;
   try {
     response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_ENDPOINT_TO_PROVIDER_PANEL_FOR_NORMAL_BLOCKSOCIAL}/client/finishWithdraw`,
+      `${process.env.NEXT_PUBLIC_API_ENDPOINT_TO_APIDON_PROVIDER_SERVER}/client/finishWithdraw`,
       {
         method: "POST",
         headers: {

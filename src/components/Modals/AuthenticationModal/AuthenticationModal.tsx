@@ -38,7 +38,7 @@ export default function AuthenticationModal() {
         <ModalBody>
           <Flex direction="column" pb="6">
             <Text fontSize="2xl" fontWeight={700} mb={5} align="center">
-              BlockSocial
+              Apidon
             </Text>
             {authModalState.view == "signUp" && <SignUp />}
             {authModalState.view == "logIn" && <LogIn />}

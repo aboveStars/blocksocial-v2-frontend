@@ -39,11 +39,11 @@ export default function Navbar() {
             <Text
               color="white"
               fontWeight={700}
-              fontSize="27pt"
+              fontSize="20pt"
               cursor="pointer"
               onClick={() => router.push("/")}
             >
-              BS
+              apidon
             </Text>
           </Flex>
         </Box>
@@ -90,7 +90,7 @@ export default function Navbar() {
             cursor="pointer"
             onClick={() => router.push("/")}
           >
-            BlockSocial
+            apidon
           </Text>
         </Flex>
         <Flex justify="center" width="100%">

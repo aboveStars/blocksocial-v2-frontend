@@ -146,11 +146,11 @@ export default function Home() {
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const pagePreviewData: IPagePreviewData = {
-    title: "BlockSocial",
+    title: "Apidon",
     description: "Create NFTs from your posts and much more!",
     type: "website",
-    url: "https://blocksocial.vercel.app",
-    image: "https://blocksocial.vercel.app/bsicon.jpg",
+    url: "https://apidon.vercel.app",
+    image: "https://apidon.vercel.app/og.png",
   };
 
   return {

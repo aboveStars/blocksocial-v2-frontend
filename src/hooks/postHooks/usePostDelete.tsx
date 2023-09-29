@@ -31,11 +31,10 @@ export default function usePostDelete() {
       setPostDeletionLoading(false);
       return false;
     }
-
     let response: Response;
     try {
       response = await fetch("/api/post/postDelete", {
-        method: "DELETE",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           authorization: `Bearer ${idToken}`,

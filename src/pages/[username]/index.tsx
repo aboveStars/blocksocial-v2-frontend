@@ -207,10 +207,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   userInformation = tempUserInformation;
 
   const pagePreviewData: IPagePreviewData = {
-    title: `${userInformation.username}'s BlockSocial`,
+    title: `${userInformation.username}'s Apidon`,
     description: `${userInformation.followerCount} followers, ${userInformation.nftCount} NFT's`,
     type: "website",
-    url: `https://blocksocial.vercel.app/${userInformation.username}`,
+    url: `https://apidon.vercel.app/${userInformation.username}`,
     image: userInformation.profilePhoto,
   };
 
